@@ -12,7 +12,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
+import static me.qmx.jitescript.util.CodegenUtils.p;
+import static me.qmx.jitescript.util.CodegenUtils.sig;
 import static org.objectweb.asm.Opcodes.*;
 
 
@@ -21,12 +24,14 @@ public class MethodGenerator {
     private final MethodVisitor mv;
     private final Annotation[][] annotations;
     private final int paramSize;
+    private final Class<?> returnType;
 
     public MethodGenerator(Method method, ClassWriter classWriter) {
         this.method = method;
         this.mv = classWriter.visitMethod(ACC_PUBLIC, method.getName(), Type.getMethodDescriptor(method), null, null);
         this.annotations = method.getParameterAnnotations();
         this.paramSize = annotations.length;
+        returnType = method.getReturnType();
     }
 
     public void genereate() {
@@ -45,12 +50,13 @@ public class MethodGenerator {
         mv.visitLdcInsn(requestMappingName);
         mv.visitVarInsn(ALOAD, paramSize + 1);
         mv.visitVarInsn(ALOAD, paramSize + 2);
-        mv.visitLdcInsn(Type.getType(method.getReturnType()));
-        mv.visitMethodInsn(INVOKESTATIC, p(UniRestUtils.class), "request",
-                "(Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;Ljava/lang/Class;)Ljava/lang/Object;", false);
-        mv.visitTypeInsn(CHECKCAST, p(method.getReturnType()));
+
+        mv.visitLdcInsn(Type.getType(returnType));
+        mv.visitMethodInsn(INVOKESTATIC, p(UniRestUtils.class), "asJson",
+                sig(Object.class, String.class, Map.class, Map.class, Class.class), false);
+        mv.visitTypeInsn(CHECKCAST, p(returnType));
         mv.visitInsn(ARETURN);
-        mv.visitMaxs(4, 6);
+        mv.visitMaxs(-1, -1);
     }
 
     private <T extends Annotation> void createMap(int index, Class<T> annotationClass) {
@@ -67,14 +73,11 @@ public class MethodGenerator {
                 String value = (String) AnnotationUtils.getValue(annotation);
                 mv.visitLdcInsn(value);
                 mv.visitVarInsn(ALOAD, i + 1);
-                mv.visitMethodInsn(INVOKEVIRTUAL, p(LinkedHashMap.class), "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", false);
+                mv.visitMethodInsn(INVOKEVIRTUAL, p(LinkedHashMap.class), "put",
+                        sig(Object.class, Object.class, Object.class), false);
                 mv.visitInsn(POP);
             }
         }
-    }
-
-    private String p(Class<?> clazz) {
-        return clazz.getName().replace('.', '/');
     }
 
 

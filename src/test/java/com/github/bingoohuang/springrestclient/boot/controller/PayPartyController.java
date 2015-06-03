@@ -23,4 +23,13 @@ class PayPartyController {
     public int addPary(@RequestBody PayParty payParty) {
         return 1;
     }
+
+    @RequestMapping(value = "/addParty/{sellerId}/{buyerId}", method = RequestMethod.POST)
+    public int addPary2(@PathVariable("sellerId") String sellerId,
+                        @PathVariable("buyerId") String buyerId,
+                        @RequestBody PayParty payParty,
+                        @RequestParam("partyId") String partyId,
+                        @RequestParam("name") String name) {
+        return 1;
+    }
 }

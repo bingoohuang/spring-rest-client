@@ -79,6 +79,11 @@
             <version>4.1.6.RELEASE</version>
         </dependency>
         <dependency>
+            <groupId>me.qmx.jitescript</groupId>
+            <artifactId>jitescript</artifactId>
+            <version>0.4.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
             <version>5.0.3</version>
