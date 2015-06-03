@@ -51,7 +51,7 @@ public class ClassGenerator<T> {
         constructor();
 
         for (Method method : restClientClass.getMethods()) {
-            new MethodGenerator(method, classWriter).genereate();
+            new MethodGenerator(method, classWriter).generate();
         }
 
         return createBytes();

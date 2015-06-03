@@ -1,5 +1,6 @@
 package com.github.bingoohuang.springrestclient.demo;
 
+import com.github.bingoohuang.springrestclient.boot.domain.Account;
 import com.github.bingoohuang.springrestclient.boot.domain.PayParty;
 import com.github.bingoohuang.springrestclient.spring.PayPartyApi;
 import com.github.bingoohuang.springrestclient.utils.UniRestUtils;
@@ -16,12 +17,27 @@ public class PayPartyApiDemo implements PayPartyApi {
     }
 
     @Override
-    public int addPary(@RequestBody PayParty payParty) {
+    public int addParty(@RequestBody PayParty payParty) {
         LinkedHashMap pathVariables = new LinkedHashMap();
         LinkedHashMap requestParams = new LinkedHashMap();
 
-        String str = UniRestUtils.asPrimitive("url", pathVariables, requestParams, payParty);
+        String str = UniRestUtils.postAsJson("url", pathVariables, requestParams, payParty);
 
         return Integer.valueOf(str);
+    }
+
+    @Override
+    public boolean addParty2(@RequestBody PayParty payParty) {
+        return false;
+    }
+
+    @Override
+    public int addParty3(@PathVariable("sellerId") String sellerId, @PathVariable("buyerId") String buyerId, @RequestBody PayParty payParty, @RequestParam("partyId") String partyId, @RequestParam("name") String name) {
+        return 0;
+    }
+
+    @Override
+    public Account transfer(@RequestBody Account fromAccount, @RequestParam("sendConfirmationSms") boolean sendConfirmationSms) {
+        return null;
     }
 }

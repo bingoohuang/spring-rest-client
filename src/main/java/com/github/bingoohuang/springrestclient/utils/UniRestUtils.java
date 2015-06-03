@@ -10,10 +10,10 @@ import com.mashape.unirest.request.HttpRequestWithBody;
 import java.util.Map;
 
 public class UniRestUtils {
-    public static <T> T asJson(String url,
-                               Map<String, String> routeParams,
-                               Map<String, Object> requestParams,
-                               Class<T> clazz) {
+    public static <T> T get(String url,
+                            Map<String, String> routeParams,
+                            Map<String, Object> requestParams,
+                            Class<T> clazz) {
         String baseUrl = "http://localhost:4849";
         GetRequest get = Unirest.get(baseUrl + url);
 
@@ -32,9 +32,10 @@ public class UniRestUtils {
         }
     }
 
-    public static <T> String asPrimitive(String url,
-                               Map<String, String> routeParams,
-                               Map<String, Object> requestParams, T bean) {
+    public static <T> String postAsJson(String url,
+                                        Map<String, String> routeParams,
+                                        Map<String, Object> requestParams,
+                                        T bean) {
         String baseUrl = "http://localhost:4849";
         HttpRequestWithBody post = Unirest.post(baseUrl + url);
 
@@ -46,8 +47,8 @@ public class UniRestUtils {
         post.queryString(requestParams);
 
         try {
-            post.header("Content-Type", "application/json;charset=UTF-8")
-                    .body(json);
+            post.header("Content-Type", "application/json;charset=UTF-8");
+            post.body(json);
 
             HttpResponse<String> response = post.asString();
             return response.getBody();

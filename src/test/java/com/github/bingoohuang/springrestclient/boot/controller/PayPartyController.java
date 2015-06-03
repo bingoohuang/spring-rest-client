@@ -1,5 +1,7 @@
 package com.github.bingoohuang.springrestclient.boot.controller;
 
+import com.github.bingoohuang.springrestclient.boot.domain.Account;
+import com.github.bingoohuang.springrestclient.boot.domain.Customer;
 import com.github.bingoohuang.springrestclient.boot.domain.PayParty;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,16 +22,27 @@ class PayPartyController {
     }
 
     @RequestMapping(value = "/addParty", method = RequestMethod.POST)
-    public int addPary(@RequestBody PayParty payParty) {
-        return 1;
+    public int addParty(@RequestBody PayParty payParty) {
+        return 100;
+    }
+
+    @RequestMapping(value = "/addParty2", method = RequestMethod.POST)
+    public boolean addParty2(@RequestBody PayParty payParty) {
+        return true;
     }
 
     @RequestMapping(value = "/addParty/{sellerId}/{buyerId}", method = RequestMethod.POST)
-    public int addPary2(@PathVariable("sellerId") String sellerId,
-                        @PathVariable("buyerId") String buyerId,
-                        @RequestBody PayParty payParty,
-                        @RequestParam("partyId") String partyId,
-                        @RequestParam("name") String name) {
-        return 1;
+    public int addParty3(@PathVariable("sellerId") String sellerId,
+                         @PathVariable("buyerId") String buyerId,
+                         @RequestBody PayParty payParty,
+                         @RequestParam("partyId") String partyId,
+                         @RequestParam("name") String name) {
+        return 300;
+    }
+
+    @RequestMapping(value = "/transfer", method = RequestMethod.POST)
+    public Account transfer(@RequestBody Account fromAccount,
+                            @RequestParam("sendConfirmationSms") boolean sendConfirmationSms) {
+        return new Account(1234, "bingoo");
     }
 }
