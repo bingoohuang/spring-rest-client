@@ -53,9 +53,7 @@ public class RestclientTest {
     @Test
     public void transfer() {
         Account fromAccount = new Account(100, "from");
-
         Account account = payPartyApi.transfer(fromAccount, true);
-
         assertThat(account, is(equalTo(new Account(1234, "bingoo"))));
     }
 }

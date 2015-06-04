@@ -1,5 +1,6 @@
 package com.github.bingoohuang.springrestclient.demo;
 
+import com.alibaba.fastjson.JSON;
 import com.github.bingoohuang.springrestclient.boot.domain.Account;
 import com.github.bingoohuang.springrestclient.boot.domain.PayParty;
 import com.github.bingoohuang.springrestclient.spring.PayPartyApi;
@@ -38,6 +39,12 @@ public class PayPartyApiDemo implements PayPartyApi {
 
     @Override
     public Account transfer(@RequestBody Account fromAccount, @RequestParam("sendConfirmationSms") boolean sendConfirmationSms) {
-        return null;
+        LinkedHashMap pathVariables = new LinkedHashMap();
+        LinkedHashMap requestParams = new LinkedHashMap();
+        requestParams.put("sendConfirmationSms", sendConfirmationSms);
+
+        String json = UniRestUtils.postAsJson("url", pathVariables, requestParams, fromAccount);
+
+        return JSON.parseObject(json, Account.class);
     }
 }

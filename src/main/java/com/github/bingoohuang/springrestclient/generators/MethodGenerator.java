@@ -1,8 +1,12 @@
 package com.github.bingoohuang.springrestclient.generators;
 
+import com.alibaba.fastjson.JSON;
+import com.github.bingoohuang.springrestclient.utils.AsmUtils;
 import com.github.bingoohuang.springrestclient.utils.UniRestUtils;
+import com.google.common.primitives.Primitives;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,11 +30,13 @@ public class MethodGenerator {
     private final Annotation[][] annotations;
     private final int paramSize;
     private final Class<?> returnType;
+    private final Class<?>[] parameterTypes;
 
     public MethodGenerator(Method method, ClassWriter classWriter) {
         this.method = method;
         this.mv = classWriter.visitMethod(ACC_PUBLIC, method.getName(), Type.getMethodDescriptor(method), null, null);
         this.annotations = method.getParameterAnnotations();
+        this.parameterTypes = method.getParameterTypes();
         this.paramSize = annotations.length;
         returnType = method.getReturnType();
     }
@@ -76,25 +82,28 @@ public class MethodGenerator {
             mv.visitVarInsn(ALOAD, paramSize + 3);
 
             if (returnType.isPrimitive()) {
-                primitiveValueOf();
+                primitiveValueOfAndReturn();
+            } else {
+                objectValueOfAndReturn();
             }
-
-            mv.visitInsn(IRETURN);
         }
         mv.visitMaxs(-1, -1);
     }
 
-    private void primitiveValueOf() {
-        if (returnType == int.class) {
-            mv.visitMethodInsn(INVOKESTATIC, p(Integer.class), "valueOf", sig(Integer.class, String.class), false);
-            mv.visitMethodInsn(INVOKEVIRTUAL, p(Integer.class), "intValue", sig(int.class), false);
-        } else if (returnType == boolean.class) {
-            mv.visitMethodInsn(INVOKESTATIC, p(Boolean.class), "valueOf", sig(Boolean.class, String.class), false);
-            mv.visitMethodInsn(INVOKEVIRTUAL, p(Boolean.class), "booleanValue", sig(boolean.class), false);
-        } else if (returnType == long.class) {
-            mv.visitMethodInsn(INVOKESTATIC, p(Long.class), "valueOf", sig(Boolean.class, String.class), false);
-            mv.visitMethodInsn(INVOKEVIRTUAL, p(Long.class), "longValue", sig(long.class), false);
-        } // TODO: short,float,double, char, byte
+    private void objectValueOfAndReturn() {
+        mv.visitLdcInsn(Type.getType(returnType));
+        mv.visitMethodInsn(INVOKESTATIC, p(JSON.class), "parseObject", sig(Object.class, String.class, Class.class), false);
+        mv.visitTypeInsn(CHECKCAST, p(returnType));
+        mv.visitInsn(ARETURN);
+    }
+
+    private void primitiveValueOfAndReturn() {
+        Class<?> wrapped = Primitives.wrap(returnType);
+        mv.visitMethodInsn(INVOKESTATIC, p(wrapped), "valueOf", sig(wrapped, String.class), false);
+        mv.visitMethodInsn(INVOKEVIRTUAL, p(wrapped), AsmUtils.getXxValueMethodName(returnType), sig(returnType), false);
+
+        Type returnAsmType = Type.getType(returnType);
+        mv.visitInsn(returnAsmType.getOpcode(IRETURN));
     }
 
     private <T extends Annotation> void createMap(int index, Class<T> annotationClass) {
@@ -110,12 +119,24 @@ public class MethodGenerator {
                 mv.visitVarInsn(ALOAD, paramSize + index);
                 String value = (String) AnnotationUtils.getValue(annotation);
                 mv.visitLdcInsn(value);
-                mv.visitVarInsn(ALOAD, i + 1);
+                wrapPrimitive(parameterTypes[i], i);
                 mv.visitMethodInsn(INVOKEVIRTUAL, p(LinkedHashMap.class), "put",
                         sig(Object.class, Object.class, Object.class), false);
                 mv.visitInsn(POP);
             }
         }
+    }
+
+    private void wrapPrimitive(Class<?> type, int paramIndex) {
+        Type parameterAsmType = Type.getType(type);
+        int opcode = parameterAsmType.getOpcode(Opcodes.ILOAD);
+        mv.visitVarInsn(opcode, paramIndex + 1);
+
+        if (!type.isPrimitive()) return;
+
+        Class<?> wrapped = Primitives.wrap(type);
+
+        mv.visitMethodInsn(INVOKESTATIC, p(wrapped), "valueOf", sig(wrapped, type), false);
     }
 
 
