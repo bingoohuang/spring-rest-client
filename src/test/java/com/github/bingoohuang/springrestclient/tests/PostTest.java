@@ -65,7 +65,7 @@ public class PostTest {
                 .queryString("sellerId", sellerId)
                 .asString();
         assertThat(response.getStatus(), is(equalTo(200)));
-        assertThat(response.getHeaders().getFirst("sellerid"), is(equalTo("123456abc")));
+        assertThat(response.getHeaders().getFirst("sellerId"), is(equalTo("123456abc")));
     }
 
     @Test
