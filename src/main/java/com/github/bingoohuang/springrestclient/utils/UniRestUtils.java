@@ -5,17 +5,18 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
+import com.mashape.unirest.request.HttpRequest;
 import com.mashape.unirest.request.HttpRequestWithBody;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.Map;
 
 public class UniRestUtils {
-    public static <T> T get(String url,
-                            Map<String, String> routeParams,
-                            Map<String, Object> requestParams,
-                            Class<T> clazz) {
+    public static String get(String url,
+                             Map<String, String> routeParams,
+                             Map<String, Object> requestParams) {
         String baseUrl = "http://localhost:4849";
-        GetRequest get = Unirest.get(baseUrl + url);
+        HttpRequest get = Unirest.get(baseUrl + url);
 
         for (Map.Entry<String, String> entry : routeParams.entrySet()) {
             get.routeParam(entry.getKey(), entry.getValue());
@@ -25,17 +26,42 @@ public class UniRestUtils {
 
         try {
             HttpResponse<String> response = get.asString();
-            String json = response.getBody();
-            return JSON.parseObject(json, clazz);
+            return response.getBody();
         } catch (UnirestException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static <T> String postAsJson(String url,
-                                        Map<String, String> routeParams,
-                                        Map<String, Object> requestParams,
-                                        T bean) {
+    public static String post(String url,
+                              Map<String, String> routeParams,
+                              Map<String, Object> requestParams) {
+        String baseUrl = "http://localhost:4849";
+        HttpRequestWithBody post = Unirest.post(baseUrl + url);
+
+        for (Map.Entry<String, String> entry : routeParams.entrySet()) {
+            post.routeParam(entry.getKey(), entry.getValue());
+        }
+
+        post.queryString(requestParams);
+
+        try {
+            post.header("Content-Type", "application/json;charset=UTF-8");
+
+            HttpResponse<String> response = post.asString();
+            if (response.getStatus() >= 200 && response.getStatus() < 300)
+                return response.getBody();
+
+            throw new RuntimeException();
+        } catch (UnirestException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    public static String postAsJson(String url,
+                                    Map<String, String> routeParams,
+                                    Map<String, Object> requestParams,
+                                    Object bean) {
         String baseUrl = "http://localhost:4849";
         HttpRequestWithBody post = Unirest.post(baseUrl + url);
 
@@ -51,9 +77,14 @@ public class UniRestUtils {
             post.body(json);
 
             HttpResponse<String> response = post.asString();
-            return response.getBody();
+            if (response.getStatus() >= 200 && response.getStatus() < 300)
+                return response.getBody();
+
+            throw new RuntimeException();
         } catch (UnirestException e) {
             throw new RuntimeException(e);
         }
     }
+
+
 }

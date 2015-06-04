@@ -1,5 +1,6 @@
 package com.github.bingoohuang.springrestclient.generators;
 
+import com.github.bingoohuang.springrestclient.annotations.CreateClassFileForDiagnose;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
@@ -24,13 +25,14 @@ public class ClassGenerator<T> {
     public Class<? extends T> generate() {
         byte[] bytes = createRestClientImplClassBytes();
 
-        diagnose(bytes);
+        createClassFileForDiagnose(bytes);
 
         return defineClass(bytes);
     }
 
-    private void diagnose(byte[] bytes) {
-        writeClassFile4Diagnose(bytes, restClientClass.getSimpleName() + "Impl.class");
+    private void createClassFileForDiagnose(byte[] bytes) {
+        if (restClientClass.isAnnotationPresent(CreateClassFileForDiagnose.class))
+            writeClassFile4Diagnose(bytes, restClientClass.getSimpleName() + "Impl.class");
     }
 
     private void writeClassFile4Diagnose(byte[] bytes, String fileName) {

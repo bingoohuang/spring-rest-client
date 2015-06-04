@@ -9,10 +9,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -52,6 +49,59 @@ public class MethodGenerator {
         createMap(1, PathVariable.class);
         createMap(2, RequestParam.class);
 
+        int requestBodyIndex = findRequestBody();
+
+        RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
+        String requestMappingName = requestMapping.value()[0];
+        mv.visitLdcInsn(requestMappingName);
+        mv.visitVarInsn(ALOAD, paramSize + 1);
+        mv.visitVarInsn(ALOAD, paramSize + 2);
+
+        if (hasNoneMethodsOrPostMethod(requestMapping)) {
+            // use post
+            if (requestBodyIndex > -1) {
+                mv.visitVarInsn(ALOAD, requestBodyIndex + 1);
+                mv.visitMethodInsn(INVOKESTATIC, p(UniRestUtils.class), "postAsJson",
+                        sig(String.class, String.class, Map.class, Map.class, Object.class), false);
+            } else {
+                mv.visitMethodInsn(INVOKESTATIC, p(UniRestUtils.class), "post",
+                        sig(String.class, String.class, Map.class, Map.class), false);
+            }
+
+            if (returnType == void.class) {
+                mv.visitInsn(RETURN);
+                return;
+            }
+
+            mv.visitVarInsn(ASTORE, paramSize + 3);
+            mv.visitVarInsn(ALOAD, paramSize + 3);
+
+            if (returnType.isPrimitive()) {
+                primitiveValueOfAndReturn();
+            } else {
+                objectValueOfAndReturn();
+            }
+        } else if (isGetMethod(requestMapping)) {
+            mv.visitLdcInsn(Type.getType(returnType));
+            mv.visitMethodInsn(INVOKESTATIC, p(UniRestUtils.class), "get",
+                    sig(Object.class, String.class, Map.class, Map.class, Class.class), false);
+
+
+            mv.visitVarInsn(ASTORE, paramSize + 3);
+            mv.visitVarInsn(ALOAD, paramSize + 3);
+
+            if (returnType.isPrimitive()) {
+                primitiveValueOfAndReturn();
+            } else {
+                objectValueOfAndReturn();
+            }
+
+        }
+
+        mv.visitMaxs(-1, -1);
+    }
+
+    private int findRequestBody() {
         int requestBodyIndex = -1;
         for (int i = 0; i < paramSize; i++) {
             for (Annotation annotation : annotations[i]) {
@@ -61,39 +111,28 @@ public class MethodGenerator {
                 }
             }
         }
+        return requestBodyIndex;
+    }
 
-        RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
-        String requestMappingName = requestMapping.value()[0];
-        mv.visitLdcInsn(requestMappingName);
-        mv.visitVarInsn(ALOAD, paramSize + 1);
-        mv.visitVarInsn(ALOAD, paramSize + 2);
+    private boolean isGetMethod(RequestMapping requestMapping) {
+        RequestMethod[] method = requestMapping.method();
+        return method.length == 1 && method[0] == RequestMethod.GET;
+    }
 
-        if (requestBodyIndex < 0) {
-            mv.visitLdcInsn(Type.getType(returnType));
-            mv.visitMethodInsn(INVOKESTATIC, p(UniRestUtils.class), "get",
-                    sig(Object.class, String.class, Map.class, Map.class, Class.class), false);
-            mv.visitTypeInsn(CHECKCAST, p(returnType));
-            mv.visitInsn(ARETURN);
-        } else {
-            mv.visitVarInsn(ALOAD, requestBodyIndex + 1);
-            mv.visitMethodInsn(INVOKESTATIC, p(UniRestUtils.class), "postAsJson",
-                    sig(String.class, String.class, Map.class, Map.class, Object.class), false);
-            mv.visitVarInsn(ASTORE, paramSize + 3);
-            mv.visitVarInsn(ALOAD, paramSize + 3);
+    private boolean hasNoneMethodsOrPostMethod(RequestMapping requestMapping) {
+        RequestMethod[] method = requestMapping.method();
+        if (method.length == 0) return true;
 
-            if (returnType.isPrimitive()) {
-                primitiveValueOfAndReturn();
-            } else {
-                objectValueOfAndReturn();
-            }
-        }
-        mv.visitMaxs(-1, -1);
+        return method.length == 1 && method[0] == RequestMethod.POST;
     }
 
     private void objectValueOfAndReturn() {
-        mv.visitLdcInsn(Type.getType(returnType));
-        mv.visitMethodInsn(INVOKESTATIC, p(JSON.class), "parseObject", sig(Object.class, String.class, Class.class), false);
-        mv.visitTypeInsn(CHECKCAST, p(returnType));
+        if (returnType != String.class) {
+            mv.visitLdcInsn(Type.getType(returnType));
+            mv.visitMethodInsn(INVOKESTATIC, p(JSON.class), "parseObject", sig(Object.class, String.class, Class.class), false);
+            mv.visitTypeInsn(CHECKCAST, p(returnType));
+        }
+
         mv.visitInsn(ARETURN);
     }
 

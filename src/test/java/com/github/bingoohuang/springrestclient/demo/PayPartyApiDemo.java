@@ -47,4 +47,22 @@ public class PayPartyApiDemo implements PayPartyApi {
 
         return JSON.parseObject(json, Account.class);
     }
+
+    @Override
+    public String getStr(@RequestParam("sellerId") String sellerId) {
+        LinkedHashMap pathVariables = new LinkedHashMap();
+        LinkedHashMap requestParams = new LinkedHashMap();
+        requestParams.put("sellerId",sellerId);
+        return UniRestUtils.post("url",pathVariables, requestParams);
+    }
+
+    @Override
+    public void returnVoid(@RequestParam("sellerId") String sellerId) {
+        LinkedHashMap pathVariables = new LinkedHashMap();
+        LinkedHashMap requestParams = new LinkedHashMap();
+        requestParams.put("sellerId",sellerId);
+        UniRestUtils.post("url",pathVariables, requestParams);
+    }
+
+
 }

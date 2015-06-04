@@ -1,11 +1,13 @@
 package com.github.bingoohuang.springrestclient.spring;
 
+import com.github.bingoohuang.springrestclient.annotations.CreateClassFileForDiagnose;
 import com.github.bingoohuang.springrestclient.annotations.SpringRestClientEnabled;
 import com.github.bingoohuang.springrestclient.boot.domain.Account;
 import com.github.bingoohuang.springrestclient.boot.domain.PayParty;
 import org.springframework.web.bind.annotation.*;
 
 @SpringRestClientEnabled
+@CreateClassFileForDiagnose
 public interface PayPartyApi {
     @RequestMapping("/party/{sellerId}/{buyerId}")
     PayParty party(@PathVariable("sellerId") String sellerId,
@@ -29,4 +31,10 @@ public interface PayPartyApi {
     @RequestMapping(value = "/transfer", method = RequestMethod.POST)
     Account transfer(@RequestBody Account fromAccount,
                             @RequestParam("sendConfirmationSms") boolean sendConfirmationSms);
+
+    @RequestMapping(value = "/getStr",method = RequestMethod.POST)
+    String getStr(@RequestParam("sellerId") String sellerId);
+
+    @RequestMapping(value = "/returnVoid")
+    void returnVoid(@RequestParam("sellerId") String sellerId);
 }

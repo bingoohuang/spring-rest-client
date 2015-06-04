@@ -5,6 +5,8 @@ import com.github.bingoohuang.springrestclient.boot.domain.Customer;
 import com.github.bingoohuang.springrestclient.boot.domain.PayParty;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 class PayPartyController {
     @RequestMapping("/party/{sellerId}/{buyerId}")
@@ -44,5 +46,14 @@ class PayPartyController {
     public Account transfer(@RequestBody Account fromAccount,
                             @RequestParam("sendConfirmationSms") boolean sendConfirmationSms) {
         return new Account(1234, "bingoo");
+    }
+    @RequestMapping(value = "/getStr", method = RequestMethod.POST)
+    public String transfer(@RequestParam("sellerId") String sellerId) {
+        return sellerId;
+    }
+
+    @RequestMapping(value = "/returnVoid")
+    public void returnVoid(@RequestParam("sellerId") String sellerId, HttpServletResponse resp){
+        resp.addHeader("sellerId", sellerId + "abc");
     }
 }

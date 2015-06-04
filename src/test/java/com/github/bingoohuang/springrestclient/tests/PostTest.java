@@ -31,18 +31,7 @@ public class PostTest {
 
     @Test
     public void test2() throws UnirestException {
-
-
-          /*
-            @RequestBody @RequestParam("fromAccount") Account fromAccount,
-            @RequestBody @RequestParam("actor") Customer actor,
-            @RequestBody @RequestParam("toAccount") Account toAccount,
-            @RequestBody @RequestParam("amount") int amount,
-            @RequestParam("sendConfirmationSms") boolean sendConfirmationSms
-          */
-
         Account fromAccount = new Account(100, "from");
-
         String json = JSON.toJSONString(fromAccount);
         HttpResponse<String> response = Unirest.post("http://localhost:4849/transfer")
                 .header("Content-Type", "application/json;charset=UTF-8")
@@ -52,5 +41,28 @@ public class PostTest {
 
         Account account = JSON.parseObject(response.getBody(), Account.class);
         assertThat(account, is(equalTo(new Account(1234, "bingoo"))));
+    }
+
+    @Test
+    public void test3() throws UnirestException {
+        String sellerId = "中华";
+        String json = JSON.toJSONString(sellerId);
+        HttpResponse<String> response = Unirest.post("http://localhost:4849/getStr")
+                .header("Content-Type", "application/json;charset=UTF-8")
+                .queryString("sellerId", "中华")
+                .body(json)
+                .asString();
+        String str = response.getBody();
+        assertThat(sellerId, is(equalTo(str)));
+    }
+
+    @Test
+    public void test4() throws UnirestException {
+        String sellerId = "123456";
+        HttpResponse<String> response = Unirest.post("http://localhost:4849/returnVoid")
+                .queryString("sellerId", sellerId)
+                .asString();
+        assertThat(response.getStatus(), is(equalTo(200)));
+        assertThat(response.getHeaders().getFirst("sellerid"), is(equalTo("123456abc")));
     }
 }

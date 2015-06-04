@@ -56,4 +56,16 @@ public class RestclientTest {
         Account account = payPartyApi.transfer(fromAccount, true);
         assertThat(account, is(equalTo(new Account(1234, "bingoo"))));
     }
+    @Test
+    public void getStr(){
+        String sellerId = "中华";
+        String str = payPartyApi.getStr(sellerId);
+        assertThat(sellerId, is(equalTo(str)));
+    }
+    @Test
+    public void returnVoid(){
+        String sellerId = "123456";
+        payPartyApi.returnVoid(sellerId);
+
+    }
 }
