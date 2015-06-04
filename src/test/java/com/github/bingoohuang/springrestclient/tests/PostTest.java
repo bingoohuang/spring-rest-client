@@ -65,7 +65,7 @@ public class PostTest {
                 .queryString("sellerId", sellerId)
                 .asString();
         assertThat(response.getStatus(), is(equalTo(200)));
-        assertThat(response.getHeaders().getFirst("sellerId"), is(equalTo("123456abc")));
+        assertThat(response.getHeaders().getFirst("sellerid"), is(equalTo("123456abc")));
     }
 
     @Test
@@ -96,4 +96,15 @@ public class PostTest {
         assertThat(account, is(equalTo(new Account(1234, "bingoo"))));
     }
 
+    @Test
+    public void test7() throws UnirestException{
+        int offset = 123;
+        HttpResponse<String> response = Unirest.post("http://localhost:4849/another/add")
+                .header("Content-Type", "application/json;charset=UTF-8")
+                .queryString("offset", offset)
+                .asString();
+
+        Integer account = JSON.parseObject(response.getBody(), Integer.class);
+        assertThat(account, is(equalTo(123)));
+    }
 }

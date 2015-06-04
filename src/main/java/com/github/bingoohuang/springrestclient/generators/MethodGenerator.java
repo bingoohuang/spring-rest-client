@@ -29,8 +29,9 @@ public class MethodGenerator {
     private final Class<?> returnType;
     private final Class<?>[] parameterTypes;
     private final int offsetSize;
+    private final String firstPath;
 
-    public MethodGenerator(Method method, ClassWriter classWriter) {
+    public MethodGenerator(Method method, ClassWriter classWriter, String firstPath) {
         this.method = method;
         this.mv = classWriter.visitMethod(ACC_PUBLIC, method.getName(), Type.getMethodDescriptor(method), null, null);
         this.annotations = method.getParameterAnnotations();
@@ -38,6 +39,7 @@ public class MethodGenerator {
         this.paramSize = annotations.length;
         this.offsetSize = computeOffsetSize();
         returnType = method.getReturnType();
+        this.firstPath = firstPath;
     }
 
     private int computeOffsetSize() {
@@ -48,7 +50,6 @@ public class MethodGenerator {
 
         return paramSize + cnt;
     }
-
 
     public void generate() {
         start();
@@ -62,7 +63,7 @@ public class MethodGenerator {
         createMap(2, RequestParam.class);
 
         RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
-        String requestMappingName = requestMapping.value()[0];
+        String requestMappingName = firstPath + requestMapping.value()[0];
         mv.visitLdcInsn(requestMappingName);
 
         mv.visitVarInsn(ALOAD, offsetSize + 1);
@@ -155,14 +156,14 @@ public class MethodGenerator {
         mv.visitMethodInsn(INVOKESPECIAL, p(LinkedHashMap.class), "<init>", "()V", false);
         mv.visitVarInsn(ASTORE, offsetSize + index);
 
-        for (int i = 0, incr = 0; i < paramSize; i++) {
+        int incr = 0; // for double and long
+        for (int i = 0; i < paramSize; i++) {
             for (Annotation annotation : annotations[i]) {
                 if (annotation.annotationType() != annotationClass) continue;
 
                 mv.visitVarInsn(ALOAD, offsetSize + index);
                 String value = (String) AnnotationUtils.getValue(annotation);
                 mv.visitLdcInsn(value);
-
                 wrapPrimitive(parameterTypes[i], i, incr);
 
                 if (isWideType(parameterTypes[i])) ++incr;

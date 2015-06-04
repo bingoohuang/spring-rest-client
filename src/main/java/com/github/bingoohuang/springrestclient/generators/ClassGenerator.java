@@ -4,6 +4,7 @@ import com.github.bingoohuang.springrestclient.annotations.CreateClassFileForDia
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -30,6 +31,16 @@ public class ClassGenerator<T> {
         return defineClass(bytes);
     }
 
+    public String getFirstRequestMappingName (){
+        if(restClientClass.isAnnotationPresent(RequestMapping.class)){
+            RequestMapping re = restClientClass.getAnnotation(RequestMapping.class);
+            return re.value()[0];
+        }
+        return "";
+    }
+
+
+
     private void createClassFileForDiagnose(byte[] bytes) {
         if (restClientClass.isAnnotationPresent(CreateClassFileForDiagnose.class))
             writeClassFile4Diagnose(bytes, restClientClass.getSimpleName() + "Impl.class");
@@ -51,9 +62,10 @@ public class ClassGenerator<T> {
 
     private byte[] createRestClientImplClassBytes() {
         constructor();
+        String firstPath = getFirstRequestMappingName();
 
         for (Method method : restClientClass.getMethods()) {
-            new MethodGenerator(method, classWriter).generate();
+            new MethodGenerator(method, classWriter,firstPath).generate();
         }
 
         return createBytes();
