@@ -29,17 +29,24 @@ public class MethodGenerator {
     private final Class<?> returnType;
     private final Class<?>[] parameterTypes;
     private final int offsetSize;
-    private final String firstPath;
+    private final String classRequestMapping;
+    private final RequestMapping requestMapping;
 
-    public MethodGenerator(Method method, ClassWriter classWriter, String firstPath) {
+    public MethodGenerator(Method method, ClassWriter classWriter, String classRequestMapping) {
         this.method = method;
-        this.mv = classWriter.visitMethod(ACC_PUBLIC, method.getName(), Type.getMethodDescriptor(method), null, null);
+        this.mv = visitMethod(method, classWriter);
         this.annotations = method.getParameterAnnotations();
         this.parameterTypes = method.getParameterTypes();
         this.paramSize = annotations.length;
         this.offsetSize = computeOffsetSize();
         returnType = method.getReturnType();
-        this.firstPath = firstPath;
+        this.classRequestMapping = classRequestMapping;
+        this.requestMapping = method.getAnnotation(RequestMapping.class);
+    }
+
+    private MethodVisitor visitMethod(Method method, ClassWriter classWriter) {
+        String methodDescriptor = Type.getMethodDescriptor(method);
+        return classWriter.visitMethod(ACC_PUBLIC, method.getName(), methodDescriptor, null, null);
     }
 
     private int computeOffsetSize() {
@@ -62,14 +69,11 @@ public class MethodGenerator {
         createMap(1, PathVariable.class);
         createMap(2, RequestParam.class);
 
-        RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
-        String requestMappingName = firstPath + requestMapping.value()[0];
-        mv.visitLdcInsn(requestMappingName);
-
+        mv.visitLdcInsn(getFullRequestMapping());
         mv.visitVarInsn(ALOAD, offsetSize + 1);
         mv.visitVarInsn(ALOAD, offsetSize + 2);
 
-        if (hasNoneMethodsOrPostMethod(requestMapping)) {
+        if (hasNoneMethodsOrPostMethod()) {
             int requestBodyIndex = findRequestBody();
             if (requestBodyIndex > -1) {
                 mv.visitVarInsn(ALOAD, requestBodyIndex + 1);
@@ -79,9 +83,7 @@ public class MethodGenerator {
                 mv.visitMethodInsn(INVOKESTATIC, p(UniRestUtils.class), "post",
                         sig(String.class, String.class, Map.class, Map.class), false);
             }
-
-
-        } else if (isGetMethod(requestMapping)) {
+        } else if (isGetMethod()) {
             mv.visitMethodInsn(INVOKESTATIC, p(UniRestUtils.class), "get",
                     sig(Object.class, String.class, Map.class, Map.class), false);
         }
@@ -102,6 +104,13 @@ public class MethodGenerator {
 
     }
 
+    private String getFullRequestMapping() {
+        String methodMappingName = requestMapping != null && requestMapping.value().length > 0
+                ? requestMapping.value()[0] : "";
+
+        return classRequestMapping + methodMappingName;
+    }
+
     private int findRequestBody() {
         for (int i = 0, incr = 0; i < paramSize; i++) {
             if (isWideType(parameterTypes[i])) ++incr;
@@ -119,12 +128,16 @@ public class MethodGenerator {
         return parameterType == long.class || parameterType == double.class;
     }
 
-    private boolean isGetMethod(RequestMapping requestMapping) {
+    private boolean isGetMethod() {
+        if (requestMapping == null) return false;
+
         RequestMethod[] method = requestMapping.method();
         return method.length == 1 && method[0] == RequestMethod.GET;
     }
 
-    private boolean hasNoneMethodsOrPostMethod(RequestMapping requestMapping) {
+    private boolean hasNoneMethodsOrPostMethod() {
+        if (requestMapping == null) return true;
+
         RequestMethod[] method = requestMapping.method();
         if (method.length == 0) return true;
 
@@ -134,7 +147,8 @@ public class MethodGenerator {
     private void objectValueOfAndReturn() {
         if (returnType != String.class) {
             mv.visitLdcInsn(Type.getType(returnType));
-            mv.visitMethodInsn(INVOKESTATIC, p(JSON.class), "parseObject", sig(Object.class, String.class, Class.class), false);
+            mv.visitMethodInsn(INVOKESTATIC, p(JSON.class), "parseObject",
+                    sig(Object.class, String.class, Class.class), false);
             mv.visitTypeInsn(CHECKCAST, p(returnType));
         }
 
@@ -143,8 +157,10 @@ public class MethodGenerator {
 
     private void primitiveValueOfAndReturn() {
         Class<?> wrapped = Primitives.wrap(returnType);
-        mv.visitMethodInsn(INVOKESTATIC, p(wrapped), "valueOf", sig(wrapped, String.class), false);
-        mv.visitMethodInsn(INVOKEVIRTUAL, p(wrapped), AsmUtils.getXxValueMethodName(returnType), sig(returnType), false);
+        mv.visitMethodInsn(INVOKESTATIC, p(wrapped), "valueOf",
+                sig(wrapped, String.class), false);
+        mv.visitMethodInsn(INVOKEVIRTUAL, p(wrapped),
+                AsmUtils.getXxValueMethodName(returnType), sig(returnType), false);
 
         Type returnAsmType = Type.getType(returnType);
         mv.visitInsn(returnAsmType.getOpcode(IRETURN));

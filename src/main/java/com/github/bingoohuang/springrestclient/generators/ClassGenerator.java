@@ -31,15 +31,10 @@ public class ClassGenerator<T> {
         return defineClass(bytes);
     }
 
-    public String getFirstRequestMappingName (){
-        if(restClientClass.isAnnotationPresent(RequestMapping.class)){
-            RequestMapping re = restClientClass.getAnnotation(RequestMapping.class);
-            return re.value()[0];
-        }
-        return "";
+    public String getClassRequestMapping() {
+        RequestMapping re = restClientClass.getAnnotation(RequestMapping.class);
+        return re != null && re.value().length > 0 ? re.value()[0] : "";
     }
-
-
 
     private void createClassFileForDiagnose(byte[] bytes) {
         if (restClientClass.isAnnotationPresent(CreateClassFileForDiagnose.class))
@@ -62,10 +57,11 @@ public class ClassGenerator<T> {
 
     private byte[] createRestClientImplClassBytes() {
         constructor();
-        String firstPath = getFirstRequestMappingName();
+
+        String classRequestMapping = getClassRequestMapping();
 
         for (Method method : restClientClass.getMethods()) {
-            new MethodGenerator(method, classWriter,firstPath).generate();
+            new MethodGenerator(method, classWriter, classRequestMapping).generate();
         }
 
         return createBytes();
