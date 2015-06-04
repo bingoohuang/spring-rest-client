@@ -68,4 +68,24 @@ public class RestclientTest {
         payPartyApi.returnVoid(sellerId);
 
     }
+
+    @Test
+    public void transferInt() {
+        Account fromAccount = new Account(100, "from");
+        Account account = payPartyApi.transferInt(fromAccount, 100);
+        assertThat(account, is(equalTo(new Account(1234, "bingoo"))));
+    }
+
+    @Test
+    public void transferDouble() {
+        Account fromAccount = new Account(100, "from");
+        Account account = payPartyApi.transferDouble(fromAccount, 100.12);
+        assertThat(account, is(equalTo(new Account(1234, "bingoo"))));
+    }
+    @Test
+    public void transferDouble2() {
+        Account fromAccount = new Account(100, "from");
+        Account account = payPartyApi.transferDouble2(100.12, fromAccount);
+        assertThat(account, is(equalTo(new Account(1234, "bingoo"))));
+    }
 }

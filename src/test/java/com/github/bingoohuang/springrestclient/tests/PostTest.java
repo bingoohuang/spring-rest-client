@@ -43,6 +43,8 @@ public class PostTest {
         assertThat(account, is(equalTo(new Account(1234, "bingoo"))));
     }
 
+
+
     @Test
     public void test3() throws UnirestException {
         String sellerId = "中华";
@@ -65,4 +67,33 @@ public class PostTest {
         assertThat(response.getStatus(), is(equalTo(200)));
         assertThat(response.getHeaders().getFirst("sellerid"), is(equalTo("123456abc")));
     }
+
+    @Test
+    public void test5() throws UnirestException {
+        Account fromAccount = new Account(1234, "bingoo");
+        String json = JSON.toJSONString(fromAccount);
+        HttpResponse<String> response = Unirest.post("http://localhost:4849/transferInt")
+                .header("Content-Type", "application/json;charset=UTF-8")
+                .queryString("msg", 100)
+                .body(json)
+                .asString();
+
+        Account account = JSON.parseObject(response.getBody(), Account.class);
+        assertThat(account, is(equalTo(new Account(1234, "bingoo"))));
+    }
+
+    @Test
+    public void test6() throws UnirestException {
+        Account fromAccount = new Account(1234, "bingoo");
+        String json = JSON.toJSONString(fromAccount);
+        HttpResponse<String> response = Unirest.post("http://localhost:4849/transferDouble")
+                .header("Content-Type", "application/json;charset=UTF-8")
+                .queryString("msg", 100.12)
+                .body(json)
+                .asString();
+
+        Account account = JSON.parseObject(response.getBody(), Account.class);
+        assertThat(account, is(equalTo(new Account(1234, "bingoo"))));
+    }
+
 }

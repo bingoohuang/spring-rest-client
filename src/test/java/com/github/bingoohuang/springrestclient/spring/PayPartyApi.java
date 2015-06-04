@@ -37,4 +37,14 @@ public interface PayPartyApi {
 
     @RequestMapping(value = "/returnVoid")
     void returnVoid(@RequestParam("sellerId") String sellerId);
+
+    @RequestMapping(value = "/transferInt", method = RequestMethod.POST)
+    Account transferInt(@RequestBody Account account, @RequestParam("msg") int msg);
+
+    @RequestMapping(value = "/transferDouble", method = RequestMethod.POST)
+    Account transferDouble(@RequestBody Account account, @RequestParam("msg") double msg);
+
+    @RequestMapping(value = "/transferDouble2", method = RequestMethod.POST)
+    Account transferDouble2(@RequestParam("msg") double ms,
+                                   @RequestBody Account account);
 }

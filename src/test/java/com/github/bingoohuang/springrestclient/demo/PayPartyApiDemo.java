@@ -64,5 +64,37 @@ public class PayPartyApiDemo implements PayPartyApi {
         UniRestUtils.post("url",pathVariables, requestParams);
     }
 
+    @Override
+    public Account transferInt(@RequestBody Account account, int msg) {
+        LinkedHashMap pathVariables = new LinkedHashMap();
+        LinkedHashMap requestParams = new LinkedHashMap();
+        requestParams.put("sendConfirmationSms", msg);
+
+        String json = UniRestUtils.postAsJson("url", pathVariables, requestParams, account);
+
+        return JSON.parseObject(json, Account.class);
+    }
+
+    @Override
+    public Account transferDouble(@RequestBody Account account, @RequestParam("msg") double msg) {
+        LinkedHashMap pathVariables = new LinkedHashMap();
+        LinkedHashMap requestParams = new LinkedHashMap();
+        requestParams.put("msg", msg);
+
+        String json = UniRestUtils.postAsJson("url", pathVariables, requestParams, account);
+
+        return JSON.parseObject(json, Account.class);    }
+
+    @Override
+    public Account transferDouble2(@RequestParam("msg") double msg, @RequestBody Account account) {
+        LinkedHashMap pathVariables = new LinkedHashMap();
+        LinkedHashMap requestParams = new LinkedHashMap();
+        requestParams.put("msg", msg);
+
+        String json = UniRestUtils.postAsJson("url", pathVariables, requestParams, account);
+
+        return JSON.parseObject(json, Account.class);
+    }
+
 
 }

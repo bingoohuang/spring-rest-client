@@ -47,13 +47,32 @@ class PayPartyController {
                             @RequestParam("sendConfirmationSms") boolean sendConfirmationSms) {
         return new Account(1234, "bingoo");
     }
+
     @RequestMapping(value = "/getStr", method = RequestMethod.POST)
     public String transfer(@RequestParam("sellerId") String sellerId) {
         return sellerId;
     }
 
     @RequestMapping(value = "/returnVoid")
-    public void returnVoid(@RequestParam("sellerId") String sellerId, HttpServletResponse resp){
+    public void returnVoid(@RequestParam("sellerId") String sellerId, HttpServletResponse resp) {
         resp.addHeader("sellerId", sellerId + "abc");
+    }
+
+    @RequestMapping(value = "/transferInt", method = RequestMethod.POST)
+    public Account transferInt(@RequestBody Account account,
+                               @RequestParam("msg") int msg) {
+        return new Account(1234, "bingoo");
+    }
+
+    @RequestMapping(value = "/transferDouble", method = RequestMethod.POST)
+    public Account transferDouble(@RequestBody Account account,
+                                  @RequestParam("msg") double msg) {
+        return new Account(1234, "bingoo");
+    }
+
+    @RequestMapping(value = "/transferDouble2", method = RequestMethod.POST)
+    public Account transferDouble2(@RequestParam("msg") double ms,
+                                   @RequestBody Account account) {
+        return new Account(1234, "bingoo");
     }
 }

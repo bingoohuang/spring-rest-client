@@ -28,6 +28,7 @@ public class MethodGenerator {
     private final int paramSize;
     private final Class<?> returnType;
     private final Class<?>[] parameterTypes;
+    private final int offsetSize;
 
     public MethodGenerator(Method method, ClassWriter classWriter) {
         this.method = method;
@@ -35,8 +36,19 @@ public class MethodGenerator {
         this.annotations = method.getParameterAnnotations();
         this.parameterTypes = method.getParameterTypes();
         this.paramSize = annotations.length;
+        this.offsetSize = computeOffsetSize();
         returnType = method.getReturnType();
     }
+
+    private int computeOffsetSize() {
+        int cnt = 0;
+        for (Class<?> parameterType : parameterTypes) {
+            if (isWideType(parameterType)) ++cnt;
+        }
+
+        return paramSize + cnt;
+    }
+
 
     public void generate() {
         start();
@@ -49,16 +61,15 @@ public class MethodGenerator {
         createMap(1, PathVariable.class);
         createMap(2, RequestParam.class);
 
-        int requestBodyIndex = findRequestBody();
-
         RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
         String requestMappingName = requestMapping.value()[0];
         mv.visitLdcInsn(requestMappingName);
-        mv.visitVarInsn(ALOAD, paramSize + 1);
-        mv.visitVarInsn(ALOAD, paramSize + 2);
+
+        mv.visitVarInsn(ALOAD, offsetSize + 1);
+        mv.visitVarInsn(ALOAD, offsetSize + 2);
 
         if (hasNoneMethodsOrPostMethod(requestMapping)) {
-            // use post
+            int requestBodyIndex = findRequestBody();
             if (requestBodyIndex > -1) {
                 mv.visitVarInsn(ALOAD, requestBodyIndex + 1);
                 mv.visitMethodInsn(INVOKESTATIC, p(UniRestUtils.class), "postAsJson",
@@ -68,50 +79,43 @@ public class MethodGenerator {
                         sig(String.class, String.class, Map.class, Map.class), false);
             }
 
-            if (returnType == void.class) {
-                mv.visitInsn(RETURN);
-                return;
-            }
 
-            mv.visitVarInsn(ASTORE, paramSize + 3);
-            mv.visitVarInsn(ALOAD, paramSize + 3);
-
-            if (returnType.isPrimitive()) {
-                primitiveValueOfAndReturn();
-            } else {
-                objectValueOfAndReturn();
-            }
         } else if (isGetMethod(requestMapping)) {
-            mv.visitLdcInsn(Type.getType(returnType));
             mv.visitMethodInsn(INVOKESTATIC, p(UniRestUtils.class), "get",
-                    sig(Object.class, String.class, Map.class, Map.class, Class.class), false);
-
-
-            mv.visitVarInsn(ASTORE, paramSize + 3);
-            mv.visitVarInsn(ALOAD, paramSize + 3);
-
-            if (returnType.isPrimitive()) {
-                primitiveValueOfAndReturn();
-            } else {
-                objectValueOfAndReturn();
-            }
-
+                    sig(Object.class, String.class, Map.class, Map.class), false);
         }
 
-        mv.visitMaxs(-1, -1);
+        if (returnType == void.class) {
+            mv.visitInsn(RETURN);
+            return;
+        }
+
+        mv.visitVarInsn(ASTORE, offsetSize + 3);
+        mv.visitVarInsn(ALOAD, offsetSize + 3);
+
+        if (returnType.isPrimitive()) {
+            primitiveValueOfAndReturn();
+        } else {
+            objectValueOfAndReturn();
+        }
+
     }
 
     private int findRequestBody() {
-        int requestBodyIndex = -1;
-        for (int i = 0; i < paramSize; i++) {
+        for (int i = 0, incr = 0; i < paramSize; i++) {
+            if (isWideType(parameterTypes[i])) ++incr;
+
             for (Annotation annotation : annotations[i]) {
                 if (annotation.annotationType() == RequestBody.class) {
-                    requestBodyIndex = i;
-                    break;
+                    return i + incr;
                 }
             }
         }
-        return requestBodyIndex;
+        return -1;
+    }
+
+    private boolean isWideType(Class<?> parameterType) {
+        return parameterType == long.class || parameterType == double.class;
     }
 
     private boolean isGetMethod(RequestMapping requestMapping) {
@@ -149,16 +153,20 @@ public class MethodGenerator {
         mv.visitTypeInsn(NEW, p(LinkedHashMap.class));
         mv.visitInsn(DUP);
         mv.visitMethodInsn(INVOKESPECIAL, p(LinkedHashMap.class), "<init>", "()V", false);
-        mv.visitVarInsn(ASTORE, paramSize + index);
+        mv.visitVarInsn(ASTORE, offsetSize + index);
 
+        int incr = 0; // for double and long
         for (int i = 0; i < paramSize; i++) {
             for (Annotation annotation : annotations[i]) {
                 if (annotation.annotationType() != annotationClass) continue;
 
-                mv.visitVarInsn(ALOAD, paramSize + index);
+                mv.visitVarInsn(ALOAD, offsetSize + index);
                 String value = (String) AnnotationUtils.getValue(annotation);
                 mv.visitLdcInsn(value);
-                wrapPrimitive(parameterTypes[i], i);
+                wrapPrimitive(parameterTypes[i], i, incr);
+
+                if (isWideType(parameterTypes[i])) ++incr;
+
                 mv.visitMethodInsn(INVOKEVIRTUAL, p(LinkedHashMap.class), "put",
                         sig(Object.class, Object.class, Object.class), false);
                 mv.visitInsn(POP);
@@ -166,10 +174,10 @@ public class MethodGenerator {
         }
     }
 
-    private void wrapPrimitive(Class<?> type, int paramIndex) {
+    private void wrapPrimitive(Class<?> type, int paramIndex, int incr) {
         Type parameterAsmType = Type.getType(type);
         int opcode = parameterAsmType.getOpcode(Opcodes.ILOAD);
-        mv.visitVarInsn(opcode, paramIndex + 1);
+        mv.visitVarInsn(opcode, paramIndex + 1 + incr);
 
         if (!type.isPrimitive()) return;
 
