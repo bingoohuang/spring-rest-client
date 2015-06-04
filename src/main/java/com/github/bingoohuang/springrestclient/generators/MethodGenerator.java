@@ -155,14 +155,14 @@ public class MethodGenerator {
         mv.visitMethodInsn(INVOKESPECIAL, p(LinkedHashMap.class), "<init>", "()V", false);
         mv.visitVarInsn(ASTORE, offsetSize + index);
 
-        int incr = 0; // for double and long
-        for (int i = 0; i < paramSize; i++) {
+        for (int i = 0, incr = 0; i < paramSize; i++) {
             for (Annotation annotation : annotations[i]) {
                 if (annotation.annotationType() != annotationClass) continue;
 
                 mv.visitVarInsn(ALOAD, offsetSize + index);
                 String value = (String) AnnotationUtils.getValue(annotation);
                 mv.visitLdcInsn(value);
+
                 wrapPrimitive(parameterTypes[i], i, incr);
 
                 if (isWideType(parameterTypes[i])) ++incr;
