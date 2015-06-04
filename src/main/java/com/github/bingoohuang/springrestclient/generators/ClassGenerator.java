@@ -24,7 +24,7 @@ public class ClassGenerator<T> {
     }
 
     public Class<? extends T> generate() {
-        byte[] bytes = createRestClientImplClassBytes();
+        byte[] bytes = createImplClassBytes();
 
         createClassFileForDiagnose(bytes);
 
@@ -52,10 +52,11 @@ public class ClassGenerator<T> {
     }
 
     private Class<? extends T> defineClass(byte[] bytes) {
-        return (Class<? extends T>) new RestClientClassLoader(restClientClass.getClassLoader()).defineClass(implName, bytes);
+        RestClientClassLoader classLoader = new RestClientClassLoader(restClientClass.getClassLoader());
+        return (Class<? extends T>) classLoader.defineClass(implName, bytes);
     }
 
-    private byte[] createRestClientImplClassBytes() {
+    private byte[] createImplClassBytes() {
         constructor();
 
         String classRequestMapping = getClassRequestMapping();

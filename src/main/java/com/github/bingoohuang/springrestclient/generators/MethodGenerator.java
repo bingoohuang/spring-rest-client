@@ -64,7 +64,6 @@ public class MethodGenerator {
         end();
     }
 
-
     private void body() {
         createMap(1, PathVariable.class);
         createMap(2, RequestParam.class);
@@ -74,9 +73,9 @@ public class MethodGenerator {
         mv.visitVarInsn(ALOAD, offsetSize + 2);
 
         if (hasNoneMethodsOrPostMethod()) {
-            int requestBodyIndex = findRequestBody();
-            if (requestBodyIndex > -1) {
-                mv.visitVarInsn(ALOAD, requestBodyIndex + 1);
+            int requestBodyOffset = findRequestBodyParameterOffset();
+            if (requestBodyOffset > -1) {
+                mv.visitVarInsn(ALOAD, requestBodyOffset + 1);
                 mv.visitMethodInsn(INVOKESTATIC, p(UniRestUtils.class), "postAsJson",
                         sig(String.class, String.class, Map.class, Map.class, Object.class), false);
             } else {
@@ -111,7 +110,7 @@ public class MethodGenerator {
         return classRequestMapping + methodMappingName;
     }
 
-    private int findRequestBody() {
+    private int findRequestBodyParameterOffset() {
         for (int i = 0, incr = 0; i < paramSize; i++) {
             if (isWideType(parameterTypes[i])) ++incr;
 
@@ -121,6 +120,7 @@ public class MethodGenerator {
                 }
             }
         }
+
         return -1;
     }
 
@@ -162,8 +162,7 @@ public class MethodGenerator {
         mv.visitMethodInsn(INVOKEVIRTUAL, p(wrapped),
                 AsmUtils.getXxValueMethodName(returnType), sig(returnType), false);
 
-        Type returnAsmType = Type.getType(returnType);
-        mv.visitInsn(returnAsmType.getOpcode(IRETURN));
+        mv.visitInsn(Type.getType(returnType).getOpcode(IRETURN));
     }
 
     private <T extends Annotation> void createMap(int index, Class<T> annotationClass) {
@@ -172,14 +171,12 @@ public class MethodGenerator {
         mv.visitMethodInsn(INVOKESPECIAL, p(LinkedHashMap.class), "<init>", "()V", false);
         mv.visitVarInsn(ASTORE, offsetSize + index);
 
-        int incr = 0; // for double and long
-        for (int i = 0; i < paramSize; i++) {
+        for (int i = 0, incr = 0; i < paramSize; i++) {
             for (Annotation annotation : annotations[i]) {
                 if (annotation.annotationType() != annotationClass) continue;
 
                 mv.visitVarInsn(ALOAD, offsetSize + index);
-                String value = (String) AnnotationUtils.getValue(annotation);
-                mv.visitLdcInsn(value);
+                mv.visitLdcInsn(AnnotationUtils.getValue(annotation));
                 wrapPrimitive(parameterTypes[i], i, incr);
 
                 if (isWideType(parameterTypes[i])) ++incr;
@@ -199,10 +196,8 @@ public class MethodGenerator {
         if (!type.isPrimitive()) return;
 
         Class<?> wrapped = Primitives.wrap(type);
-
         mv.visitMethodInsn(INVOKESTATIC, p(wrapped), "valueOf", sig(wrapped, type), false);
     }
-
 
     private void start() {
         mv.visitCode();
