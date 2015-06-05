@@ -20,6 +20,7 @@ public class UniRests {
                              Map<String, String> routeParams,
                              Map<String, Object> requestParams) {
         String baseUrl = "http://localhost:4849";
+
         HttpRequest get = Unirest.get(baseUrl + url);
 
         for (Map.Entry<String, String> entry : routeParams.entrySet()) {

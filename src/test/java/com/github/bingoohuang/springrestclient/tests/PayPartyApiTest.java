@@ -2,7 +2,6 @@ package com.github.bingoohuang.springrestclient.tests;
 
 import com.github.bingoohuang.springrestclient.boot.domain.Account;
 import com.github.bingoohuang.springrestclient.boot.domain.PayParty;
-import com.github.bingoohuang.springrestclient.spring.AnotherApi;
 import com.github.bingoohuang.springrestclient.spring.PayPartyApi;
 import com.github.bingoohuang.springrestclient.spring.SpringRestClientConfig;
 import org.junit.Test;
@@ -17,18 +16,10 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = SpringRestClientConfig.class)
-public class RestclientTest {
+public class PayPartyApiTest {
+
     @Autowired
     PayPartyApi payPartyApi;
-
-    @Autowired
-    AnotherApi anotherApi;
-
-    @Test
-    public void party() {
-        PayParty party = payPartyApi.party("s100", "b200", "p300", "n400");
-        assertThat(party, is(equalTo(new PayParty("s100", "b200", "p300", "n400"))));
-    }
 
     @Test
     public void addParty() {
@@ -91,12 +82,5 @@ public class RestclientTest {
         Account fromAccount = new Account(100, "from");
         Account account = payPartyApi.transferDouble2(100.12, fromAccount);
         assertThat(account, is(equalTo(new Account(1234, "bingoo"))));
-    }
-
-    @Test
-    public void anotherAdd() {
-        int a = 123;
-        int account = anotherApi.add(a);
-        assertThat(account, is(equalTo(123)));
     }
 }

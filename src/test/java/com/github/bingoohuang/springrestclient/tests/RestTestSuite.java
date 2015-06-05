@@ -12,8 +12,9 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
         GetTest.class,
         PostTest.class,
-        RestclientTest.class,
-        ExceptionTest.class
+        AnotherApiTest.class,
+        ExceptionTest.class,
+        PayPartyApiTest.class
 })
 public class RestTestSuite {
     @ClassRule
