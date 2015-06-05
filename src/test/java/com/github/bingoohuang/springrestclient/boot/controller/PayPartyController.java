@@ -1,7 +1,6 @@
 package com.github.bingoohuang.springrestclient.boot.controller;
 
 import com.github.bingoohuang.springrestclient.boot.domain.Account;
-import com.github.bingoohuang.springrestclient.boot.domain.Customer;
 import com.github.bingoohuang.springrestclient.boot.domain.PayParty;
 import org.springframework.web.bind.annotation.*;
 

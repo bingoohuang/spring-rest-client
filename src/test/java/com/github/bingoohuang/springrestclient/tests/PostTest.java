@@ -2,15 +2,11 @@ package com.github.bingoohuang.springrestclient.tests;
 
 import com.alibaba.fastjson.JSON;
 import com.github.bingoohuang.springrestclient.boot.domain.Account;
-import com.github.bingoohuang.springrestclient.boot.domain.Customer;
 import com.github.bingoohuang.springrestclient.boot.domain.PayParty;
-import com.google.common.collect.Maps;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.junit.Test;
-
-import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;

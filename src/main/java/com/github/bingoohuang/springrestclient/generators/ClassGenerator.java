@@ -1,12 +1,13 @@
 package com.github.bingoohuang.springrestclient.generators;
 
-import com.github.bingoohuang.springrestclient.annotations.CreateClassFileForDiagnose;
+import com.github.bingoohuang.springrestclient.annotations.SpringRestClientEnabled;
+import com.google.common.io.Files;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.io.FileOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
@@ -37,17 +38,16 @@ public class ClassGenerator<T> {
     }
 
     private void createClassFileForDiagnose(byte[] bytes) {
-        if (restClientClass.isAnnotationPresent(CreateClassFileForDiagnose.class))
+        SpringRestClientEnabled restClientEnabled = restClientClass.getAnnotation(SpringRestClientEnabled.class);
+        if (restClientEnabled.createClassFileForDiagnose())
             writeClassFile4Diagnose(bytes, restClientClass.getSimpleName() + "Impl.class");
     }
 
     private void writeClassFile4Diagnose(byte[] bytes, String fileName) {
         try {
-            FileOutputStream fos = new FileOutputStream(fileName);
-            fos.write(bytes);
-            fos.close();
+            Files.write(bytes, new File(fileName));
         } catch (IOException e) {
-            e.printStackTrace();
+            // ignore
         }
     }
 

@@ -4,14 +4,18 @@ import com.alibaba.fastjson.JSON;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.mashape.unirest.request.GetRequest;
 import com.mashape.unirest.request.HttpRequest;
 import com.mashape.unirest.request.HttpRequestWithBody;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.Map;
 
-public class UniRestUtils {
+public class UniRests {
+    static ThreadLocal<HttpResponse<String>> lastResponseTL;
+
+    static {
+        lastResponseTL = new ThreadLocal<HttpResponse<String>>();
+    }
+
     public static String get(String url,
                              Map<String, String> routeParams,
                              Map<String, Object> requestParams) {
@@ -26,10 +30,18 @@ public class UniRestUtils {
 
         try {
             HttpResponse<String> response = get.asString();
-            return response.getBody();
+            lastResponseTL.set(response);
+
+            if (isSuccessful(response)) return nullOrBody(response);
+
+            throw new RuntimeException();
         } catch (UnirestException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static String nullOrBody(HttpResponse<String> response) {
+        return "true".equals(response.getHeaders().getFirst("returnNull")) ? null : response.getBody();
     }
 
     public static String post(String url,
@@ -42,19 +54,23 @@ public class UniRestUtils {
             post.routeParam(entry.getKey(), entry.getValue());
         }
 
-        post.queryString(requestParams);
+        post.fields(requestParams);
 
         try {
-            post.header("Content-Type", "application/json;charset=UTF-8");
-
             HttpResponse<String> response = post.asString();
-            if (response.getStatus() >= 200 && response.getStatus() < 300)
-                return response.getBody();
+            lastResponseTL.set(response);
+
+            if (isSuccessful(response)) return nullOrBody(response);
 
             throw new RuntimeException();
         } catch (UnirestException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static boolean isSuccessful(HttpResponse<String> response) {
+        int status = response.getStatus();
+        return status >= 200 && status < 300;
     }
 
     public static String postAsJson(String url,
@@ -68,16 +84,16 @@ public class UniRestUtils {
             post.routeParam(entry.getKey(), entry.getValue());
         }
 
-        String json = JSON.toJSONString(bean);
         post.queryString(requestParams);
 
         try {
             post.header("Content-Type", "application/json;charset=UTF-8");
-            post.body(json);
+            post.body(JSON.toJSONString(bean));
 
             HttpResponse<String> response = post.asString();
-            if (response.getStatus() >= 200 && response.getStatus() < 300)
-                return response.getBody();
+            lastResponseTL.set(response);
+
+            if (isSuccessful(response)) return nullOrBody(response);
 
             throw new RuntimeException();
         } catch (UnirestException e) {
@@ -85,5 +101,7 @@ public class UniRestUtils {
         }
     }
 
-
+    public static HttpResponse<String> lastResponse() {
+        return lastResponseTL.get();
+    }
 }

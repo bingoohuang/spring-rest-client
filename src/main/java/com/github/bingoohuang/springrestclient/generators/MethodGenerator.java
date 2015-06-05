@@ -1,8 +1,8 @@
 package com.github.bingoohuang.springrestclient.generators;
 
 import com.alibaba.fastjson.JSON;
-import com.github.bingoohuang.springrestclient.utils.AsmUtils;
-import com.github.bingoohuang.springrestclient.utils.UniRestUtils;
+import com.github.bingoohuang.springrestclient.utils.PrimitiveWrappers;
+import com.github.bingoohuang.springrestclient.utils.UniRests;
 import com.google.common.primitives.Primitives;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
@@ -76,14 +76,14 @@ public class MethodGenerator {
             int requestBodyOffset = findRequestBodyParameterOffset();
             if (requestBodyOffset > -1) {
                 mv.visitVarInsn(ALOAD, requestBodyOffset + 1);
-                mv.visitMethodInsn(INVOKESTATIC, p(UniRestUtils.class), "postAsJson",
+                mv.visitMethodInsn(INVOKESTATIC, p(UniRests.class), "postAsJson",
                         sig(String.class, String.class, Map.class, Map.class, Object.class), false);
             } else {
-                mv.visitMethodInsn(INVOKESTATIC, p(UniRestUtils.class), "post",
+                mv.visitMethodInsn(INVOKESTATIC, p(UniRests.class), "post",
                         sig(String.class, String.class, Map.class, Map.class), false);
             }
         } else if (isGetMethod()) {
-            mv.visitMethodInsn(INVOKESTATIC, p(UniRestUtils.class), "get",
+            mv.visitMethodInsn(INVOKESTATIC, p(UniRests.class), "get",
                     sig(Object.class, String.class, Map.class, Map.class), false);
         }
 
@@ -104,8 +104,8 @@ public class MethodGenerator {
     }
 
     private String getFullRequestMapping() {
-        String methodMappingName = requestMapping != null && requestMapping.value().length > 0
-                ? requestMapping.value()[0] : "";
+        boolean isEmpty = requestMapping != null && requestMapping.value().length > 0;
+        String methodMappingName = isEmpty ? requestMapping.value()[0] : "";
 
         return classRequestMapping + methodMappingName;
     }
@@ -157,10 +157,9 @@ public class MethodGenerator {
 
     private void primitiveValueOfAndReturn() {
         Class<?> wrapped = Primitives.wrap(returnType);
-        mv.visitMethodInsn(INVOKESTATIC, p(wrapped), "valueOf",
-                sig(wrapped, String.class), false);
-        mv.visitMethodInsn(INVOKEVIRTUAL, p(wrapped),
-                AsmUtils.getXxValueMethodName(returnType), sig(returnType), false);
+        mv.visitMethodInsn(INVOKESTATIC, p(wrapped),
+                PrimitiveWrappers.getParseXxMethodName(returnType),
+                sig(returnType, String.class), false);
 
         mv.visitInsn(Type.getType(returnType).getOpcode(IRETURN));
     }
