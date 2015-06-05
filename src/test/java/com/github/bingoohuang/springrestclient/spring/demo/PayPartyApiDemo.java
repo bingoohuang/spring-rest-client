@@ -3,6 +3,7 @@ package com.github.bingoohuang.springrestclient.spring.demo;
 import com.alibaba.fastjson.JSON;
 import com.github.bingoohuang.springrestclient.boot.domain.Account;
 import com.github.bingoohuang.springrestclient.boot.domain.PayParty;
+import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
 import com.github.bingoohuang.springrestclient.spring.api.PayPartyApi;
 import com.github.bingoohuang.springrestclient.utils.UniRests;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.LinkedHashMap;
 
 public class PayPartyApiDemo implements PayPartyApi {
+    BaseUrlProvider baseUrlProvider;
+
     @Override
     public PayParty party(@PathVariable("sellerId") String sellerId, @PathVariable("buyerId") String buyerId, @RequestParam("partyId") String partyId, @RequestParam("name") String name) {
         return null;
@@ -22,7 +25,9 @@ public class PayPartyApiDemo implements PayPartyApi {
         LinkedHashMap pathVariables = new LinkedHashMap();
         LinkedHashMap requestParams = new LinkedHashMap();
 
-        String str = UniRests.postAsJson("url", pathVariables, requestParams, payParty);
+        String str = UniRests.postAsJson(PayPartyApi.class,
+                baseUrlProvider,
+                "url", pathVariables, requestParams, payParty);
 
         return Integer.parseInt(str);
     }
@@ -43,7 +48,8 @@ public class PayPartyApiDemo implements PayPartyApi {
         LinkedHashMap requestParams = new LinkedHashMap();
         requestParams.put("sendConfirmationSms", sendConfirmationSms);
 
-        String json = UniRests.postAsJson("url", pathVariables, requestParams, fromAccount);
+        String json = UniRests.postAsJson(PayPartyApi.class,
+                baseUrlProvider, "url", pathVariables, requestParams, fromAccount);
 
         return JSON.parseObject(json, Account.class);
     }
@@ -53,7 +59,8 @@ public class PayPartyApiDemo implements PayPartyApi {
         LinkedHashMap pathVariables = new LinkedHashMap();
         LinkedHashMap requestParams = new LinkedHashMap();
         requestParams.put("sellerId", sellerId);
-        return UniRests.post("url", pathVariables, requestParams);
+        return UniRests.post(PayPartyApi.class,
+                baseUrlProvider, "url", pathVariables, requestParams);
     }
 
     @Override
@@ -61,7 +68,8 @@ public class PayPartyApiDemo implements PayPartyApi {
         LinkedHashMap pathVariables = new LinkedHashMap();
         LinkedHashMap requestParams = new LinkedHashMap();
         requestParams.put("sellerId", sellerId);
-        UniRests.post("url", pathVariables, requestParams);
+        UniRests.post(PayPartyApi.class,
+                baseUrlProvider, "url", pathVariables, requestParams);
     }
 
     @Override
@@ -70,7 +78,8 @@ public class PayPartyApiDemo implements PayPartyApi {
         LinkedHashMap requestParams = new LinkedHashMap();
         requestParams.put("sendConfirmationSms", msg);
 
-        String json = UniRests.postAsJson("url", pathVariables, requestParams, account);
+        String json = UniRests.postAsJson(PayPartyApi.class,
+                baseUrlProvider, "url", pathVariables, requestParams, account);
 
         return JSON.parseObject(json, Account.class);
     }
@@ -81,7 +90,8 @@ public class PayPartyApiDemo implements PayPartyApi {
         LinkedHashMap requestParams = new LinkedHashMap();
         requestParams.put("msg", msg);
 
-        String json = UniRests.postAsJson("url", pathVariables, requestParams, account);
+        String json = UniRests.postAsJson(PayPartyApi.class,
+                baseUrlProvider, "url", pathVariables, requestParams, account);
 
         return JSON.parseObject(json, Account.class);
     }
@@ -92,7 +102,8 @@ public class PayPartyApiDemo implements PayPartyApi {
         LinkedHashMap requestParams = new LinkedHashMap();
         requestParams.put("msg", msg);
 
-        String json = UniRests.postAsJson("url", pathVariables, requestParams, account);
+        String json = UniRests.postAsJson(PayPartyApi.class,
+                baseUrlProvider, "url", pathVariables, requestParams, account);
 
         return JSON.parseObject(json, Account.class);
     }

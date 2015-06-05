@@ -1,6 +1,7 @@
 package com.github.bingoohuang.springrestclient.generators;
 
 import com.alibaba.fastjson.JSON;
+import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
 import com.github.bingoohuang.springrestclient.utils.PrimitiveWrappers;
 import com.github.bingoohuang.springrestclient.utils.UniRests;
 import com.google.common.primitives.Primitives;
@@ -68,6 +69,11 @@ public class MethodGenerator {
         createMap(1, PathVariable.class);
         createMap(2, RequestParam.class);
 
+        mv.visitLdcInsn(Type.getType(method.getDeclaringClass()));
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitFieldInsn(GETFIELD, p(method.getDeclaringClass()) + "Impl",
+                "baseUrlProvider", Type.getType(BaseUrlProvider.class).getDescriptor());
+
         mv.visitLdcInsn(getFullRequestMapping());
         mv.visitVarInsn(ALOAD, offsetSize + 1);
         mv.visitVarInsn(ALOAD, offsetSize + 2);
@@ -77,14 +83,14 @@ public class MethodGenerator {
             if (requestBodyOffset > -1) {
                 mv.visitVarInsn(ALOAD, requestBodyOffset + 1);
                 mv.visitMethodInsn(INVOKESTATIC, p(UniRests.class), "postAsJson",
-                        sig(String.class, String.class, Map.class, Map.class, Object.class), false);
+                        sig(String.class, Class.class, BaseUrlProvider.class, String.class, Map.class, Map.class, Object.class), false);
             } else {
                 mv.visitMethodInsn(INVOKESTATIC, p(UniRests.class), "post",
-                        sig(String.class, String.class, Map.class, Map.class), false);
+                        sig(String.class, Class.class, BaseUrlProvider.class, String.class, Map.class, Map.class), false);
             }
         } else if (isGetMethod()) {
             mv.visitMethodInsn(INVOKESTATIC, p(UniRests.class), "get",
-                    sig(Object.class, String.class, Map.class, Map.class), false);
+                    sig(String.class, Class.class, BaseUrlProvider.class, String.class, Map.class, Map.class), false);
         }
 
         if (returnType == void.class) {

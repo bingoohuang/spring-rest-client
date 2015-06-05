@@ -15,6 +15,8 @@ public class NullController {
 
     @RequestMapping("/returnEmptyString")
     public String emptyString(@RequestBody Account account) {
-        return "";
+        Account a = new Account(100, "java");
+        if (a == account) return "";
+        return "error";
     }
 }
