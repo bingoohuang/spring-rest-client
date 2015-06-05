@@ -6,9 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RequestMapping("/another")
-@SpringRestClientEnabled(
-        baseUrlProvider = DiamondBaseUrlProvider.class,
-        createClassFileForDiagnose = true)
+@SpringRestClientEnabled(baseUrlProvider = DiamondBaseUrlProvider.class)
 public interface AnotherApi {
     @RequestMapping("/add")
     int add(@RequestParam("offset") int offset);

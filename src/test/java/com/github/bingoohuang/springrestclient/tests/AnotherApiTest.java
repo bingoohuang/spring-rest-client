@@ -2,6 +2,8 @@ package com.github.bingoohuang.springrestclient.tests;
 
 import com.github.bingoohuang.springrestclient.spring.api.AnotherApi;
 import com.github.bingoohuang.springrestclient.spring.SpringRestClientConfig;
+import com.github.bingoohuang.springrestclient.utils.UniRests;
+import com.mashape.unirest.http.HttpResponse;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,5 +26,9 @@ public class AnotherApiTest {
         int a = 123;
         int account = anotherApi.add(a);
         assertThat(account, is(equalTo(123)));
+
+        HttpResponse<String> response = UniRests.lastResponse();
+        String fuck = response.getHeaders().getFirst("fuck");
+        assertThat(fuck, is(equalTo("you123")));
     }
 }
