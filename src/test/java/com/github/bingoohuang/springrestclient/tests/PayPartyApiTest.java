@@ -2,7 +2,7 @@ package com.github.bingoohuang.springrestclient.tests;
 
 import com.github.bingoohuang.springrestclient.boot.domain.Account;
 import com.github.bingoohuang.springrestclient.boot.domain.PayParty;
-import com.github.bingoohuang.springrestclient.spring.PayPartyApi;
+import com.github.bingoohuang.springrestclient.spring.api.PayPartyApi;
 import com.github.bingoohuang.springrestclient.spring.SpringRestClientConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;

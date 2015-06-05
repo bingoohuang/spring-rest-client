@@ -19,9 +19,7 @@ public class UniRests {
     public static String get(String url,
                              Map<String, String> routeParams,
                              Map<String, Object> requestParams) {
-        String baseUrl = "http://localhost:4849";
-
-        HttpRequest get = Unirest.get(baseUrl + url);
+        HttpRequest get = Unirest.get(url);
 
         for (Map.Entry<String, String> entry : routeParams.entrySet()) {
             get.routeParam(entry.getKey(), entry.getValue());
@@ -48,8 +46,7 @@ public class UniRests {
     public static String post(String url,
                               Map<String, String> routeParams,
                               Map<String, Object> requestParams) {
-        String baseUrl = "http://localhost:4849";
-        HttpRequestWithBody post = Unirest.post(baseUrl + url);
+        HttpRequestWithBody post = Unirest.post(url);
 
         for (Map.Entry<String, String> entry : routeParams.entrySet()) {
             post.routeParam(entry.getKey(), entry.getValue());
@@ -78,8 +75,7 @@ public class UniRests {
                                     Map<String, String> routeParams,
                                     Map<String, Object> requestParams,
                                     Object bean) {
-        String baseUrl = "http://localhost:4849";
-        HttpRequestWithBody post = Unirest.post(baseUrl + url);
+        HttpRequestWithBody post = Unirest.post(url);
 
         for (Map.Entry<String, String> entry : routeParams.entrySet()) {
             post.routeParam(entry.getKey(), entry.getValue());

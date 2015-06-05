@@ -1,6 +1,6 @@
-package com.github.bingoohuang.springrestclient.demo;
+package com.github.bingoohuang.springrestclient.spring.demo;
 
-import com.github.bingoohuang.springrestclient.spring.AnotherApi;
+import com.github.bingoohuang.springrestclient.spring.api.AnotherApi;
 import com.github.bingoohuang.springrestclient.utils.UniRests;
 import org.springframework.web.bind.annotation.RequestParam;
 

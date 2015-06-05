@@ -1,6 +1,6 @@
 package com.github.bingoohuang.springrestclient.tests;
 
-import com.github.bingoohuang.springrestclient.spring.AnotherApi;
+import com.github.bingoohuang.springrestclient.spring.api.AnotherApi;
 import com.github.bingoohuang.springrestclient.spring.SpringRestClientConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;

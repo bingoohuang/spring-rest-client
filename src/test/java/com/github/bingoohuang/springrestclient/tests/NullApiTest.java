@@ -2,7 +2,7 @@ package com.github.bingoohuang.springrestclient.tests;
 
 import com.alibaba.fastjson.JSON;
 import com.github.bingoohuang.springrestclient.boot.domain.Account;
-import com.github.bingoohuang.springrestclient.spring.NullApi;
+import com.github.bingoohuang.springrestclient.spring.api.NullApi;
 import com.github.bingoohuang.springrestclient.spring.SpringRestClientConfig;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;

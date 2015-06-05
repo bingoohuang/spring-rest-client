@@ -7,6 +7,7 @@ import org.junit.ClassRule;
 import org.junit.rules.ExternalResource;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
+import org.n3r.diamond.client.impl.MockDiamondServer;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
@@ -23,6 +24,9 @@ public class RestTestSuite {
         protected void before() throws Throwable {
             Unirest.setProxy(new HttpHost("localhost", 9999));
             Application.startup();
+
+            MockDiamondServer.setUpMockServer();
+            MockDiamondServer.setConfigInfo("api", "base.urls", "AnotherApi=http://localhost:4849");
         }
 
         @Override
@@ -32,6 +36,8 @@ public class RestTestSuite {
             } catch (Exception e) {
             }
             Application.shutdown();
+
+            MockDiamondServer.tearDownMockServer();
         }
     };
 }

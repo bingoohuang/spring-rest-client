@@ -1,11 +1,12 @@
-package com.github.bingoohuang.springrestclient.spring;
+package com.github.bingoohuang.springrestclient.spring.api;
 
 import com.github.bingoohuang.springrestclient.annotations.SpringRestClientEnabled;
 import com.github.bingoohuang.springrestclient.boot.domain.Account;
 import com.github.bingoohuang.springrestclient.boot.domain.PayParty;
+import com.github.bingoohuang.springrestclient.provider.PropertiesBaseUrlProvider;
 import org.springframework.web.bind.annotation.*;
 
-@SpringRestClientEnabled(createClassFileForDiagnose = true)
+@SpringRestClientEnabled(baseUrlProvider = PropertiesBaseUrlProvider.class)
 public interface PayPartyApi {
     @RequestMapping("/party/{sellerId}/{buyerId}")
     PayParty party(@PathVariable("sellerId") String sellerId,

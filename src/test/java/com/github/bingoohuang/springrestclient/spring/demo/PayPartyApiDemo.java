@@ -1,9 +1,9 @@
-package com.github.bingoohuang.springrestclient.demo;
+package com.github.bingoohuang.springrestclient.spring.demo;
 
 import com.alibaba.fastjson.JSON;
 import com.github.bingoohuang.springrestclient.boot.domain.Account;
 import com.github.bingoohuang.springrestclient.boot.domain.PayParty;
-import com.github.bingoohuang.springrestclient.spring.PayPartyApi;
+import com.github.bingoohuang.springrestclient.spring.api.PayPartyApi;
 import com.github.bingoohuang.springrestclient.utils.UniRests;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
