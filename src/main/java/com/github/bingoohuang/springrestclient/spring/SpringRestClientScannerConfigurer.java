@@ -35,7 +35,7 @@ public class SpringRestClientScannerConfigurer implements BeanDefinitionRegistry
 
     private BeanNameGenerator nameGenerator;
 
-    /**
+    /*
      * This property lets you set the base package for your mapper interface files.
      * <p/>
      * You can set more than one package by using a semicolon or comma as a separator.
@@ -48,10 +48,6 @@ public class SpringRestClientScannerConfigurer implements BeanDefinitionRegistry
         this.basePackage = basePackage;
     }
 
-
-    /**
-     * @param processPropertyPlaceHolders
-     */
     public void setProcessPropertyPlaceHolders(boolean processPropertyPlaceHolders) {
         this.processPropertyPlaceHolders = processPropertyPlaceHolders;
     }
