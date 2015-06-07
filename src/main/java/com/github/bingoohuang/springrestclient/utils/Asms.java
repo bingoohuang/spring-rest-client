@@ -1,23 +1,17 @@
 package com.github.bingoohuang.springrestclient.utils;
 
 public class Asms {
-    /**
-     * Creates a dotted class name from a path/package name
-     */
+    // Creates a dotted class name from a path/package name
     public static String c(String p) {
         return p.replace('/', '.');
     }
 
-    /**
-     * Creates a class path name, from a Class.
-     */
+    // Creates a class path name, from a Class.
     public static String p(Class n) {
         return n.getName().replace('.', '/');
     }
 
-    /**
-     * Creates a class identifier of form Labc/abc;, from a Class.
-     */
+    // Creates a class identifier of form Labc/abc;, from a Class.
     public static String ci(Class n) {
         if (n.isArray()) {
             n = n.getComponentType();
@@ -73,9 +67,7 @@ public class Asms {
         }
     }
 
-    /**
-     * Create a method signature from the given param types and return values
-     */
+    // Create a method signature from the given param types and return values
     public static String sig(Class retval, Class... params) {
         return sigParams(params) + ci(retval);
     }

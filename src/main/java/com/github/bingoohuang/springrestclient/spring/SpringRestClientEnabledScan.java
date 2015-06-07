@@ -11,20 +11,17 @@ import java.lang.annotation.*;
 @Import(SpringRestClientScannerRegistrar.class)
 public @interface SpringRestClientEnabledScan {
 
-    /**
-     * Alias for the {@link #basePackages()} attribute. Allows for more concise
-     * annotation declarations.
-     */
+    // Alias for the {@link #basePackages()} attribute. Allows for more concise annotation declarations.
     String[] value() default {};
 
-    /**
+    /*
      * Base packages to scan for MyBatis interfaces. Note that only interfaces
      * with at least one method will be registered; concrete classes will be
      * ignored.
      */
     String[] basePackages() default {};
 
-    /**
+    /*
      * Type-safe alternative to {@link #basePackages()} for specifying the packages
      * to scan for annotated components. The package of each class specified will be scanned.
      * <p>Consider creating a special no-op marker class or interface in each package
@@ -32,7 +29,7 @@ public @interface SpringRestClientEnabledScan {
      */
     Class<?>[] basePackageClasses() default {};
 
-    /**
+    /*
      * The {@link BeanNameGenerator} class to be used for naming detected components
      * within the Spring container.
      */
