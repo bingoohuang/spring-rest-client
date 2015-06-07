@@ -1,4 +1,4 @@
-package com.github.bingoohuang.springrestclient.tests;
+package com.github.bingoohuang.springrestclient.tests.api;
 
 import com.github.bingoohuang.springrestclient.spring.api.AnotherApi;
 import com.github.bingoohuang.springrestclient.spring.SpringRestClientConfig;

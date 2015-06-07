@@ -1,6 +1,7 @@
 package com.github.bingoohuang.springrestclient.utils;
 
 import com.alibaba.fastjson.JSON;
+import com.github.bingoohuang.springrestclient.exception.RestException;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
 import com.google.common.base.Strings;
 import com.mashape.unirest.http.HttpResponse;
@@ -18,90 +19,91 @@ public class UniRests {
         lastResponseTL = new ThreadLocal<HttpResponse<String>>();
     }
 
-    public static String get(Class<?> apiClass,
+    public static HttpResponse<String> lastResponse() {
+        return lastResponseTL.get();
+    }
+
+
+    public static String get(Map<Integer, Class<? extends Throwable>> mappings,
+                             Class<?> apiClass,
                              BaseUrlProvider baseUrlProvider,
                              String prefix,
-                             Map<String, String> routeParams,
-                             Map<String, Object> requestParams) {
+                             Map<String, Object> routeParams,
+                             Map<String, Object> requestParams) throws Throwable {
         String url = createUrl(apiClass, baseUrlProvider, prefix);
         HttpRequest get = Unirest.get(url);
-
-        for (Map.Entry<String, String> entry : routeParams.entrySet()) {
-            get.routeParam(entry.getKey(), entry.getValue());
-        }
-
         get.queryString(requestParams);
 
-        try {
-            HttpResponse<String> response = get.asString();
-            lastResponseTL.set(response);
-
-            if (isSuccessful(response)) return nullOrBody(response);
-
-            throw new RuntimeException();
-        } catch (UnirestException e) {
-            throw new RuntimeException(e);
-        }
+        return request(mappings, routeParams, get);
     }
 
-    public static String post(Class<?> apiClass,
+
+    public static String post(Map<Integer, Class<? extends Throwable>> mappings,
+                              Class<?> apiClass,
                               BaseUrlProvider baseUrlProvider,
                               String prefix,
-                              Map<String, String> routeParams,
-                              Map<String, Object> requestParams) {
+                              Map<String, Object> routeParams,
+                              Map<String, Object> requestParams) throws Throwable {
         String url = createUrl(apiClass, baseUrlProvider, prefix);
         HttpRequestWithBody post = Unirest.post(url);
-
-        for (Map.Entry<String, String> entry : routeParams.entrySet()) {
-            post.routeParam(entry.getKey(), entry.getValue());
-        }
-
         post.fields(requestParams);
 
-        try {
-            HttpResponse<String> response = post.asString();
-            lastResponseTL.set(response);
-
-            if (isSuccessful(response)) return nullOrBody(response);
-
-            throw new RuntimeException();
-        } catch (UnirestException e) {
-            throw new RuntimeException(e);
-        }
+        return request(mappings, routeParams, post);
     }
 
 
-    public static String postAsJson(Class<?> apiClass,
+    public static String postAsJson(Map<Integer, Class<? extends Throwable>> mappings,
+                                    Class<?> apiClass,
                                     BaseUrlProvider baseUrlProvider,
                                     String prefix,
-                                    Map<String, String> routeParams,
+                                    Map<String, Object> routeParams,
                                     Map<String, Object> requestParams,
-                                    Object bean) {
+                                    Object bean) throws Throwable {
         String url = createUrl(apiClass, baseUrlProvider, prefix);
         HttpRequestWithBody post = Unirest.post(url);
-
-        for (Map.Entry<String, String> entry : routeParams.entrySet()) {
-            post.routeParam(entry.getKey(), entry.getValue());
-        }
-
         post.queryString(requestParams);
+        post.header("Content-Type", "application/json;charset=UTF-8");
+        post.body(JSON.toJSONString(bean));
+
+        return request(mappings, routeParams, post);
+    }
+
+    private static String request(Map<Integer, Class<? extends Throwable>> mappings,
+                                  Map<String, Object> routeParams,
+                                  HttpRequest httpRequest) throws Throwable {
+        setRouteParams(routeParams, httpRequest);
 
         try {
-            post.header("Content-Type", "application/json;charset=UTF-8");
-            post.body(JSON.toJSONString(bean));
-
-            HttpResponse<String> response = post.asString();
+            HttpResponse<String> response = httpRequest.asString();
             lastResponseTL.set(response);
 
             if (isSuccessful(response)) return nullOrBody(response);
 
-            throw new RuntimeException();
+            throw processStatusExceptionMappings(response, mappings);
         } catch (UnirestException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static String createUrl(Class<?> apiClass, BaseUrlProvider baseUrlProvider, String prefix) {
+    private static void setRouteParams(Map<String, Object> routeParams, HttpRequest httpRequest) {
+        for (Map.Entry<String, Object> entry : routeParams.entrySet()) {
+            httpRequest.routeParam(entry.getKey(), String.valueOf(entry.getValue()));
+        }
+    }
+
+    private static Throwable processStatusExceptionMappings(
+            HttpResponse<String> response,
+            Map<Integer, Class<? extends Throwable>> mappings)
+            throws Throwable {
+        Class<? extends Throwable> exceptionClass = mappings.get(response.getStatus());
+        String msg = response.getHeaders().getFirst("error-msg");
+        if (exceptionClass == null) throw new RestException(response.getStatus(), msg);
+
+        throw Obj.createObject(exceptionClass, msg);
+    }
+
+    private static String createUrl(Class<?> apiClass,
+                                    BaseUrlProvider baseUrlProvider, String prefix) {
         String baseUrl = baseUrlProvider.getBaseUrl(apiClass);
         if (Strings.isNullOrEmpty(baseUrl)) {
             throw new RuntimeException("base url cannot be null generated by provider " + baseUrlProvider.getClass());
@@ -119,8 +121,4 @@ public class UniRests {
         return status >= 200 && status < 300;
     }
 
-
-    public static HttpResponse<String> lastResponse() {
-        return lastResponseTL.get();
-    }
 }

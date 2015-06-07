@@ -25,9 +25,14 @@ public class PayPartyApiDemo implements PayPartyApi {
         LinkedHashMap pathVariables = new LinkedHashMap();
         LinkedHashMap requestParams = new LinkedHashMap();
 
-        String str = UniRests.postAsJson(PayPartyApi.class,
-                baseUrlProvider,
-                "url", pathVariables, requestParams, payParty);
+        String str = null;
+        try {
+            str = UniRests.postAsJson(null, PayPartyApi.class,
+                    baseUrlProvider,
+                    "url", pathVariables, requestParams, payParty);
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
 
         return Integer.parseInt(str);
     }
@@ -48,8 +53,13 @@ public class PayPartyApiDemo implements PayPartyApi {
         LinkedHashMap requestParams = new LinkedHashMap();
         requestParams.put("sendConfirmationSms", sendConfirmationSms);
 
-        String json = UniRests.postAsJson(PayPartyApi.class,
-                baseUrlProvider, "url", pathVariables, requestParams, fromAccount);
+        String json = null;
+        try {
+            json = UniRests.postAsJson(null, PayPartyApi.class,
+                    baseUrlProvider, "url", pathVariables, requestParams, fromAccount);
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
 
         return JSON.parseObject(json, Account.class);
     }
@@ -59,8 +69,12 @@ public class PayPartyApiDemo implements PayPartyApi {
         LinkedHashMap pathVariables = new LinkedHashMap();
         LinkedHashMap requestParams = new LinkedHashMap();
         requestParams.put("sellerId", sellerId);
-        return UniRests.post(PayPartyApi.class,
-                baseUrlProvider, "url", pathVariables, requestParams);
+        try {
+            return UniRests.post(null, PayPartyApi.class,
+                    baseUrlProvider, "url", pathVariables, requestParams);
+        } catch (Throwable throwable) {
+            return null;
+        }
     }
 
     @Override
@@ -68,8 +82,12 @@ public class PayPartyApiDemo implements PayPartyApi {
         LinkedHashMap pathVariables = new LinkedHashMap();
         LinkedHashMap requestParams = new LinkedHashMap();
         requestParams.put("sellerId", sellerId);
-        UniRests.post(PayPartyApi.class,
-                baseUrlProvider, "url", pathVariables, requestParams);
+        try {
+            UniRests.post(null, PayPartyApi.class,
+                    baseUrlProvider, "url", pathVariables, requestParams);
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
     }
 
     @Override
@@ -78,8 +96,13 @@ public class PayPartyApiDemo implements PayPartyApi {
         LinkedHashMap requestParams = new LinkedHashMap();
         requestParams.put("sendConfirmationSms", msg);
 
-        String json = UniRests.postAsJson(PayPartyApi.class,
-                baseUrlProvider, "url", pathVariables, requestParams, account);
+        String json = null;
+        try {
+            json = UniRests.postAsJson(null, PayPartyApi.class,
+                    baseUrlProvider, "url", pathVariables, requestParams, account);
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
 
         return JSON.parseObject(json, Account.class);
     }
@@ -90,8 +113,13 @@ public class PayPartyApiDemo implements PayPartyApi {
         LinkedHashMap requestParams = new LinkedHashMap();
         requestParams.put("msg", msg);
 
-        String json = UniRests.postAsJson(PayPartyApi.class,
-                baseUrlProvider, "url", pathVariables, requestParams, account);
+        String json = null;
+        try {
+            json = UniRests.postAsJson(null, PayPartyApi.class,
+                    baseUrlProvider, "url", pathVariables, requestParams, account);
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
 
         return JSON.parseObject(json, Account.class);
     }
@@ -102,8 +130,13 @@ public class PayPartyApiDemo implements PayPartyApi {
         LinkedHashMap requestParams = new LinkedHashMap();
         requestParams.put("msg", msg);
 
-        String json = UniRests.postAsJson(PayPartyApi.class,
-                baseUrlProvider, "url", pathVariables, requestParams, account);
+        String json = null;
+        try {
+            json = UniRests.postAsJson(null, PayPartyApi.class,
+                    baseUrlProvider, "url", pathVariables, requestParams, account);
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
 
         return JSON.parseObject(json, Account.class);
     }

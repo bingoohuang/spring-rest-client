@@ -1,5 +1,7 @@
 package com.github.bingoohuang.springrestclient.boot.controller;
 
+import com.github.bingoohuang.springrestclient.boot.exception.BadArgumentException;
+import com.github.bingoohuang.springrestclient.boot.exception.RestException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -8,11 +10,14 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 
 @RestController
+@RequestMapping("/ex")
 public class ExceptionController {
     @RequestMapping("/exception1/{error}")
-    public int exception1(@PathVariable("error") int error) throws NotFoundException {
-        if (error == 1) throw new NotFoundException("bad argument    ");
-        if (error == 2) throw new BadArgumentException("bad argument    ");
+    public int error(@PathVariable("error") int error) throws NotFoundException {
+        if (error == 1) throw new NotFoundException("NotFoundException ErrorMsg");
+        if (error == 2) throw new BadArgumentException("BadArgumentException ErrorMsg");
+        if (error == 3) throw new RuntimeException("RuntimeException ErrorMsg");
+        if (error == 4) throw new RestException(406, "RestException ErrorMsg");
         else return error;
     }
 
@@ -21,7 +26,6 @@ public class ExceptionController {
     @ExceptionHandler(BadArgumentException.class)
     public void badArgumentExceptionHandler(HttpServletResponse response, BadArgumentException ex) {
         response.setStatus(405);
-        response.addHeader("exception-name", ex.getClass().getName());
-        response.addHeader("exception-msg", ex.getMessage());
+        response.addHeader("error-msg", ex.getMessage());
     }
 }

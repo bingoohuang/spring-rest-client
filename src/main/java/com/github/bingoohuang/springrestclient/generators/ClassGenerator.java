@@ -2,9 +2,6 @@ package com.github.bingoohuang.springrestclient.generators;
 
 import com.github.bingoohuang.springrestclient.annotations.SpringRestClientEnabled;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
-import com.github.bingoohuang.springrestclient.provider.FixedBaseUrlProvider;
-import com.github.bingoohuang.springrestclient.provider.NoneBaseUrlProvider;
-import com.google.common.base.Strings;
 import com.google.common.io.Files;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
@@ -15,7 +12,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Map;
 
+import static com.github.bingoohuang.springrestclient.generators.MethodGenerator.STATUS_EXCEPTION_MAPPINGS;
+import static com.github.bingoohuang.springrestclient.utils.Asms.ci;
+import static com.github.bingoohuang.springrestclient.utils.Asms.p;
 import static org.objectweb.asm.Opcodes.*;
 
 public class ClassGenerator<T> {
@@ -74,22 +75,24 @@ public class ClassGenerator<T> {
         return createBytes();
     }
 
-
     private byte[] createBytes() {
         classWriter.visitEnd();
         return classWriter.toByteArray();
     }
 
     private ClassWriter createClassWriter() {
-        final String implSourceName = implName.replace('.', '/');
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         String[] interfaces = {Type.getInternalName(restClientClass)};
-        cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, implSourceName, null, "java/lang/Object", interfaces);
+        cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, implName.replace('.', '/'), null, p(Object.class), interfaces);
 
-        FieldVisitor fv = cw.visitField(0, "baseUrlProvider",
-                Type.getType(BaseUrlProvider.class).getDescriptor(),
-                null, null);
+        FieldVisitor fv = cw.visitField(0, "baseUrlProvider", ci(BaseUrlProvider.class), null, null);
         fv.visitEnd();
+
+        for (Method method : restClientClass.getDeclaredMethods()) {
+            fv = cw.visitField(0, method.getName() + STATUS_EXCEPTION_MAPPINGS, ci(Map.class), null, null);
+            fv.visitEnd();
+        }
+
         return cw;
     }
 
@@ -97,7 +100,7 @@ public class ClassGenerator<T> {
         MethodVisitor mv = classWriter.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
         mv.visitCode();
         mv.visitVarInsn(ALOAD, 0);
-        mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
+        mv.visitMethodInsn(INVOKESPECIAL, p(Object.class), "<init>", "()V", false);
         mv.visitInsn(RETURN);
         mv.visitMaxs(1, 1);
         mv.visitEnd();

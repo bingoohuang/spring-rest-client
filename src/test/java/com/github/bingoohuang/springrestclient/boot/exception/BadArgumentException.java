@@ -1,4 +1,4 @@
-package com.github.bingoohuang.springrestclient.boot.controller;
+package com.github.bingoohuang.springrestclient.boot.exception;
 
 public class BadArgumentException extends RuntimeException {
     public BadArgumentException(String msg) {

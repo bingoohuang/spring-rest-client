@@ -1,4 +1,4 @@
-package com.github.bingoohuang.springrestclient.tests;
+package com.github.bingoohuang.springrestclient.tests.api;
 
 import com.github.bingoohuang.springrestclient.boot.domain.Account;
 import com.github.bingoohuang.springrestclient.boot.domain.PayParty;

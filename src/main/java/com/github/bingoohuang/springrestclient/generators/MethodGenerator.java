@@ -2,7 +2,6 @@ package com.github.bingoohuang.springrestclient.generators;
 
 import com.alibaba.fastjson.JSON;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
-import com.github.bingoohuang.springrestclient.utils.PrimitiveWrappers;
 import com.github.bingoohuang.springrestclient.utils.UniRests;
 import com.google.common.primitives.Primitives;
 import org.objectweb.asm.ClassWriter;
@@ -17,12 +16,14 @@ import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static me.qmx.jitescript.util.CodegenUtils.p;
-import static me.qmx.jitescript.util.CodegenUtils.sig;
+import static com.github.bingoohuang.springrestclient.utils.Asms.*;
+import static com.github.bingoohuang.springrestclient.utils.PrimitiveWrappers.getParseXxMethodName;
 import static org.objectweb.asm.Opcodes.*;
 
 
 public class MethodGenerator {
+    public static final String STATUS_EXCEPTION_MAPPINGS = "StatusExceptionMappings";
+
     private final Method method;
     private final MethodVisitor mv;
     private final Annotation[][] annotations;
@@ -69,28 +70,35 @@ public class MethodGenerator {
         createMap(1, PathVariable.class);
         createMap(2, RequestParam.class);
 
+        String impl = p(method.getDeclaringClass()) + "Impl";
+
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitFieldInsn(GETFIELD, impl, method.getName() + STATUS_EXCEPTION_MAPPINGS, ci(Map.class));
+
         mv.visitLdcInsn(Type.getType(method.getDeclaringClass()));
         mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, p(method.getDeclaringClass()) + "Impl",
-                "baseUrlProvider", Type.getType(BaseUrlProvider.class).getDescriptor());
+        mv.visitFieldInsn(GETFIELD, impl, "baseUrlProvider", ci(BaseUrlProvider.class));
 
         mv.visitLdcInsn(getFullRequestMapping());
         mv.visitVarInsn(ALOAD, offsetSize + 1);
         mv.visitVarInsn(ALOAD, offsetSize + 2);
 
-        if (hasNoneMethodsOrPostMethod()) {
+        if (isPostMethodOrNone()) {
             int requestBodyOffset = findRequestBodyParameterOffset();
             if (requestBodyOffset > -1) {
                 mv.visitVarInsn(ALOAD, requestBodyOffset + 1);
                 mv.visitMethodInsn(INVOKESTATIC, p(UniRests.class), "postAsJson",
-                        sig(String.class, Class.class, BaseUrlProvider.class, String.class, Map.class, Map.class, Object.class), false);
+                        sig(String.class, Map.class, Class.class, BaseUrlProvider.class,
+                                String.class, Map.class, Map.class, Object.class), false);
             } else {
                 mv.visitMethodInsn(INVOKESTATIC, p(UniRests.class), "post",
-                        sig(String.class, Class.class, BaseUrlProvider.class, String.class, Map.class, Map.class), false);
+                        sig(String.class, Map.class, Class.class, BaseUrlProvider.class,
+                                String.class, Map.class, Map.class), false);
             }
         } else if (isGetMethod()) {
             mv.visitMethodInsn(INVOKESTATIC, p(UniRests.class), "get",
-                    sig(String.class, Class.class, BaseUrlProvider.class, String.class, Map.class, Map.class), false);
+                    sig(String.class, Map.class, Class.class, BaseUrlProvider.class,
+                            String.class, Map.class, Map.class), false);
         }
 
         if (returnType == void.class) {
@@ -141,7 +149,7 @@ public class MethodGenerator {
         return method.length == 1 && method[0] == RequestMethod.GET;
     }
 
-    private boolean hasNoneMethodsOrPostMethod() {
+    private boolean isPostMethodOrNone() {
         if (requestMapping == null) return true;
 
         RequestMethod[] method = requestMapping.method();
@@ -163,8 +171,7 @@ public class MethodGenerator {
 
     private void primitiveValueOfAndReturn() {
         Class<?> wrapped = Primitives.wrap(returnType);
-        mv.visitMethodInsn(INVOKESTATIC, p(wrapped),
-                PrimitiveWrappers.getParseXxMethodName(returnType),
+        mv.visitMethodInsn(INVOKESTATIC, p(wrapped), getParseXxMethodName(returnType),
                 sig(returnType, String.class), false);
 
         mv.visitInsn(Type.getType(returnType).getOpcode(IRETURN));

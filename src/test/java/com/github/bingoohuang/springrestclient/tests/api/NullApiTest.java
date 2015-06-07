@@ -1,4 +1,4 @@
-package com.github.bingoohuang.springrestclient.tests;
+package com.github.bingoohuang.springrestclient.tests.api;
 
 import com.alibaba.fastjson.JSON;
 import com.github.bingoohuang.springrestclient.boot.domain.Account;

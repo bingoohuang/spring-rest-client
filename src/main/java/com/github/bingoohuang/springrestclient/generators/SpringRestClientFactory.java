@@ -1,15 +1,24 @@
 package com.github.bingoohuang.springrestclient.generators;
 
+import com.github.bingoohuang.springrestclient.annotations.RespStatusMapping;
+import com.github.bingoohuang.springrestclient.annotations.RespStatusMappings;
 import com.github.bingoohuang.springrestclient.annotations.SpringRestClientEnabled;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
 import com.github.bingoohuang.springrestclient.provider.FixedBaseUrlProvider;
 import com.github.bingoohuang.springrestclient.provider.NoneBaseUrlProvider;
+import com.github.bingoohuang.springrestclient.utils.Obj;
 import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
-import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 public class SpringRestClientFactory {
     private static LoadingCache<Class, Object> restClientCache =
@@ -18,35 +27,74 @@ public class SpringRestClientFactory {
                 public Object load(Class restClientClass) throws Exception {
                     ClassGenerator generator = new ClassGenerator(restClientClass);
                     Class<?> restClientImplClass = generator.generate();
-                    Object object = createObject(restClientImplClass);
-
+                    Object object = Obj.createObject(restClientImplClass);
 
                     setBaseUrlProvider(restClientImplClass, object, restClientClass);
+                    setStatusMappings(restClientImplClass, object, restClientClass);
 
                     return object;
                 }
             });
 
-    private static void setBaseUrlProvider(Class<?> restClientImplClass,
-                                           Object object, Class restClientClass) {
-        BaseUrlProvider provider = createBaseUrlProvider(restClientClass);
+
+    public static <T> T getRestClient(final Class<T> restClientClass) {
+        Obj.ensureInterface(restClientClass);
         try {
-            Field field = restClientImplClass.getDeclaredField("baseUrlProvider");
-            field.setAccessible(true);
-            field.set(object, provider);
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException("unable to set baseUrlProvider field", e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException("unable to set baseUrlProvider field", e);
+            return (T) restClientCache.get(restClientClass);
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause();
+            throw Throwables.propagate(cause);
+        } catch (UncheckedExecutionException e) {
+            Throwable cause = e.getCause();
+            throw Throwables.propagate(cause);
         }
     }
 
-    public static <T> T getRestClient(final Class<T> restClientClass) {
-        ensureRestClientClassIsAnInterface(restClientClass);
-        return (T) restClientCache.getUnchecked(restClientClass);
+    private static void setStatusMappings(Class<?> restClientImplClass, Object object, Class restClientClass) {
+        for (Method method : restClientClass.getDeclaredMethods()) {
+            Map<Integer, Class<? extends Throwable>> mappings = createStatusExceptionMappings(method);
+            String fieldName = method.getName() + MethodGenerator.STATUS_EXCEPTION_MAPPINGS;
+            Obj.setField(restClientImplClass, object, fieldName, mappings);
+        }
     }
 
-    public static BaseUrlProvider createBaseUrlProvider(Class<?> restClientClass) {
+    private static Map<Integer, Class<? extends Throwable>> createStatusExceptionMappings(Method method) {
+        Map<Integer, Class<? extends Throwable>> statusExceptionMappings = Maps.newHashMap();
+
+        RespStatusMappings respStatusMappings = method.getAnnotation(RespStatusMappings.class);
+        if (respStatusMappings != null) {
+            for (RespStatusMapping respStatusMapping : respStatusMappings.value()) {
+                Class<? extends Throwable> exceptionClass = respStatusMapping.exception();
+                checkMethodException(method, exceptionClass);
+                statusExceptionMappings.put(respStatusMapping.status(), exceptionClass);
+            }
+        }
+
+        return Collections.unmodifiableMap(statusExceptionMappings);
+    }
+
+    private static void checkMethodException(Method method,
+                                             Class<? extends Throwable> exceptionClass) {
+        if (RuntimeException.class.isAssignableFrom(exceptionClass)) return;
+
+        // checked exception should be declared
+        for (Class<?> declaredExceptionType : method.getExceptionTypes()) {
+            if (declaredExceptionType == exceptionClass) return;
+        }
+
+        throw new RuntimeException(exceptionClass
+                + " is checked exception and should be declared on the method " + method);
+    }
+
+    private static void setBaseUrlProvider(Class<?> restClientImplClass,
+                                           Object object, Class restClientClass) {
+        BaseUrlProvider provider = createBaseUrlProvider(restClientClass);
+        String fieldName = "baseUrlProvider";
+
+        Obj.setField(restClientImplClass, object, fieldName, provider);
+    }
+
+    private static BaseUrlProvider createBaseUrlProvider(Class<?> restClientClass) {
         SpringRestClientEnabled restClientEnabled =
                 restClientClass.getAnnotation(SpringRestClientEnabled.class);
         String baseUrl = restClientEnabled.baseUrl();
@@ -64,17 +112,5 @@ public class SpringRestClientFactory {
         }
     }
 
-    private static <T> T createObject(Class<T> clazz) {
-        try {
-            return clazz.newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 
-    private static <T> void ensureRestClientClassIsAnInterface(Class<T> restClientClass) {
-        if (restClientClass.isInterface()) return;
-
-        throw new RuntimeException(restClientClass + " is not an interface");
-    }
 }
