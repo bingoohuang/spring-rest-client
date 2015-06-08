@@ -5,8 +5,8 @@ import java.lang.annotation.*;
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RequestParamValue {
-    String name();
+public @interface SuccInResponseJSONProperty {
+    String key();
 
     String value();
 }

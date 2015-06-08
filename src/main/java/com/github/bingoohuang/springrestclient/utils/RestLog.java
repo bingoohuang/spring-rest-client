@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-public class RequestLog {
+public class RestLog {
     public static void log(Class<?> apiClass, HttpRequest httpRequest) {
         Logger logger = LoggerFactory.getLogger(apiClass);
         if (logger.isDebugEnabled()) {

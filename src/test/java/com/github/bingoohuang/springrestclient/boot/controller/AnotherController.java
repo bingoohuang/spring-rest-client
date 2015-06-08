@@ -12,6 +12,6 @@ public class AnotherController {
     @RequestMapping("/add")
     public int add(@RequestParam("offset") int offset, HttpServletResponse response) {
         response.addHeader("fuck", "you" + offset);
-        return offset ;
+        return offset;
     }
 }

@@ -30,8 +30,8 @@ public class SpringRestClientFactory {
 
                     setBaseUrlProvider(restClientImplClass, object, restClientClass);
                     setStatusMappings(restClientImplClass, object, restClientClass);
-                    setRequestParamValues(restClientImplClass, object, restClientClass);
-                    setCheckResponseOKByJSONProperty(restClientImplClass, object, restClientClass);
+                    setFixedRequestParams(restClientImplClass, object, restClientClass);
+                    setSuccInResponseJSONProperty(restClientImplClass, object, restClientClass);
 
                     return object;
                 }
@@ -50,33 +50,33 @@ public class SpringRestClientFactory {
         }
     }
 
-    private static void setCheckResponseOKByJSONProperty(Class<?> restClientImplClass, Object object, Class restClientClass) {
+    private static void setSuccInResponseJSONProperty(Class<?> restClientImplClass, Object object, Class restClientClass) {
         for (Method method : restClientClass.getDeclaredMethods()) {
-            CheckResponseOKByJSONProperty property = method.getAnnotation(CheckResponseOKByJSONProperty.class);
-            String fieldName = method.getName() + MethodGenerator.CHECK_RESPONSE_OK_BY_JSON_PROPERTY;
+            SuccInResponseJSONProperty property = method.getAnnotation(SuccInResponseJSONProperty.class);
+            String fieldName = method.getName() + MethodGenerator.SuccInResponseJSONProperty;
             Obj.setField(restClientImplClass, object, fieldName, property);
         }
     }
 
-    private static void setRequestParamValues(Class<?> restClientImplClass, Object object, Class restClientClass) {
+    private static void setFixedRequestParams(Class<?> restClientImplClass, Object object, Class restClientClass) {
         for (Method method : restClientClass.getDeclaredMethods()) {
-            Map<String, Object> mappings = createRequestParamValues(method);
-            String fieldName = method.getName() + MethodGenerator.REQUEST_PARAM_VALUES;
+            Map<String, Object> mappings = createFixedRequestParams(method);
+            String fieldName = method.getName() + MethodGenerator.FixedRequestParams;
             Obj.setField(restClientImplClass, object, fieldName, mappings);
         }
     }
 
-    private static Map<String, Object> createRequestParamValues(Method method) {
+    private static Map<String, Object> createFixedRequestParams(Method method) {
         HashMap<String, Object> map = Maps.newHashMap();
 
-        RequestParamValue requestParamValue = method.getAnnotation(RequestParamValue.class);
-        if (requestParamValue != null) {
-            map.put(requestParamValue.name(), requestParamValue.value());
+        FixedRequestParam fixedRequestParam = method.getAnnotation(FixedRequestParam.class);
+        if (fixedRequestParam != null) {
+            map.put(fixedRequestParam.name(), fixedRequestParam.value());
         }
 
-        RequestParamValues requestParamValues = method.getAnnotation(RequestParamValues.class);
-        if (requestParamValues != null) {
-            for (RequestParamValue paramValue : requestParamValues.value()) {
+        FixedRequestParams fixedRequestParams = method.getAnnotation(FixedRequestParams.class);
+        if (fixedRequestParams != null) {
+            for (FixedRequestParam paramValue : fixedRequestParams.value()) {
                 map.put(paramValue.name(), paramValue.value());
             }
         }
@@ -88,7 +88,7 @@ public class SpringRestClientFactory {
     private static void setStatusMappings(Class<?> restClientImplClass, Object object, Class restClientClass) {
         for (Method method : restClientClass.getDeclaredMethods()) {
             Map<Integer, Class<? extends Throwable>> mappings = createStatusExceptionMappings(method);
-            String fieldName = method.getName() + MethodGenerator.STATUS_EXCEPTION_MAPPINGS;
+            String fieldName = method.getName() + MethodGenerator.StatusExceptionMappings;
             Obj.setField(restClientImplClass, object, fieldName, mappings);
         }
     }

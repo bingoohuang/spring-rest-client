@@ -40,7 +40,6 @@ public class PostTest {
     }
 
 
-
     @Test
     public void test3() throws UnirestException {
         String sellerId = "中华";
@@ -93,7 +92,7 @@ public class PostTest {
     }
 
     @Test
-    public void test7() throws UnirestException{
+    public void test7() throws UnirestException {
         int offset = 123;
         HttpResponse<String> response = Unirest.post("http://localhost:4849/another/add")
                 .header("Content-Type", "application/json;charset=UTF-8")

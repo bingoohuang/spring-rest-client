@@ -5,6 +5,6 @@ import java.lang.annotation.*;
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RequestParamValues {
-    RequestParamValue[] value();
+public @interface FixedRequestParams {
+    FixedRequestParam[] value();
 }

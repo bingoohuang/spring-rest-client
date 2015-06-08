@@ -1,6 +1,6 @@
 package com.github.bingoohuang.springrestclient.generators;
 
-public class RestClientClassLoader extends ClassLoader{
+public class RestClientClassLoader extends ClassLoader {
     public RestClientClassLoader(ClassLoader parent) {
         super(parent);
     }

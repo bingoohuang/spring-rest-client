@@ -1,7 +1,7 @@
 package com.github.bingoohuang.springrestclient.generators;
 
-import com.github.bingoohuang.springrestclient.annotations.CheckResponseOKByJSONProperty;
 import com.github.bingoohuang.springrestclient.annotations.SpringRestClientEnabled;
+import com.github.bingoohuang.springrestclient.annotations.SuccInResponseJSONProperty;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
 import com.google.common.io.Files;
 import org.objectweb.asm.ClassWriter;
@@ -89,16 +89,16 @@ public class ClassGenerator<T> {
         fv.visitEnd();
 
         for (Method method : restClientClass.getDeclaredMethods()) {
-            fv = cw.visitField(0, method.getName() + MethodGenerator.STATUS_EXCEPTION_MAPPINGS,
+            fv = cw.visitField(0, method.getName() + MethodGenerator.StatusExceptionMappings,
                     ci(Map.class), null, null);
             fv.visitEnd();
 
-            fv = cw.visitField(0, method.getName() + MethodGenerator.REQUEST_PARAM_VALUES,
+            fv = cw.visitField(0, method.getName() + MethodGenerator.FixedRequestParams,
                     ci(Map.class), null, null);
             fv.visitEnd();
 
-            fv = cw.visitField(0, method.getName() + MethodGenerator.CHECK_RESPONSE_OK_BY_JSON_PROPERTY,
-                    ci(CheckResponseOKByJSONProperty.class), null, null);
+            fv = cw.visitField(0, method.getName() + MethodGenerator.SuccInResponseJSONProperty,
+                    ci(SuccInResponseJSONProperty.class), null, null);
             fv.visitEnd();
         }
 

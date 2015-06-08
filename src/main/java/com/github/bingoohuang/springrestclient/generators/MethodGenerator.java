@@ -1,9 +1,10 @@
 package com.github.bingoohuang.springrestclient.generators;
 
 import com.alibaba.fastjson.JSON;
-import com.github.bingoohuang.springrestclient.annotations.CheckResponseOKByJSONProperty;
+import com.github.bingoohuang.springrestclient.annotations.SuccInResponseJSONProperty;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
-import com.github.bingoohuang.springrestclient.utils.UniRests;
+import com.github.bingoohuang.springrestclient.utils.RestReq;
+import com.github.bingoohuang.springrestclient.utils.RestReqBuilder;
 import com.google.common.primitives.Primitives;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
@@ -23,9 +24,9 @@ import static org.objectweb.asm.Opcodes.*;
 
 
 public class MethodGenerator {
-    public static final String STATUS_EXCEPTION_MAPPINGS = "StatusExceptionMappings";
-    public static final String REQUEST_PARAM_VALUES = "RequestParamValues";
-    public static final String CHECK_RESPONSE_OK_BY_JSON_PROPERTY = "CheckResponseOKByJSONProperty";
+    public static final String StatusExceptionMappings = "StatusExceptionMappings";
+    public static final String FixedRequestParams = "FixedRequestParams";
+    public static final String SuccInResponseJSONProperty = "SuccInResponseJSONProperty";
 
     private final Method method;
     private final MethodVisitor mv;
@@ -73,57 +74,88 @@ public class MethodGenerator {
         createMap(1, PathVariable.class);
         createMap(2, RequestParam.class);
 
-        String impl = p(method.getDeclaringClass()) + "Impl";
+        buildUniRestReq();
 
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, impl, method.getName() + CHECK_RESPONSE_OK_BY_JSON_PROPERTY, ci(CheckResponseOKByJSONProperty.class));
+        request();
 
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, impl, method.getName() + REQUEST_PARAM_VALUES, ci(Map.class));
+        dealResult();
+    }
 
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, impl, method.getName() + STATUS_EXCEPTION_MAPPINGS, ci(Map.class));
-
-        mv.visitLdcInsn(Type.getType(method.getDeclaringClass()));
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, impl, "baseUrlProvider", ci(BaseUrlProvider.class));
-
-        mv.visitLdcInsn(getFullRequestMapping());
-        mv.visitVarInsn(ALOAD, offsetSize + 1);
-        mv.visitVarInsn(ALOAD, offsetSize + 2);
-
-        if (isPostMethodOrNone()) {
-            int requestBodyOffset = findRequestBodyParameterOffset();
-            if (requestBodyOffset > -1) {
-                mv.visitVarInsn(ALOAD, requestBodyOffset + 1);
-                mv.visitMethodInsn(INVOKESTATIC, p(UniRests.class), "postAsJson",
-                        sig(String.class, CheckResponseOKByJSONProperty.class, Map.class, Map.class, Class.class, BaseUrlProvider.class,
-                                String.class, Map.class, Map.class, Object.class), false);
-            } else {
-                mv.visitMethodInsn(INVOKESTATIC, p(UniRests.class), "post",
-                        sig(String.class, CheckResponseOKByJSONProperty.class, Map.class, Map.class, Class.class, BaseUrlProvider.class,
-                                String.class, Map.class, Map.class), false);
-            }
-        } else if (isGetMethod()) {
-            mv.visitMethodInsn(INVOKESTATIC, p(UniRests.class), "get",
-                    sig(String.class, CheckResponseOKByJSONProperty.class, Map.class, Map.class, Class.class, BaseUrlProvider.class,
-                            String.class, Map.class, Map.class), false);
-        }
-
+    private void dealResult() {
         if (returnType == void.class) {
+            mv.visitInsn(POP);
             mv.visitInsn(RETURN);
             return;
         }
 
-        mv.visitVarInsn(ASTORE, offsetSize + 3);
-        mv.visitVarInsn(ALOAD, offsetSize + 3);
+//        mv.visitVarInsn(ASTORE, offsetSize + 4);
+//        mv.visitVarInsn(ALOAD, offsetSize + 4);
 
         if (returnType.isPrimitive()) {
             primitiveValueOfAndReturn();
         } else {
             objectValueOfAndReturn();
         }
+    }
 
+    private void request() {
+        mv.visitVarInsn(ASTORE, offsetSize + 3);
+        mv.visitVarInsn(ALOAD, offsetSize + 3);
+
+        if (isPostMethodOrNone()) {
+            int requestBodyOffset = findRequestBodyParameterOffset();
+            if (requestBodyOffset > -1) {
+                mv.visitVarInsn(ALOAD, requestBodyOffset + 1);
+                mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReq.class),
+                        "postAsJson", sig(String.class, Object.class), false);
+            } else {
+                mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReq.class),
+                        "post", sig(String.class), false);
+            }
+        } else if (isGetMethod()) {
+            mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReq.class),
+                    "get", sig(String.class), false);
+        }
+    }
+
+    private void buildUniRestReq() {
+        String impl = p(method.getDeclaringClass()) + "Impl";
+
+        mv.visitTypeInsn(NEW, p(RestReqBuilder.class));
+        mv.visitInsn(DUP);
+        mv.visitMethodInsn(INVOKESPECIAL, p(RestReqBuilder.class), "<init>", "()V", false);
+        mv.visitLdcInsn(getFullRequestMapping());
+        mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReqBuilder.class), "prefix",
+                sig(RestReqBuilder.class, String.class), false);
+        mv.visitLdcInsn(Type.getType(method.getDeclaringClass()));
+        mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReqBuilder.class), "apiClass",
+                sig(RestReqBuilder.class, Class.class), false);
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitFieldInsn(GETFIELD, impl, "baseUrlProvider", ci(BaseUrlProvider.class));
+        mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReqBuilder.class), "baseUrlProvider",
+                sig(RestReqBuilder.class, BaseUrlProvider.class), false);
+        mv.visitVarInsn(ALOAD, 0);
+        String methodName = method.getName();
+        mv.visitFieldInsn(GETFIELD, impl, methodName + SuccInResponseJSONProperty,
+                ci(SuccInResponseJSONProperty.class));
+        mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReqBuilder.class), "succInResponseJSONProperty",
+                sig(RestReqBuilder.class, SuccInResponseJSONProperty.class), false);
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitFieldInsn(GETFIELD, impl, methodName + StatusExceptionMappings, ci(Map.class));
+        mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReqBuilder.class), "statusExceptionMappings",
+                sig(RestReqBuilder.class, Map.class), false);
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitFieldInsn(GETFIELD, impl, methodName + FixedRequestParams, ci(Map.class));
+        mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReqBuilder.class), "fixedRequestParams",
+                sig(RestReqBuilder.class, Map.class), false);
+        mv.visitVarInsn(ALOAD, offsetSize + 1);
+        mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReqBuilder.class), "routeParams",
+                sig(RestReqBuilder.class, Map.class), false);
+        mv.visitVarInsn(ALOAD, offsetSize + 2);
+        mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReqBuilder.class), "requestParams",
+                sig(RestReqBuilder.class, Map.class), false);
+        mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReqBuilder.class), "build",
+                sig(RestReq.class), false);
     }
 
     private String getFullRequestMapping() {
@@ -168,13 +200,15 @@ public class MethodGenerator {
     }
 
     private void objectValueOfAndReturn() {
-        if (returnType != String.class) {
-            mv.visitLdcInsn(Type.getType(returnType));
-            mv.visitMethodInsn(INVOKESTATIC, p(JSON.class), "parseObject",
-                    sig(Object.class, String.class, Class.class), false);
-            mv.visitTypeInsn(CHECKCAST, p(returnType));
+        if (returnType == String.class || returnType == Object.class) {
+            mv.visitInsn(ARETURN);
+            return;
         }
 
+        mv.visitLdcInsn(Type.getType(returnType));
+        mv.visitMethodInsn(INVOKESTATIC, p(JSON.class), "parseObject",
+                sig(Object.class, String.class, Class.class), false);
+        mv.visitTypeInsn(CHECKCAST, p(returnType));
         mv.visitInsn(ARETURN);
     }
 

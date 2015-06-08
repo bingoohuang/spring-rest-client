@@ -2,8 +2,8 @@ package com.github.bingoohuang.springrestclient.tests.api;
 
 import com.github.bingoohuang.springrestclient.boot.domain.Account;
 import com.github.bingoohuang.springrestclient.boot.domain.PayParty;
-import com.github.bingoohuang.springrestclient.spring.api.PayPartyApi;
 import com.github.bingoohuang.springrestclient.spring.SpringRestClientConfig;
+import com.github.bingoohuang.springrestclient.spring.api.PayPartyApi;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,14 +51,16 @@ public class PayPartyApiTest {
         Account account = payPartyApi.transfer(fromAccount, true);
         assertThat(account, is(equalTo(new Account(1234, "bingoo"))));
     }
+
     @Test
-    public void getStr(){
+    public void getStr() {
         String sellerId = "中华";
         String str = payPartyApi.getStr(sellerId);
         assertThat(sellerId, is(equalTo(str)));
     }
+
     @Test
-    public void returnVoid(){
+    public void returnVoid() {
         String sellerId = "123456";
         payPartyApi.returnVoid(sellerId);
 
@@ -77,6 +79,7 @@ public class PayPartyApiTest {
         Account account = payPartyApi.transferDouble(fromAccount, 100.12);
         assertThat(account, is(equalTo(new Account(1234, "bingoo"))));
     }
+
     @Test
     public void transferDouble2() {
         Account fromAccount = new Account(100, "from");

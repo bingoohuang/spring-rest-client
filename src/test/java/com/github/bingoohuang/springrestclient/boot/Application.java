@@ -12,7 +12,7 @@ public class Application {
         context = SpringApplication.run(Application.class);
     }
 
-    public static void shutdown () {
+    public static void shutdown() {
         context.close();
     }
 }

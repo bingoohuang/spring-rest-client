@@ -2,8 +2,8 @@ package com.github.bingoohuang.springrestclient.tests.api;
 
 import com.alibaba.fastjson.JSON;
 import com.github.bingoohuang.springrestclient.boot.domain.Account;
-import com.github.bingoohuang.springrestclient.spring.api.NullApi;
 import com.github.bingoohuang.springrestclient.spring.SpringRestClientConfig;
+import com.github.bingoohuang.springrestclient.spring.api.NullApi;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -13,9 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
 
