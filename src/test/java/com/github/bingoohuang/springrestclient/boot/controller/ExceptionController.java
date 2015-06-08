@@ -1,6 +1,7 @@
 package com.github.bingoohuang.springrestclient.boot.controller;
 
 import com.github.bingoohuang.springrestclient.boot.exception.BadArgumentException;
+import com.github.bingoohuang.springrestclient.boot.exception.NotFoundException;
 import com.github.bingoohuang.springrestclient.boot.exception.RestException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,9 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 
 @RestController
-@RequestMapping("/ex")
+@RequestMapping("/exception-controller")
 public class ExceptionController {
-    @RequestMapping("/exception1/{error}")
+    @RequestMapping("/error/{error}")
     public int error(@PathVariable("error") int error) throws NotFoundException {
         if (error == 1) throw new NotFoundException("NotFoundException ErrorMsg");
         if (error == 2) throw new BadArgumentException("BadArgumentException ErrorMsg");

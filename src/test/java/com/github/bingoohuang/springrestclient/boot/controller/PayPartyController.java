@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 
 @RestController
+@RequestMapping("pay-party-controller")
 class PayPartyController {
     @RequestMapping("/party/{sellerId}/{buyerId}")
     public PayParty party(@PathVariable("sellerId") String sellerId,
@@ -22,17 +23,17 @@ class PayPartyController {
         return payParty;
     }
 
-    @RequestMapping(value = "/addParty", method = RequestMethod.POST)
+    @RequestMapping(value = "/add-party", method = RequestMethod.POST)
     public int addParty(@RequestBody PayParty payParty) {
         return 100;
     }
 
-    @RequestMapping(value = "/addParty2", method = RequestMethod.POST)
+    @RequestMapping(value = "/add-party2", method = RequestMethod.POST)
     public boolean addParty2(@RequestBody PayParty payParty) {
         return true;
     }
 
-    @RequestMapping(value = "/addParty/{sellerId}/{buyerId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/add-party3/{sellerId}/{buyerId}", method = RequestMethod.POST)
     public int addParty3(@PathVariable("sellerId") String sellerId,
                          @PathVariable("buyerId") String buyerId,
                          @RequestBody PayParty payParty,
@@ -47,29 +48,29 @@ class PayPartyController {
         return new Account(1234, "bingoo");
     }
 
-    @RequestMapping(value = "/getStr", method = RequestMethod.POST)
-    public String transfer(@RequestParam("sellerId") String sellerId) {
+    @RequestMapping(value = "/get-str", method = RequestMethod.POST)
+    public String getStr(@RequestParam("sellerId") String sellerId) {
         return sellerId;
     }
 
-    @RequestMapping(value = "/returnVoid")
+    @RequestMapping(value = "/return-void")
     public void returnVoid(@RequestParam("sellerId") String sellerId, HttpServletResponse resp) {
         resp.addHeader("sellerId", sellerId + "abc");
     }
 
-    @RequestMapping(value = "/transferInt", method = RequestMethod.POST)
+    @RequestMapping(value = "/transfer-int", method = RequestMethod.POST)
     public Account transferInt(@RequestBody Account account,
                                @RequestParam("msg") int msg) {
         return new Account(1234, "bingoo");
     }
 
-    @RequestMapping(value = "/transferDouble", method = RequestMethod.POST)
+    @RequestMapping(value = "/transfer-double", method = RequestMethod.POST)
     public Account transferDouble(@RequestBody Account account,
                                   @RequestParam("msg") double msg) {
         return new Account(1234, "bingoo");
     }
 
-    @RequestMapping(value = "/transferDouble2", method = RequestMethod.POST)
+    @RequestMapping(value = "/transfer-double2", method = RequestMethod.POST)
     public Account transferDouble2(@RequestParam("msg") double ms,
                                    @RequestBody Account account) {
         return new Account(1234, "bingoo");

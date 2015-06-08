@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 
 @RestController
-@RequestMapping("/another")
+@RequestMapping("/another-controller")
 public class AnotherController {
     @RequestMapping("/add")
     public int add(@RequestParam("offset") int offset, HttpServletResponse response) {

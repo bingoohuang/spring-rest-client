@@ -1,6 +1,5 @@
 package com.github.bingoohuang.springrestclient.boot.exception;
 
-import com.github.bingoohuang.springrestclient.boot.controller.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
