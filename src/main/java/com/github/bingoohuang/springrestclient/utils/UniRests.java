@@ -33,7 +33,7 @@ public class UniRests {
         HttpRequest get = Unirest.get(url);
         get.queryString(requestParams);
 
-        return request(mappings, routeParams, get);
+        return request(apiClass, mappings, routeParams, get);
     }
 
     public static String post(Map<Integer, Class<? extends Throwable>> mappings,
@@ -46,7 +46,7 @@ public class UniRests {
         HttpRequestWithBody post = Unirest.post(url);
         post.fields(requestParams);
 
-        return request(mappings, routeParams, post);
+        return request(apiClass, mappings, routeParams, post);
     }
 
     public static String postAsJson(Map<Integer, Class<? extends Throwable>> mappings,
@@ -62,16 +62,21 @@ public class UniRests {
         post.header("Content-Type", "application/json;charset=UTF-8");
         post.body(JSON.toJSONString(bean));
 
-        return request(mappings, routeParams, post);
+        return request(apiClass, mappings, routeParams, post);
     }
 
-    private static String request(Map<Integer, Class<? extends Throwable>> mappings,
+    private static String request(Class<?> apiClass, Map<Integer, Class<? extends Throwable>> mappings,
                                   Map<String, Object> routeParams,
                                   HttpRequest httpRequest) throws Throwable {
         setRouteParams(routeParams, httpRequest);
 
         try {
+            RequestLog.log(apiClass, httpRequest);
+            long start = System.currentTimeMillis();
+
             HttpResponse<String> response = httpRequest.asString();
+            RequestLog.log(apiClass, response, System.currentTimeMillis() - start);
+
             lastResponseTL.set(response);
 
             if (isSuccessful(response)) return nullOrBody(response);

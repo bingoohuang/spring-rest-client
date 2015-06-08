@@ -30,7 +30,7 @@ public class RestTestSuite {
     public static ExternalResource testRule = new ExternalResource() {
         @Override
         protected void before() throws Throwable {
-//            Unirest.setProxy(new HttpHost("localhost", 9999));
+//            Unirest.setProxy(new org.apache.http.HttpHost("localhost", 9999));
             Application.startup();
 
             MockDiamondServer.setUpMockServer();
