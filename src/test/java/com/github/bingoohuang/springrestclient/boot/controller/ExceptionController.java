@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 
 @RestController
-@RequestMapping("/exception-controller")
+@RequestMapping("/exception")
 public class ExceptionController {
     @RequestMapping("/error/{error}")
     public int error(@PathVariable("error") int error) throws NotFoundException {

@@ -18,7 +18,7 @@ public class PostTest {
         PayParty payParty = new PayParty("s100", "b200", "p300", "n400");
         String json = JSON.toJSONString(payParty);
 
-        HttpResponse<String> response = Unirest.post("http://localhost:4849/addParty")
+        HttpResponse<String> response = Unirest.post("http://localhost:4849/pay-party/add-party")
                 .header("Content-Type", "application/json;charset=UTF-8")
                 .body(json)
                 .asString();
@@ -29,7 +29,7 @@ public class PostTest {
     public void test2() throws UnirestException {
         Account fromAccount = new Account(100, "from");
         String json = JSON.toJSONString(fromAccount);
-        HttpResponse<String> response = Unirest.post("http://localhost:4849/transfer")
+        HttpResponse<String> response = Unirest.post("http://localhost:4849/pay-party/transfer")
                 .header("Content-Type", "application/json;charset=UTF-8")
                 .queryString("sendConfirmationSms", "true")
                 .body(json)
@@ -45,7 +45,7 @@ public class PostTest {
     public void test3() throws UnirestException {
         String sellerId = "中华";
         String json = JSON.toJSONString(sellerId);
-        HttpResponse<String> response = Unirest.post("http://localhost:4849/getStr")
+        HttpResponse<String> response = Unirest.post("http://localhost:4849/pay-party/get-str")
                 .header("Content-Type", "application/json;charset=UTF-8")
                 .queryString("sellerId", "中华")
                 .body(json)
@@ -57,7 +57,7 @@ public class PostTest {
     @Test
     public void test4() throws UnirestException {
         String sellerId = "123456";
-        HttpResponse<String> response = Unirest.post("http://localhost:4849/returnVoid")
+        HttpResponse<String> response = Unirest.post("http://localhost:4849/pay-party/return-void")
                 .queryString("sellerId", sellerId)
                 .asString();
         assertThat(response.getStatus(), is(equalTo(200)));
@@ -68,7 +68,7 @@ public class PostTest {
     public void test5() throws UnirestException {
         Account fromAccount = new Account(1234, "bingoo");
         String json = JSON.toJSONString(fromAccount);
-        HttpResponse<String> response = Unirest.post("http://localhost:4849/transferInt")
+        HttpResponse<String> response = Unirest.post("http://localhost:4849/pay-party/transfer-int")
                 .header("Content-Type", "application/json;charset=UTF-8")
                 .queryString("msg", 100)
                 .body(json)
@@ -82,7 +82,7 @@ public class PostTest {
     public void test6() throws UnirestException {
         Account fromAccount = new Account(1234, "bingoo");
         String json = JSON.toJSONString(fromAccount);
-        HttpResponse<String> response = Unirest.post("http://localhost:4849/transferDouble")
+        HttpResponse<String> response = Unirest.post("http://localhost:4849/pay-party/transfer-double")
                 .header("Content-Type", "application/json;charset=UTF-8")
                 .queryString("msg", 100.12)
                 .body(json)

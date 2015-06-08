@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 
 @RestController
-@RequestMapping("pay-party-controller")
+@RequestMapping("pay-party")
 class PayPartyController {
     @RequestMapping("/party/{sellerId}/{buyerId}")
     public PayParty party(@PathVariable("sellerId") String sellerId,

@@ -14,7 +14,7 @@ import static org.junit.Assert.assertThat;
 public class GetTest {
     @Test
     public void test1() throws UnirestException {
-        HttpResponse<String> httpResponse = Unirest.get("http://localhost:4849/party/{sellerId}/{buyerId}")
+        HttpResponse<String> httpResponse = Unirest.get("http://localhost:4849/pay-party/party/{sellerId}/{buyerId}")
                 .routeParam("sellerId", "s100")
                 .routeParam("buyerId", "b200")
                 .queryString("partyId", "p300")

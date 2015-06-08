@@ -7,6 +7,7 @@ import com.github.bingoohuang.springrestclient.provider.PropertiesBaseUrlProvide
 import org.springframework.web.bind.annotation.*;
 
 @SpringRestClientEnabled(baseUrlProvider = PropertiesBaseUrlProvider.class)
+@RequestMapping("/pay-party")
 public interface PayPartyApi {
     @RequestMapping("/party/{sellerId}/{buyerId}")
     PayParty party(@PathVariable("sellerId") String sellerId,
@@ -14,13 +15,13 @@ public interface PayPartyApi {
                    @RequestParam("partyId") String partyId,
                    @RequestParam("name") String name);
 
-    @RequestMapping(value = "/addParty", method = RequestMethod.POST)
+    @RequestMapping(value = "/add-party", method = RequestMethod.POST)
     int addParty(@RequestBody PayParty payParty);
 
-    @RequestMapping(value = "/addParty2", method = RequestMethod.POST)
+    @RequestMapping(value = "/add-party2", method = RequestMethod.POST)
     boolean addParty2(@RequestBody PayParty payParty);
 
-    @RequestMapping(value = "/addParty/{sellerId}/{buyerId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/add-party3/{sellerId}/{buyerId}", method = RequestMethod.POST)
     int addParty3(@PathVariable("sellerId") String sellerId,
                   @PathVariable("buyerId") String buyerId,
                   @RequestBody PayParty payParty,
@@ -31,19 +32,19 @@ public interface PayPartyApi {
     Account transfer(@RequestBody Account fromAccount,
                      @RequestParam("sendConfirmationSms") boolean sendConfirmationSms);
 
-    @RequestMapping(value = "/getStr", method = RequestMethod.POST)
+    @RequestMapping(value = "/get-str", method = RequestMethod.POST)
     String getStr(@RequestParam("sellerId") String sellerId);
 
-    @RequestMapping(value = "/returnVoid")
+    @RequestMapping(value = "/return-void")
     void returnVoid(@RequestParam("sellerId") String sellerId);
 
-    @RequestMapping(value = "/transferInt", method = RequestMethod.POST)
+    @RequestMapping(value = "/transfer-int", method = RequestMethod.POST)
     Account transferInt(@RequestBody Account account, @RequestParam("msg") int msg);
 
-    @RequestMapping(value = "/transferDouble", method = RequestMethod.POST)
+    @RequestMapping(value = "/transfer-double", method = RequestMethod.POST)
     Account transferDouble(@RequestBody Account account, @RequestParam("msg") double msg);
 
-    @RequestMapping(value = "/transferDouble2", method = RequestMethod.POST)
+    @RequestMapping(value = "/transfer-double2", method = RequestMethod.POST)
     Account transferDouble2(@RequestParam("msg") double ms,
                             @RequestBody Account account);
 }
