@@ -23,7 +23,6 @@ public class UniRests {
         return lastResponseTL.get();
     }
 
-
     public static String get(Map<Integer, Class<? extends Throwable>> mappings,
                              Class<?> apiClass,
                              BaseUrlProvider baseUrlProvider,
@@ -37,7 +36,6 @@ public class UniRests {
         return request(mappings, routeParams, get);
     }
 
-
     public static String post(Map<Integer, Class<? extends Throwable>> mappings,
                               Class<?> apiClass,
                               BaseUrlProvider baseUrlProvider,
@@ -50,7 +48,6 @@ public class UniRests {
 
         return request(mappings, routeParams, post);
     }
-
 
     public static String postAsJson(Map<Integer, Class<? extends Throwable>> mappings,
                                     Class<?> apiClass,
@@ -114,7 +111,6 @@ public class UniRests {
     private static String nullOrBody(HttpResponse<String> response) {
         return "true".equals(response.getHeaders().getFirst("returnNull")) ? null : response.getBody();
     }
-
 
     private static boolean isSuccessful(HttpResponse<String> response) {
         int status = response.getStatus();
