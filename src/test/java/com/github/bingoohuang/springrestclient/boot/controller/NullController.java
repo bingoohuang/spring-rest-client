@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/null-controller")
+@RequestMapping("/null")
 public class NullController {
     @RequestMapping("/null-account")
     public Account nullAccount(@RequestBody Account account) {
@@ -16,7 +16,7 @@ public class NullController {
     @RequestMapping("/empty-string")
     public String emptyString(@RequestBody Account account) {
         Account a = new Account(100, "java");
-        if (a == account) return "";
+        if (a.equals(account)) return "";
         return "error";
     }
 }

@@ -5,7 +5,7 @@ import com.github.bingoohuang.springrestclient.boot.domain.Account;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@RequestMapping("/null-controller")
+@RequestMapping("/null")
 @SpringRestClientEnabled(baseUrl = "http://localhost:4849")
 public interface NullApi {
     @RequestMapping("/null-account")

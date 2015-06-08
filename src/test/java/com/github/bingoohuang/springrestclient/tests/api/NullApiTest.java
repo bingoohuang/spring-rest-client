@@ -41,9 +41,9 @@ public class NullApiTest {
 
     @Test
     public void testNullPost() throws UnirestException {
-        Account account = new Account(100, "java");
+        Account account = new Account(110, "java");
         String json = JSON.toJSONString(account);
-        HttpResponse<String> response = Unirest.post("http://localhost:4849/nullController/returnNull")
+        HttpResponse<String> response = Unirest.post("http://localhost:4849/null/null-account")
                 .header("Content-Type", "application/json;charset=UTF-8")
                 .body(json)
                 .asString();
@@ -57,7 +57,7 @@ public class NullApiTest {
     public void testEmptyPost() throws UnirestException {
         Account account = new Account(100, "java");
         String json = JSON.toJSONString(account);
-        HttpResponse<String> response = Unirest.post("http://localhost:4849/nullController/returnEmptyString")
+        HttpResponse<String> response = Unirest.post("http://localhost:4849/null/empty-string")
                 .header("Content-Type", "application/json;charset=UTF-8")
                 .body(json)
                 .asString();

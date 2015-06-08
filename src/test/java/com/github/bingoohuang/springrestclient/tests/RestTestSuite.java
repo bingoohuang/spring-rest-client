@@ -3,6 +3,7 @@ package com.github.bingoohuang.springrestclient.tests;
 import com.github.bingoohuang.springrestclient.boot.Application;
 import com.github.bingoohuang.springrestclient.tests.api.AnotherApiTest;
 import com.github.bingoohuang.springrestclient.tests.api.ExApiTest;
+import com.github.bingoohuang.springrestclient.tests.api.NullApiTest;
 import com.github.bingoohuang.springrestclient.tests.api.PayPartyApiTest;
 import com.github.bingoohuang.springrestclient.tests.unirest.ExceptionTest;
 import com.github.bingoohuang.springrestclient.tests.unirest.GetTest;
@@ -21,7 +22,8 @@ import org.n3r.diamond.client.impl.MockDiamondServer;
         AnotherApiTest.class,
         ExceptionTest.class,
         PayPartyApiTest.class,
-        ExApiTest.class
+        ExApiTest.class,
+        NullApiTest.class
 })
 public class RestTestSuite {
     @ClassRule
