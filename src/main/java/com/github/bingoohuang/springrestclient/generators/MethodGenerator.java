@@ -1,6 +1,7 @@
 package com.github.bingoohuang.springrestclient.generators;
 
 import com.alibaba.fastjson.JSON;
+import com.github.bingoohuang.springrestclient.annotations.CheckResponseOKByJSONProperty;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
 import com.github.bingoohuang.springrestclient.utils.UniRests;
 import com.google.common.primitives.Primitives;
@@ -23,6 +24,8 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class MethodGenerator {
     public static final String STATUS_EXCEPTION_MAPPINGS = "StatusExceptionMappings";
+    public static final String REQUEST_PARAM_VALUES = "RequestParamValues";
+    public static final String CHECK_RESPONSE_OK_BY_JSON_PROPERTY = "CheckResponseOKByJSONProperty";
 
     private final Method method;
     private final MethodVisitor mv;
@@ -73,6 +76,12 @@ public class MethodGenerator {
         String impl = p(method.getDeclaringClass()) + "Impl";
 
         mv.visitVarInsn(ALOAD, 0);
+        mv.visitFieldInsn(GETFIELD, impl, method.getName() + CHECK_RESPONSE_OK_BY_JSON_PROPERTY, ci(CheckResponseOKByJSONProperty.class));
+
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitFieldInsn(GETFIELD, impl, method.getName() + REQUEST_PARAM_VALUES, ci(Map.class));
+
+        mv.visitVarInsn(ALOAD, 0);
         mv.visitFieldInsn(GETFIELD, impl, method.getName() + STATUS_EXCEPTION_MAPPINGS, ci(Map.class));
 
         mv.visitLdcInsn(Type.getType(method.getDeclaringClass()));
@@ -88,16 +97,16 @@ public class MethodGenerator {
             if (requestBodyOffset > -1) {
                 mv.visitVarInsn(ALOAD, requestBodyOffset + 1);
                 mv.visitMethodInsn(INVOKESTATIC, p(UniRests.class), "postAsJson",
-                        sig(String.class, Map.class, Class.class, BaseUrlProvider.class,
+                        sig(String.class, CheckResponseOKByJSONProperty.class, Map.class, Map.class, Class.class, BaseUrlProvider.class,
                                 String.class, Map.class, Map.class, Object.class), false);
             } else {
                 mv.visitMethodInsn(INVOKESTATIC, p(UniRests.class), "post",
-                        sig(String.class, Map.class, Class.class, BaseUrlProvider.class,
+                        sig(String.class, CheckResponseOKByJSONProperty.class, Map.class, Map.class, Class.class, BaseUrlProvider.class,
                                 String.class, Map.class, Map.class), false);
             }
         } else if (isGetMethod()) {
             mv.visitMethodInsn(INVOKESTATIC, p(UniRests.class), "get",
-                    sig(String.class, Map.class, Class.class, BaseUrlProvider.class,
+                    sig(String.class, CheckResponseOKByJSONProperty.class, Map.class, Map.class, Class.class, BaseUrlProvider.class,
                             String.class, Map.class, Map.class), false);
         }
 

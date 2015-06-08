@@ -1,8 +1,6 @@
 package com.github.bingoohuang.springrestclient.generators;
 
-import com.github.bingoohuang.springrestclient.annotations.RespStatusMapping;
-import com.github.bingoohuang.springrestclient.annotations.RespStatusMappings;
-import com.github.bingoohuang.springrestclient.annotations.SpringRestClientEnabled;
+import com.github.bingoohuang.springrestclient.annotations.*;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
 import com.github.bingoohuang.springrestclient.provider.FixedBaseUrlProvider;
 import com.github.bingoohuang.springrestclient.provider.NoneBaseUrlProvider;
@@ -17,6 +15,7 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -31,11 +30,12 @@ public class SpringRestClientFactory {
 
                     setBaseUrlProvider(restClientImplClass, object, restClientClass);
                     setStatusMappings(restClientImplClass, object, restClientClass);
+                    setRequestParamValues(restClientImplClass, object, restClientClass);
+                    setCheckResponseOKByJSONProperty(restClientImplClass, object, restClientClass);
 
                     return object;
                 }
             });
-
 
     public static <T> T getRestClient(final Class<T> restClientClass) {
         Obj.ensureInterface(restClientClass);
@@ -49,6 +49,41 @@ public class SpringRestClientFactory {
             throw Throwables.propagate(cause);
         }
     }
+
+    private static void setCheckResponseOKByJSONProperty(Class<?> restClientImplClass, Object object, Class restClientClass) {
+        for (Method method : restClientClass.getDeclaredMethods()) {
+            CheckResponseOKByJSONProperty property = method.getAnnotation(CheckResponseOKByJSONProperty.class);
+            String fieldName = method.getName() + MethodGenerator.CHECK_RESPONSE_OK_BY_JSON_PROPERTY;
+            Obj.setField(restClientImplClass, object, fieldName, property);
+        }
+    }
+
+    private static void setRequestParamValues(Class<?> restClientImplClass, Object object, Class restClientClass) {
+        for (Method method : restClientClass.getDeclaredMethods()) {
+            Map<String, Object> mappings = createRequestParamValues(method);
+            String fieldName = method.getName() + MethodGenerator.REQUEST_PARAM_VALUES;
+            Obj.setField(restClientImplClass, object, fieldName, mappings);
+        }
+    }
+
+    private static Map<String, Object> createRequestParamValues(Method method) {
+        HashMap<String, Object> map = Maps.newHashMap();
+
+        RequestParamValue requestParamValue = method.getAnnotation(RequestParamValue.class);
+        if (requestParamValue != null) {
+            map.put(requestParamValue.name(), requestParamValue.value());
+        }
+
+        RequestParamValues requestParamValues = method.getAnnotation(RequestParamValues.class);
+        if (requestParamValues != null) {
+            for (RequestParamValue paramValue : requestParamValues.value()) {
+                map.put(paramValue.name(), paramValue.value());
+            }
+        }
+
+        return Collections.unmodifiableMap(map);
+    }
+
 
     private static void setStatusMappings(Class<?> restClientImplClass, Object object, Class restClientClass) {
         for (Method method : restClientClass.getDeclaredMethods()) {

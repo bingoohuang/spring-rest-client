@@ -27,7 +27,7 @@ public class PayPartyApiDemo implements PayPartyApi {
 
         String str = null;
         try {
-            str = UniRests.postAsJson(null, PayPartyApi.class,
+            str = UniRests.postAsJson(null, null, null, PayPartyApi.class,
                     baseUrlProvider,
                     "url", pathVariables, requestParams, payParty);
         } catch (Throwable throwable) {
@@ -55,7 +55,7 @@ public class PayPartyApiDemo implements PayPartyApi {
 
         String json = null;
         try {
-            json = UniRests.postAsJson(null, PayPartyApi.class,
+            json = UniRests.postAsJson(null, null, null, PayPartyApi.class,
                     baseUrlProvider, "url", pathVariables, requestParams, fromAccount);
         } catch (Throwable throwable) {
             throwable.printStackTrace();
@@ -70,7 +70,7 @@ public class PayPartyApiDemo implements PayPartyApi {
         LinkedHashMap requestParams = new LinkedHashMap();
         requestParams.put("sellerId", sellerId);
         try {
-            return UniRests.post(null, PayPartyApi.class,
+            return UniRests.post(null, null, null, PayPartyApi.class,
                     baseUrlProvider, "url", pathVariables, requestParams);
         } catch (Throwable throwable) {
             return null;
@@ -83,7 +83,7 @@ public class PayPartyApiDemo implements PayPartyApi {
         LinkedHashMap requestParams = new LinkedHashMap();
         requestParams.put("sellerId", sellerId);
         try {
-            UniRests.post(null, PayPartyApi.class,
+            UniRests.post(null, null, null, PayPartyApi.class,
                     baseUrlProvider, "url", pathVariables, requestParams);
         } catch (Throwable throwable) {
             throwable.printStackTrace();
@@ -98,7 +98,7 @@ public class PayPartyApiDemo implements PayPartyApi {
 
         String json = null;
         try {
-            json = UniRests.postAsJson(null, PayPartyApi.class,
+            json = UniRests.postAsJson(null, null, null, PayPartyApi.class,
                     baseUrlProvider, "url", pathVariables, requestParams, account);
         } catch (Throwable throwable) {
             throwable.printStackTrace();
@@ -115,7 +115,7 @@ public class PayPartyApiDemo implements PayPartyApi {
 
         String json = null;
         try {
-            json = UniRests.postAsJson(null, PayPartyApi.class,
+            json = UniRests.postAsJson(null, null, null, PayPartyApi.class,
                     baseUrlProvider, "url", pathVariables, requestParams, account);
         } catch (Throwable throwable) {
             throwable.printStackTrace();
@@ -132,7 +132,7 @@ public class PayPartyApiDemo implements PayPartyApi {
 
         String json = null;
         try {
-            json = UniRests.postAsJson(null, PayPartyApi.class,
+            json = UniRests.postAsJson(null, null, null, PayPartyApi.class,
                     baseUrlProvider, "url", pathVariables, requestParams, account);
         } catch (Throwable throwable) {
             throwable.printStackTrace();

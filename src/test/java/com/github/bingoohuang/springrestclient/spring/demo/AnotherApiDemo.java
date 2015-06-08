@@ -1,5 +1,6 @@
 package com.github.bingoohuang.springrestclient.spring.demo;
 
+import com.github.bingoohuang.springrestclient.annotations.CheckResponseOKByJSONProperty;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
 import com.github.bingoohuang.springrestclient.spring.api.AnotherApi;
 import com.github.bingoohuang.springrestclient.utils.UniRests;
@@ -11,6 +12,7 @@ import java.util.Map;
 public class AnotherApiDemo implements AnotherApi {
     BaseUrlProvider baseUrlProvider;
     Map<Integer, Class<? extends Throwable>> addStatusExceptionMappings;
+    CheckResponseOKByJSONProperty checkResponseOKByJSONProperty;
 
     @Override
     public int add(@RequestParam("offset") int offset) {
@@ -18,7 +20,7 @@ public class AnotherApiDemo implements AnotherApi {
         LinkedHashMap requestParams = new LinkedHashMap();
         requestParams.put("offset", offset);
         try {
-            return Integer.valueOf(UniRests.post(addStatusExceptionMappings,
+            return Integer.valueOf(UniRests.post(checkResponseOKByJSONProperty, new LinkedHashMap(), addStatusExceptionMappings,
                     AnotherApi.class, baseUrlProvider, "url", pathVariables, requestParams));
         } catch (Throwable throwable) {
             throw new RuntimeException(throwable);

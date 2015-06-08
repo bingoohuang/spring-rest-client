@@ -25,7 +25,7 @@ public final class ExApiDemo implements ExApi {
         LinkedHashMap requestParams = new LinkedHashMap();
         pathVariables.put("error", error);
         try {
-            String value = UniRests.post(errorStatusExceptionMappings,
+            String value = UniRests.post(null, new LinkedHashMap(), errorStatusExceptionMappings,
                     ExApi.class, baseUrlProvider, "url", pathVariables, requestParams);
             return Integer.parseInt(value);
         } catch (NotFoundError e) {

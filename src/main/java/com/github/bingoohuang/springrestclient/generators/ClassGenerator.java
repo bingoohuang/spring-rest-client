@@ -1,5 +1,6 @@
 package com.github.bingoohuang.springrestclient.generators;
 
+import com.github.bingoohuang.springrestclient.annotations.CheckResponseOKByJSONProperty;
 import com.github.bingoohuang.springrestclient.annotations.SpringRestClientEnabled;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
 import com.google.common.io.Files;
@@ -14,7 +15,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
-import static com.github.bingoohuang.springrestclient.generators.MethodGenerator.STATUS_EXCEPTION_MAPPINGS;
 import static com.github.bingoohuang.springrestclient.utils.Asms.ci;
 import static com.github.bingoohuang.springrestclient.utils.Asms.p;
 import static org.objectweb.asm.Opcodes.*;
@@ -89,7 +89,16 @@ public class ClassGenerator<T> {
         fv.visitEnd();
 
         for (Method method : restClientClass.getDeclaredMethods()) {
-            fv = cw.visitField(0, method.getName() + STATUS_EXCEPTION_MAPPINGS, ci(Map.class), null, null);
+            fv = cw.visitField(0, method.getName() + MethodGenerator.STATUS_EXCEPTION_MAPPINGS,
+                    ci(Map.class), null, null);
+            fv.visitEnd();
+
+            fv = cw.visitField(0, method.getName() + MethodGenerator.REQUEST_PARAM_VALUES,
+                    ci(Map.class), null, null);
+            fv.visitEnd();
+
+            fv = cw.visitField(0, method.getName() + MethodGenerator.CHECK_RESPONSE_OK_BY_JSON_PROPERTY,
+                    ci(CheckResponseOKByJSONProperty.class), null, null);
             fv.visitEnd();
         }
 

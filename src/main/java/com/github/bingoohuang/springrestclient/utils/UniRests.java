@@ -1,9 +1,12 @@
 package com.github.bingoohuang.springrestclient.utils;
 
 import com.alibaba.fastjson.JSON;
+import com.github.bingoohuang.springrestclient.annotations.CheckResponseOKByJSONProperty;
 import com.github.bingoohuang.springrestclient.exception.RestException;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
+import com.github.bingoohuang.utils.codec.Json;
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -23,49 +26,70 @@ public class UniRests {
         return lastResponseTL.get();
     }
 
-    public static String get(Map<Integer, Class<? extends Throwable>> mappings,
-                             Class<?> apiClass,
-                             BaseUrlProvider baseUrlProvider,
-                             String prefix,
-                             Map<String, Object> routeParams,
-                             Map<String, Object> requestParams) throws Throwable {
+    public static String get(
+            CheckResponseOKByJSONProperty checkResponseOKByJSONProperty,
+            Map<String, Object> requestParamValues,
+            Map<Integer, Class<? extends Throwable>> mappings,
+            Class<?> apiClass,
+            BaseUrlProvider baseUrlProvider,
+            String prefix,
+            Map<String, Object> routeParams,
+            Map<String, Object> requestParams) throws Throwable {
         String url = createUrl(apiClass, baseUrlProvider, prefix);
         HttpRequest get = Unirest.get(url);
-        get.queryString(requestParams);
 
-        return request(apiClass, mappings, routeParams, get);
+        get.queryString(mergeRequestParams(requestParamValues, requestParams));
+
+        return request(checkResponseOKByJSONProperty, apiClass, mappings, routeParams, get);
     }
 
-    public static String post(Map<Integer, Class<? extends Throwable>> mappings,
-                              Class<?> apiClass,
-                              BaseUrlProvider baseUrlProvider,
-                              String prefix,
-                              Map<String, Object> routeParams,
-                              Map<String, Object> requestParams) throws Throwable {
+    public static String post(
+            CheckResponseOKByJSONProperty checkResponseOKByJSONProperty,
+            Map<String, Object> requestParamValues,
+            Map<Integer, Class<? extends Throwable>> mappings,
+            Class<?> apiClass,
+            BaseUrlProvider baseUrlProvider,
+            String prefix,
+            Map<String, Object> routeParams,
+            Map<String, Object> requestParams) throws Throwable {
         String url = createUrl(apiClass, baseUrlProvider, prefix);
         HttpRequestWithBody post = Unirest.post(url);
-        post.fields(requestParams);
 
-        return request(apiClass, mappings, routeParams, post);
+        post.fields(mergeRequestParams(requestParamValues, requestParams));
+
+        return request(checkResponseOKByJSONProperty, apiClass, mappings, routeParams, post);
     }
 
-    public static String postAsJson(Map<Integer, Class<? extends Throwable>> mappings,
-                                    Class<?> apiClass,
-                                    BaseUrlProvider baseUrlProvider,
-                                    String prefix,
-                                    Map<String, Object> routeParams,
-                                    Map<String, Object> requestParams,
-                                    Object bean) throws Throwable {
+    public static String postAsJson(
+            CheckResponseOKByJSONProperty checkResponseOKByJSONProperty,
+            Map<String, Object> requestParamValues,
+            Map<Integer, Class<? extends Throwable>> mappings,
+            Class<?> apiClass,
+            BaseUrlProvider baseUrlProvider,
+            String prefix,
+            Map<String, Object> routeParams,
+            Map<String, Object> requestParams,
+            Object bean) throws Throwable {
         String url = createUrl(apiClass, baseUrlProvider, prefix);
         HttpRequestWithBody post = Unirest.post(url);
-        post.queryString(requestParams);
+
+        post.queryString(mergeRequestParams(requestParamValues, requestParams));
+
         post.header("Content-Type", "application/json;charset=UTF-8");
         post.body(JSON.toJSONString(bean));
 
-        return request(apiClass, mappings, routeParams, post);
+        return request(checkResponseOKByJSONProperty, apiClass, mappings, routeParams, post);
     }
 
-    private static String request(Class<?> apiClass, Map<Integer, Class<? extends Throwable>> mappings,
+    private static Map<String, Object> mergeRequestParams(Map<String, Object> requestParamValues,
+                                                          Map<String, Object> requestParams) {
+        Map<String, Object> mergedRequestParams = Maps.newHashMap(requestParamValues);
+        mergedRequestParams.putAll(requestParams);
+        return mergedRequestParams;
+    }
+
+    private static String request(CheckResponseOKByJSONProperty checkResponseOKByJSONProperty,
+                                  Class<?> apiClass, Map<Integer, Class<? extends Throwable>> mappings,
                                   Map<String, Object> routeParams,
                                   HttpRequest httpRequest) throws Throwable {
         setRouteParams(routeParams, httpRequest);
@@ -79,7 +103,7 @@ public class UniRests {
 
             lastResponseTL.set(response);
 
-            if (isSuccessful(response)) return nullOrBody(response);
+            if (isSuccessful(checkResponseOKByJSONProperty, response)) return nullOrBody(response);
 
             throw processStatusExceptionMappings(response, mappings);
         } catch (UnirestException e) {
@@ -99,6 +123,8 @@ public class UniRests {
             throws Throwable {
         Class<? extends Throwable> exceptionClass = mappings.get(response.getStatus());
         String msg = response.getHeaders().getFirst("error-msg");
+        if (Strings.isNullOrEmpty(msg)) msg = response.getBody();
+
         if (exceptionClass == null) throw new RestException(response.getStatus(), msg);
 
         throw Obj.createObject(exceptionClass, msg);
@@ -117,9 +143,25 @@ public class UniRests {
         return "true".equals(response.getHeaders().getFirst("returnNull")) ? null : response.getBody();
     }
 
-    private static boolean isSuccessful(HttpResponse<String> response) {
+    private static boolean isSuccessful(CheckResponseOKByJSONProperty checkResponseOKByJSONProperty,
+                                        HttpResponse<String> response) {
         int status = response.getStatus();
-        return status >= 200 && status < 300;
+        boolean isHttpSucc = status >= 200 && status < 300;
+        if (!isHttpSucc) return false;
+
+        if (checkResponseOKByJSONProperty == null) return true;
+        if (!isResponseJsonContentType(response)) return true;
+
+        Map<String, Object> map = Json.unJson(response.getBody());
+        String key = checkResponseOKByJSONProperty.key();
+        Object realValue = map.get(key);
+        String expectedValue = checkResponseOKByJSONProperty.value();
+        return expectedValue.equals("" + realValue);
+    }
+
+    private static boolean isResponseJsonContentType(HttpResponse<String> response) {
+        String contentType = response.getHeaders().getFirst("Content-Type");
+        return contentType != null && contentType.contains("application/json");
     }
 
 }
