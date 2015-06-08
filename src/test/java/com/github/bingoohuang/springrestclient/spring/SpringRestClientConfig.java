@@ -4,7 +4,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ComponentScan(basePackageClasses = SpringRestClientConfig.class)
-@SpringRestClientEnabledScan(basePackageClasses = SpringRestClientConfig.class)
+@ComponentScan
+@SpringRestClientEnabledScan
 public class SpringRestClientConfig {
 }

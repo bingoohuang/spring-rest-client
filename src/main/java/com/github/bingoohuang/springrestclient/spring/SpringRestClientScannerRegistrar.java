@@ -14,6 +14,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 public class SpringRestClientScannerRegistrar implements ImportBeanDefinitionRegistrar, ResourceLoaderAware {
@@ -24,14 +25,15 @@ public class SpringRestClientScannerRegistrar implements ImportBeanDefinitionReg
      * {@inheritDoc}
      */
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-
-        AnnotationAttributes annoAttrs = AnnotationAttributes.fromMap(importingClassMetadata.getAnnotationAttributes(SpringRestClientEnabledScan.class.getName()));
+        String name = SpringRestClientEnabledScan.class.getName();
+        Map<String, Object> annotationAttributes = importingClassMetadata.getAnnotationAttributes(name);
         ClassPathSpringRestClientScanner scanner = new ClassPathSpringRestClientScanner(registry);
 
         if (resourceLoader != null) { // this check is needed in Spring 3.1
             scanner.setResourceLoader(resourceLoader);
         }
 
+        AnnotationAttributes annoAttrs = AnnotationAttributes.fromMap(annotationAttributes);
         Class<? extends BeanNameGenerator> generatorClass = annoAttrs.getClass("nameGenerator");
         if (!BeanNameGenerator.class.equals(generatorClass)) {
             scanner.setBeanNameGenerator(BeanUtils.instantiateClass(generatorClass));
@@ -39,18 +41,22 @@ public class SpringRestClientScannerRegistrar implements ImportBeanDefinitionReg
 
         List<String> basePackages = new ArrayList<String>();
         for (String pkg : annoAttrs.getStringArray("value")) {
-            if (StringUtils.hasText(pkg)) {
-                basePackages.add(pkg);
-            }
+            if (StringUtils.hasText(pkg)) basePackages.add(pkg);
         }
+
         for (String pkg : annoAttrs.getStringArray("basePackages")) {
-            if (StringUtils.hasText(pkg)) {
-                basePackages.add(pkg);
-            }
+            if (StringUtils.hasText(pkg)) basePackages.add(pkg);
         }
+
         for (Class<?> clazz : annoAttrs.getClassArray("basePackageClasses")) {
             basePackages.add(ClassUtils.getPackageName(clazz));
         }
+
+        if (basePackages.isEmpty()) {
+            String className = importingClassMetadata.getClassName();
+            basePackages.add(ClassUtils.getPackageName(className));
+        }
+
         scanner.registerFilters();
         scanner.doScan(StringUtils.toStringArray(basePackages));
     }
