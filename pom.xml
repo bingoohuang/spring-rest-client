@@ -88,11 +88,6 @@
             <version>4.1.6.RELEASE</version>
         </dependency>
         <dependency>
-            <groupId>me.qmx.jitescript</groupId>
-            <artifactId>jitescript</artifactId>
-            <version>0.4.0</version>
-        </dependency>
-        <dependency>
             <groupId>com.github.bingoohuang</groupId>
             <artifactId>diamond-client</artifactId>
             <version>0.0.18</version>
