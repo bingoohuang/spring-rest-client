@@ -36,6 +36,11 @@ public class RestLog {
         }
     }
 
+    public static void log(Class<?> apiClass, Throwable e, long costTimeMillis) {
+        Logger logger = LoggerFactory.getLogger(apiClass);
+        logger.debug("API Exception: cost {} millis", costTimeMillis, e);
+    }
+
     public static void log(Class<?> apiClass, HttpResponse<String> response, long costTimeMillis) {
         Logger logger = LoggerFactory.getLogger(apiClass);
         if (logger.isDebugEnabled()) {
@@ -44,6 +49,11 @@ public class RestLog {
             String body = response.getBody();
             logger.debug("API Response: cost {} millis, {} headers:{} body: {}", costTimeMillis, status, headers, singleLine(body));
         }
+    }
+
+    public static void log(Class<?> apiClass, String status, long costTimeMillis) {
+        Logger logger = LoggerFactory.getLogger(apiClass);
+        logger.debug("API {}: cost {} millis", status, costTimeMillis);
     }
 
     private static String buildHeaders(Map<String, List<String>> headers) {
@@ -68,4 +78,5 @@ public class RestLog {
         String s = lineBreakPattern.matcher(str).replaceAll("\\n");
         return Url.decode(s);
     }
+
 }

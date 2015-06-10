@@ -11,6 +11,11 @@ public class Asms {
         return n.getName().replace('.', '/');
     }
 
+    public static String p(String className) {
+        return className.replace('.', '/');
+    }
+
+
     // Creates a class identifier of form Labc/abc;, from a Class.
     public static String ci(Class n) {
         if (n.isArray()) {

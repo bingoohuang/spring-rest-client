@@ -27,7 +27,7 @@ public class ClassGenerator<T> {
 
     public ClassGenerator(Class<T> restClientClass) {
         this.restClientClass = restClientClass;
-        this.implName = restClientClass.getName() + "Impl";
+        this.implName = restClientClass.getName() + "$$BINGOOASM$$Impl";
         this.classWriter = createClassWriter();
         this.restClientEnabled = restClientClass.getAnnotation(SpringRestClientEnabled.class);
     }
@@ -47,7 +47,7 @@ public class ClassGenerator<T> {
 
     private void createClassFileForDiagnose(byte[] bytes) {
         if (restClientEnabled.createClassFileForDiagnose())
-            writeClassFile4Diagnose(bytes, restClientClass.getSimpleName() + "Impl.class");
+            writeClassFile4Diagnose(bytes, implName + ".class");
     }
 
     private void writeClassFile4Diagnose(byte[] bytes, String fileName) {
@@ -59,17 +59,18 @@ public class ClassGenerator<T> {
     }
 
     private Class<? extends T> defineClass(byte[] bytes) {
-        RestClientClassLoader classLoader = new RestClientClassLoader(restClientClass.getClassLoader());
+        ClassLoader parentClassLoader = restClientClass.getClassLoader();
+        RestClientClassLoader classLoader = new RestClientClassLoader(parentClassLoader);
         return (Class<? extends T>) classLoader.defineClass(implName, bytes);
     }
 
     private byte[] createImplClassBytes() {
-        constructor();
-
         String classRequestMapping = getClassRequestMapping();
 
+        constructor();
+
         for (Method method : restClientClass.getMethods()) {
-            new MethodGenerator(method, classWriter, classRequestMapping).generate();
+            new MethodGenerator(classWriter, implName, method, classRequestMapping).generate();
         }
 
         return createBytes();

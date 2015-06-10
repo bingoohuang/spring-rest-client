@@ -3,6 +3,7 @@ package com.github.bingoohuang.springrestclient.generators;
 import com.alibaba.fastjson.JSON;
 import com.github.bingoohuang.springrestclient.annotations.SuccInResponseJSONProperty;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
+import com.github.bingoohuang.springrestclient.utils.Futures;
 import com.github.bingoohuang.springrestclient.utils.RestReq;
 import com.github.bingoohuang.springrestclient.utils.RestReqBuilder;
 import com.google.common.primitives.Primitives;
@@ -17,6 +18,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 import static com.github.bingoohuang.springrestclient.utils.Asms.*;
 import static com.github.bingoohuang.springrestclient.utils.PrimitiveWrappers.getParseXxMethodName;
@@ -37,8 +39,10 @@ public class MethodGenerator {
     private final int offsetSize;
     private final String classRequestMapping;
     private final RequestMapping requestMapping;
+    private final String implName;
 
-    public MethodGenerator(Method method, ClassWriter classWriter, String classRequestMapping) {
+    public MethodGenerator(ClassWriter classWriter, String implName, Method method, String classRequestMapping) {
+        this.implName = implName;
         this.method = method;
         this.mv = visitMethod(method, classWriter);
         this.annotations = method.getParameterAnnotations();
@@ -88,9 +92,6 @@ public class MethodGenerator {
             return;
         }
 
-//        mv.visitVarInsn(ASTORE, offsetSize + 4);
-//        mv.visitVarInsn(ALOAD, offsetSize + 4);
-
         if (returnType.isPrimitive()) {
             primitiveValueOfAndReturn();
         } else {
@@ -102,24 +103,32 @@ public class MethodGenerator {
         mv.visitVarInsn(ASTORE, offsetSize + 3);
         mv.visitVarInsn(ALOAD, offsetSize + 3);
 
+        boolean futureReturnType = Futures.isFutureReturnType(method);
+
         if (isPostMethodOrNone()) {
             int requestBodyOffset = findRequestBodyParameterOffset();
             if (requestBodyOffset > -1) {
                 mv.visitVarInsn(ALOAD, requestBodyOffset + 1);
-                mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReq.class),
-                        "postAsJson", sig(String.class, Object.class), false);
+                getOrPost(futureReturnType, "postAsJsonAsync", sig(Future.class, Object.class),
+                        "postAsJson", sig(String.class, Object.class));
             } else {
-                mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReq.class),
-                        "post", sig(String.class), false);
+                getOrPost(futureReturnType, "postAsync", sig(Future.class), "post", sig(String.class));
             }
         } else if (isGetMethod()) {
-            mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReq.class),
-                    "get", sig(String.class), false);
+            getOrPost(futureReturnType, "getAsync", sig(Future.class), "get", sig(String.class));
+        }
+    }
+
+    private void getOrPost(boolean futureReturnType, String getAsync, String sig, String get, String sig2) {
+        if (futureReturnType) {
+            mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReq.class), getAsync, sig, false);
+        } else {
+            mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReq.class), get, sig2, false);
         }
     }
 
     private void buildUniRestReq() {
-        String impl = p(method.getDeclaringClass()) + "Impl";
+        String impl = p(implName);
 
         mv.visitTypeInsn(NEW, p(RestReqBuilder.class));
         mv.visitInsn(DUP);
@@ -205,9 +214,25 @@ public class MethodGenerator {
             return;
         }
 
-        mv.visitLdcInsn(Type.getType(returnType));
-        mv.visitMethodInsn(INVOKESTATIC, p(JSON.class), "parseObject",
-                sig(Object.class, String.class, Class.class), false);
+        boolean futureReturnType = Futures.isFutureReturnType(method);
+        if (futureReturnType) {
+            java.lang.reflect.Type futureType = Futures.getFutureGenericArgClass(method);
+            if (!(futureType instanceof Class)) {
+                mv.visitInsn(ARETURN);
+                return;
+            }
+
+            mv.visitLdcInsn(Type.getType((Class) futureType));
+            mv.visitVarInsn(ALOAD, offsetSize + 3);
+            mv.visitMethodInsn(INVOKESTATIC, p(Futures.class),
+                    futureType == Void.class ? "convertFutureVoid" : "convertFuture",
+                    sig(Future.class, Future.class, Class.class, RestReq.class), false);
+        } else {
+            mv.visitLdcInsn(Type.getType(returnType));
+            mv.visitMethodInsn(INVOKESTATIC, p(JSON.class), "parseObject",
+                    sig(Object.class, String.class, Class.class), false);
+
+        }
         mv.visitTypeInsn(CHECKCAST, p(returnType));
         mv.visitInsn(ARETURN);
     }

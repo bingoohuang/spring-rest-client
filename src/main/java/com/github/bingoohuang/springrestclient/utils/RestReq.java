@@ -14,6 +14,10 @@ import com.mashape.unirest.request.HttpRequest;
 import com.mashape.unirest.request.HttpRequestWithBody;
 
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class RestReq {
     final SuccInResponseJSONProperty succInResponseJSONProperty;
@@ -62,6 +66,15 @@ public class RestReq {
         return request(get);
     }
 
+    public Future<HttpResponse<String>> getAsync() throws Throwable {
+        String url = createUrl();
+        HttpRequest get = Unirest.get(url);
+
+        get.queryString(mergeRequestParams());
+
+        return requestAsync(get);
+    }
+
     public String post() throws Throwable {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
@@ -69,6 +82,15 @@ public class RestReq {
         post.fields(mergeRequestParams());
 
         return request(post);
+    }
+
+    public Future<HttpResponse<String>> postAsync() throws Throwable {
+        String url = createUrl();
+        HttpRequestWithBody post = Unirest.post(url);
+
+        post.fields(mergeRequestParams());
+
+        return requestAsync(post);
     }
 
     public String postAsJson(Object bean) throws Throwable {
@@ -83,6 +105,18 @@ public class RestReq {
         return request(post);
     }
 
+    public Future<HttpResponse<String>> postAsJsonAsync(Object bean) throws Throwable {
+        String url = createUrl();
+        HttpRequestWithBody post = Unirest.post(url);
+
+        post.queryString(mergeRequestParams());
+
+        post.header("Content-Type", "application/json;charset=UTF-8");
+        post.body(JSON.toJSONString(bean));
+
+        return requestAsync(post);
+    }
+
     private Map<String, Object> mergeRequestParams() {
         Map<String, Object> mergedRequestParams = Maps.newHashMap(requestParamValues);
         mergedRequestParams.putAll(requestParams);
@@ -92,21 +126,65 @@ public class RestReq {
     private String request(HttpRequest httpRequest) throws Throwable {
         setRouteParams(httpRequest);
 
+        long start = System.currentTimeMillis();
+        boolean loggedResponse = false;
         try {
             RestLog.log(apiClass, httpRequest);
-            long start = System.currentTimeMillis();
-
+            lastResponseTL.remove();
             HttpResponse<String> response = httpRequest.asString();
             RestLog.log(apiClass, response, System.currentTimeMillis() - start);
-
+            loggedResponse = true;
             lastResponseTL.set(response);
+
 
             if (isSuccessful(response)) return nullOrBody(response);
 
             throw processStatusExceptionMappings(response);
         } catch (UnirestException e) {
+            if (!loggedResponse) RestLog.log(apiClass, e, System.currentTimeMillis() - start);
             throw new RuntimeException(e);
+        } catch (Throwable e) {
+            if (!loggedResponse) RestLog.log(apiClass, e, System.currentTimeMillis() - start);
+            throw e;
         }
+    }
+
+    private Future<HttpResponse<String>> requestAsync(HttpRequest httpRequest) throws Throwable {
+        setRouteParams(httpRequest);
+
+        RestLog.log(apiClass, httpRequest);
+        final long start = System.currentTimeMillis();
+        lastResponseTL.remove(); // clear response threadlocal before execution
+        final UniRestCallback callback = new UniRestCallback(apiClass, start);
+
+        final Future<HttpResponse<String>> future = httpRequest.asStringAsync(callback);
+
+        return new Future<HttpResponse<String>>() {
+            @Override
+            public boolean cancel(boolean mayInterruptIfRunning) {
+                return future.cancel(mayInterruptIfRunning);
+            }
+
+            @Override
+            public boolean isCancelled() {
+                return callback.isCancelled();
+            }
+
+            @Override
+            public boolean isDone() {
+                return callback.isDone();
+            }
+
+            @Override
+            public HttpResponse<String> get() throws InterruptedException, ExecutionException {
+                return callback.get();
+            }
+
+            @Override
+            public HttpResponse<String> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                return callback.get(unit.toMillis(timeout));
+            }
+        };
     }
 
     private void setRouteParams(HttpRequest httpRequest) {
@@ -115,7 +193,7 @@ public class RestReq {
         }
     }
 
-    private Throwable processStatusExceptionMappings(HttpResponse<String> response) throws Throwable {
+    public Throwable processStatusExceptionMappings(HttpResponse<String> response) throws Throwable {
         Class<? extends Throwable> exceptionClass = sendStatusExceptionMappings.get(response.getStatus());
         String msg = response.getHeaders().getFirst("error-msg");
         if (Strings.isNullOrEmpty(msg)) msg = response.getBody();
@@ -133,11 +211,11 @@ public class RestReq {
         return baseUrl + prefix;
     }
 
-    private static String nullOrBody(HttpResponse<String> response) {
+    public static String nullOrBody(HttpResponse<String> response) {
         return "true".equals(response.getHeaders().getFirst("returnNull")) ? null : response.getBody();
     }
 
-    private boolean isSuccessful(HttpResponse<String> response) {
+    public boolean isSuccessful(HttpResponse<String> response) {
         int status = response.getStatus();
         boolean isHttpSucc = status >= 200 && status < 300;
         if (!isHttpSucc) return false;

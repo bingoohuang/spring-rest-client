@@ -50,9 +50,12 @@ public class SpringRestClientFactory {
         }
     }
 
-    private static void setSuccInResponseJSONProperty(Class<?> restClientImplClass, Object object, Class restClientClass) {
+    private static void setSuccInResponseJSONProperty(
+            Class<?> restClientImplClass, Object object, Class<?> restClientClass) {
         for (Method method : restClientClass.getDeclaredMethods()) {
             SuccInResponseJSONProperty property = method.getAnnotation(SuccInResponseJSONProperty.class);
+            if (property == null) property = restClientClass.getAnnotation(SuccInResponseJSONProperty.class);
+            
             String fieldName = method.getName() + MethodGenerator.SuccInResponseJSONProperty;
             Obj.setField(restClientImplClass, object, fieldName, property);
         }
@@ -60,52 +63,67 @@ public class SpringRestClientFactory {
 
     private static void setFixedRequestParams(Class<?> restClientImplClass, Object object, Class restClientClass) {
         for (Method method : restClientClass.getDeclaredMethods()) {
-            Map<String, Object> mappings = createFixedRequestParams(method);
+            Map<String, Object> mappings = createFixedRequestParams(method, restClientClass);
             String fieldName = method.getName() + MethodGenerator.FixedRequestParams;
             Obj.setField(restClientImplClass, object, fieldName, mappings);
         }
     }
 
-    private static Map<String, Object> createFixedRequestParams(Method method) {
+    private static Map<String, Object> createFixedRequestParams(Method method, Class<?> restClientClass) {
         HashMap<String, Object> map = Maps.newHashMap();
 
-        FixedRequestParam fixedRequestParam = method.getAnnotation(FixedRequestParam.class);
+        putRequestParams(map, restClientClass.getAnnotation(FixedRequestParam.class),
+                restClientClass.getAnnotation(FixedRequestParams.class));
+
+        putRequestParams(map, method.getAnnotation(FixedRequestParam.class),
+                method.getAnnotation(FixedRequestParams.class));
+
+        return Collections.unmodifiableMap(map);
+    }
+
+    private static void putRequestParams(HashMap<String, Object> map,
+                                         FixedRequestParam fixedRequestParam,
+                                         FixedRequestParams fixedRequestParams) {
         if (fixedRequestParam != null) {
             map.put(fixedRequestParam.name(), fixedRequestParam.value());
         }
 
-        FixedRequestParams fixedRequestParams = method.getAnnotation(FixedRequestParams.class);
         if (fixedRequestParams != null) {
             for (FixedRequestParam paramValue : fixedRequestParams.value()) {
                 map.put(paramValue.name(), paramValue.value());
             }
         }
-
-        return Collections.unmodifiableMap(map);
     }
 
 
     private static void setStatusMappings(Class<?> restClientImplClass, Object object, Class restClientClass) {
         for (Method method : restClientClass.getDeclaredMethods()) {
-            Map<Integer, Class<? extends Throwable>> mappings = createStatusExceptionMappings(method);
+            Map<Integer, Class<? extends Throwable>> mappings = createStatusExceptionMappings(method, restClientClass);
             String fieldName = method.getName() + MethodGenerator.StatusExceptionMappings;
             Obj.setField(restClientImplClass, object, fieldName, mappings);
         }
     }
 
-    private static Map<Integer, Class<? extends Throwable>> createStatusExceptionMappings(Method method) {
+    private static Map<Integer, Class<? extends Throwable>> createStatusExceptionMappings(
+            Method method, Class<?> restClientClass) {
         Map<Integer, Class<? extends Throwable>> statusExceptionMappings = Maps.newHashMap();
 
-        RespStatusMappings respStatusMappings = method.getAnnotation(RespStatusMappings.class);
-        if (respStatusMappings != null) {
-            for (RespStatusMapping respStatusMapping : respStatusMappings.value()) {
-                Class<? extends Throwable> exceptionClass = respStatusMapping.exception();
-                checkMethodException(method, exceptionClass);
-                statusExceptionMappings.put(respStatusMapping.status(), exceptionClass);
-            }
-        }
+        addStatusExceptionMapppings(method, statusExceptionMappings, restClientClass.getAnnotation(RespStatusMappings.class));
+        addStatusExceptionMapppings(method, statusExceptionMappings, method.getAnnotation(RespStatusMappings.class));
 
         return Collections.unmodifiableMap(statusExceptionMappings);
+    }
+
+    private static void addStatusExceptionMapppings(
+            Method method, Map<Integer, Class<? extends Throwable>> statusExceptionMappings,
+            RespStatusMappings respStatusMappings) {
+        if (respStatusMappings == null) return;
+
+        for (RespStatusMapping respStatusMapping : respStatusMappings.value()) {
+            Class<? extends Throwable> exceptionClass = respStatusMapping.exception();
+            checkMethodException(method, exceptionClass);
+            statusExceptionMappings.put(respStatusMapping.status(), exceptionClass);
+        }
     }
 
     private static void checkMethodException(Method method,
@@ -124,9 +142,8 @@ public class SpringRestClientFactory {
     private static void setBaseUrlProvider(Class<?> restClientImplClass,
                                            Object object, Class restClientClass) {
         BaseUrlProvider provider = createBaseUrlProvider(restClientClass);
-        String fieldName = "baseUrlProvider";
 
-        Obj.setField(restClientImplClass, object, fieldName, provider);
+        Obj.setField(restClientImplClass, object, "baseUrlProvider", provider);
     }
 
     private static BaseUrlProvider createBaseUrlProvider(Class<?> restClientClass) {

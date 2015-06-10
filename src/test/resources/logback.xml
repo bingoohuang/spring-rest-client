@@ -12,6 +12,6 @@
         <appender-ref ref="Console"/>
     </root>
 
-    <logger name="com.github.bingoohuang.springrestclient.spring.api.YunpianApi" level="DEBUG"/>
+    <logger name="com.github.bingoohuang.springrestclient.spring.api" level="DEBUG"/>
 
 </configuration>

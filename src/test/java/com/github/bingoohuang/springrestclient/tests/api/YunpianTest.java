@@ -1,8 +1,11 @@
 package com.github.bingoohuang.springrestclient.tests.api;
 
+import com.alibaba.fastjson.JSON;
 import com.github.bingoohuang.springrestclient.exception.RestException;
 import com.github.bingoohuang.springrestclient.spring.SpringRestClientConfig;
 import com.github.bingoohuang.springrestclient.spring.api.YunpianApi;
+import com.github.bingoohuang.springrestclient.spring.api.YunpianResult;
+import com.mashape.unirest.http.HttpResponse;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,11 +47,12 @@ public class YunpianTest {
 
     @Test
     public void test3() {
-        YunpianApi.YunpianResult result = yunpianApi.send3(
+        YunpianResult result = yunpianApi.send3(
                 "【健康生活】您正在注册验证easy-hi，验证码为123456（5分钟内有效），如非本人操作，请忽略本短信",
                 "15951770693");
         assertThat(result.getCode(), is(equalTo(1)));
         assertThat(result.getMsg(), is(equalTo("请求参数缺失")));
         assertThat(result.getDetail(), is(equalTo("参数 apikey 必须传入")));
     }
+
 }
