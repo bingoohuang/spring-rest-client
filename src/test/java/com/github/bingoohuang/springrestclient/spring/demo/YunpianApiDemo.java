@@ -1,6 +1,5 @@
 package com.github.bingoohuang.springrestclient.spring.demo;
 
-import com.alibaba.fastjson.JSON;
 import com.github.bingoohuang.springrestclient.annotations.SuccInResponseJSONProperty;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
 import com.github.bingoohuang.springrestclient.spring.api.YunpianApi;
@@ -12,12 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-
 public class YunpianApiDemo {
-
-
-    public YunpianApiDemo() {
-    }
     BaseUrlProvider baseUrlProvider;
     Map sendStatusExceptionMappings;
     Map sendRequestParamValues;
@@ -32,6 +26,7 @@ public class YunpianApiDemo {
 
         RestReq restReq = new RestReqBuilder()
                 .prefix("/sms/send.json")
+                .async(false)
                 .apiClass(YunpianApi.class)
                 .baseUrlProvider(baseUrlProvider)
                 .succInResponseJSONProperty(sendSuccInResponseJSONProperty)

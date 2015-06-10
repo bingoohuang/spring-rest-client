@@ -28,6 +28,7 @@ public class RestReq {
     final String prefix;
     final Map<String, Object> routeParams;
     final Map<String, Object> requestParams;
+    private final RestLog restLog;
 
     RestReq(SuccInResponseJSONProperty succInResponseJSONProperty,
             Map<String, Object> requestParamValues,
@@ -36,7 +37,8 @@ public class RestReq {
             BaseUrlProvider baseUrlProvider,
             String prefix,
             Map<String, Object> routeParams,
-            Map<String, Object> requestParams) {
+            Map<String, Object> requestParams,
+            boolean async) {
         this.succInResponseJSONProperty = succInResponseJSONProperty;
         this.requestParamValues = requestParamValues;
         this.sendStatusExceptionMappings = sendStatusExceptionMappings;
@@ -45,6 +47,7 @@ public class RestReq {
         this.prefix = prefix;
         this.routeParams = routeParams;
         this.requestParams = requestParams;
+        this.restLog = new RestLog(apiClass, async ? "async" : "sync");
     }
 
     static ThreadLocal<HttpResponse<String>> lastResponseTL;
@@ -126,25 +129,23 @@ public class RestReq {
     private String request(HttpRequest httpRequest) throws Throwable {
         setRouteParams(httpRequest);
 
-        long start = System.currentTimeMillis();
         boolean loggedResponse = false;
         try {
-            RestLog.log(apiClass, httpRequest);
+            restLog.log(httpRequest);
             lastResponseTL.remove();
             HttpResponse<String> response = httpRequest.asString();
-            RestLog.log(apiClass, response, System.currentTimeMillis() - start);
+            restLog.log(response);
             loggedResponse = true;
             lastResponseTL.set(response);
-
 
             if (isSuccessful(response)) return nullOrBody(response);
 
             throw processStatusExceptionMappings(response);
         } catch (UnirestException e) {
-            if (!loggedResponse) RestLog.log(apiClass, e, System.currentTimeMillis() - start);
+            if (!loggedResponse) restLog.log(e);
             throw new RuntimeException(e);
         } catch (Throwable e) {
-            if (!loggedResponse) RestLog.log(apiClass, e, System.currentTimeMillis() - start);
+            if (!loggedResponse) restLog.log(e);
             throw e;
         }
     }
@@ -152,10 +153,10 @@ public class RestReq {
     private Future<HttpResponse<String>> requestAsync(HttpRequest httpRequest) throws Throwable {
         setRouteParams(httpRequest);
 
-        RestLog.log(apiClass, httpRequest);
+        restLog.log(httpRequest);
         final long start = System.currentTimeMillis();
         lastResponseTL.remove(); // clear response threadlocal before execution
-        final UniRestCallback callback = new UniRestCallback(apiClass, start);
+        final UniRestCallback callback = new UniRestCallback(apiClass, restLog);
 
         final Future<HttpResponse<String>> future = httpRequest.asStringAsync(callback);
 

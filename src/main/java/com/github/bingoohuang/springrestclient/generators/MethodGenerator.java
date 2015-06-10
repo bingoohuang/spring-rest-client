@@ -40,6 +40,7 @@ public class MethodGenerator {
     private final String classRequestMapping;
     private final RequestMapping requestMapping;
     private final String implName;
+    private final boolean futureReturnType;
 
     public MethodGenerator(ClassWriter classWriter, String implName, Method method, String classRequestMapping) {
         this.implName = implName;
@@ -52,6 +53,7 @@ public class MethodGenerator {
         returnType = method.getReturnType();
         this.classRequestMapping = classRequestMapping;
         this.requestMapping = method.getAnnotation(RequestMapping.class);
+        this.futureReturnType = Futures.isFutureReturnType(method);
     }
 
     private MethodVisitor visitMethod(Method method, ClassWriter classWriter) {
@@ -103,8 +105,6 @@ public class MethodGenerator {
         mv.visitVarInsn(ASTORE, offsetSize + 3);
         mv.visitVarInsn(ALOAD, offsetSize + 3);
 
-        boolean futureReturnType = Futures.isFutureReturnType(method);
-
         if (isPostMethodOrNone()) {
             int requestBodyOffset = findRequestBodyParameterOffset();
             if (requestBodyOffset > -1) {
@@ -130,41 +130,40 @@ public class MethodGenerator {
     private void buildUniRestReq() {
         String impl = p(implName);
 
-        mv.visitTypeInsn(NEW, p(RestReqBuilder.class));
+        String restReqBuilder = p(RestReqBuilder.class);
+        mv.visitTypeInsn(NEW, restReqBuilder);
         mv.visitInsn(DUP);
-        mv.visitMethodInsn(INVOKESPECIAL, p(RestReqBuilder.class), "<init>", "()V", false);
+        mv.visitMethodInsn(INVOKESPECIAL, restReqBuilder, "<init>", "()V", false);
         mv.visitLdcInsn(getFullRequestMapping());
-        mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReqBuilder.class), "prefix",
-                sig(RestReqBuilder.class, String.class), false);
+        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "prefix", sigRest(String.class), false);
+        mv.visitInsn(futureReturnType ? ICONST_1 : ICONST_0);
+        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "async", sigRest(boolean.class), false);
         mv.visitLdcInsn(Type.getType(method.getDeclaringClass()));
-        mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReqBuilder.class), "apiClass",
-                sig(RestReqBuilder.class, Class.class), false);
+        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "apiClass", sigRest(Class.class), false);
         mv.visitVarInsn(ALOAD, 0);
         mv.visitFieldInsn(GETFIELD, impl, "baseUrlProvider", ci(BaseUrlProvider.class));
-        mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReqBuilder.class), "baseUrlProvider",
-                sig(RestReqBuilder.class, BaseUrlProvider.class), false);
+        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "baseUrlProvider", sigRest(BaseUrlProvider.class), false);
         mv.visitVarInsn(ALOAD, 0);
         String methodName = method.getName();
-        mv.visitFieldInsn(GETFIELD, impl, methodName + SuccInResponseJSONProperty,
-                ci(SuccInResponseJSONProperty.class));
-        mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReqBuilder.class), "succInResponseJSONProperty",
-                sig(RestReqBuilder.class, SuccInResponseJSONProperty.class), false);
+        mv.visitFieldInsn(GETFIELD, impl, methodName + SuccInResponseJSONProperty, ci(SuccInResponseJSONProperty.class));
+        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "succInResponseJSONProperty",
+                sigRest(SuccInResponseJSONProperty.class), false);
         mv.visitVarInsn(ALOAD, 0);
         mv.visitFieldInsn(GETFIELD, impl, methodName + StatusExceptionMappings, ci(Map.class));
-        mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReqBuilder.class), "statusExceptionMappings",
-                sig(RestReqBuilder.class, Map.class), false);
+        String sigMap = sigRest(Map.class);
+        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "statusExceptionMappings", sigMap, false);
         mv.visitVarInsn(ALOAD, 0);
         mv.visitFieldInsn(GETFIELD, impl, methodName + FixedRequestParams, ci(Map.class));
-        mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReqBuilder.class), "fixedRequestParams",
-                sig(RestReqBuilder.class, Map.class), false);
+        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "fixedRequestParams", sigMap, false);
         mv.visitVarInsn(ALOAD, offsetSize + 1);
-        mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReqBuilder.class), "routeParams",
-                sig(RestReqBuilder.class, Map.class), false);
+        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "routeParams", sigMap, false);
         mv.visitVarInsn(ALOAD, offsetSize + 2);
-        mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReqBuilder.class), "requestParams",
-                sig(RestReqBuilder.class, Map.class), false);
-        mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReqBuilder.class), "build",
-                sig(RestReq.class), false);
+        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "requestParams", sigMap, false);
+        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "build", sig(RestReq.class), false);
+    }
+
+    private String sigRest(Class<?> clazz) {
+        return sig(RestReqBuilder.class, clazz);
     }
 
     private String getFullRequestMapping() {
@@ -214,7 +213,6 @@ public class MethodGenerator {
             return;
         }
 
-        boolean futureReturnType = Futures.isFutureReturnType(method);
         if (futureReturnType) {
             java.lang.reflect.Type futureType = Futures.getFutureGenericArgClass(method);
             if (!(futureType instanceof Class)) {

@@ -6,33 +6,33 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 
 class UniRestCallback implements Callback<String> {
     private final Class<?> apiClass;
-    private final long start;
+    private final RestLog restLog;
     private volatile boolean done;
     private volatile boolean cancelled;
     private HttpResponse<String> response;
 
-    public UniRestCallback(final Class<?> apiClass, long start) {
+    public UniRestCallback(final Class<?> apiClass, RestLog restLog) {
         this.apiClass = apiClass;
-        this.start = start;
+        this.restLog = restLog;
     }
 
     @Override
     public void completed(HttpResponse<String> response) {
         this.response = response;
         done = true;
-        RestLog.log(apiClass, response, System.currentTimeMillis() - start);
+        restLog.log(response);
     }
 
     @Override
     public void failed(UnirestException e) {
         done = true;
-        RestLog.log(apiClass, e, System.currentTimeMillis() - start);
+        restLog.log(e);
     }
 
     @Override
     public void cancelled() {
         cancelled = true;
-        RestLog.log(apiClass, "callback", System.currentTimeMillis() - start);
+        restLog.log("cancelled");
     }
 
     public boolean isDone() {

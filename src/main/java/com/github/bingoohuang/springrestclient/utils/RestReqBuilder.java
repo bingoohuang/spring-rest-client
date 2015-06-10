@@ -14,6 +14,12 @@ public class RestReqBuilder {
     String prefix;
     Map<String, Object> routeParams;
     Map<String, Object> requestParams;
+    boolean async;
+
+    public RestReqBuilder async(boolean async) {
+        this.async = async;
+        return this;
+    }
 
     public RestReqBuilder prefix(String prefix) {
         this.prefix = prefix;
@@ -63,6 +69,7 @@ public class RestReqBuilder {
                 baseUrlProvider,
                 prefix,
                 routeParams,
-                requestParams);
+                requestParams,
+                async);
     }
 }
