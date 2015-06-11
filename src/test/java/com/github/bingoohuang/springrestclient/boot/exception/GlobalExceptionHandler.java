@@ -1,9 +1,7 @@
 package com.github.bingoohuang.springrestclient.boot.exception;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -11,9 +9,9 @@ import java.io.PrintWriter;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(NotFoundException.class)
     public void handleConflict(NotFoundException ex, HttpServletResponse response) {
+        response.setStatus(404);
         respondText(response, ex.getMessage());
     }
 

@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 @RequestMapping("/exception")
 public class ExceptionController {
     @RequestMapping("/error/{error}")
-    public int error(@PathVariable("error") int error) throws NotFoundException {
+    public int error(@PathVariable("error") int error) {
         if (error == 1) throw new NotFoundException("NotFoundException ErrorMsg");
         if (error == 2) throw new BadArgumentException("BadArgumentException ErrorMsg");
         if (error == 3) throw new RuntimeException("RuntimeException ErrorMsg");
