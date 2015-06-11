@@ -47,7 +47,7 @@ public class RestReq {
         this.prefix = prefix;
         this.routeParams = routeParams;
         this.requestParams = requestParams;
-        this.restLog = new RestLog(apiClass, async ? "async" : "sync");
+        this.restLog = new RestLog(apiClass, async);
     }
 
     static ThreadLocal<HttpResponse<String>> lastResponseTL;

@@ -14,35 +14,36 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 public class RestLog {
-    private Class<?> apiClass;
-    private String syncOrAsync;
+    private final String syncOrAsync;
+    private final String uuid = UUID.randomUUID().toString();
+    private final Logger logger;
     private long start;
 
-    public RestLog(Class<?> apiClass, String syncOrAsync) {
-        this.apiClass = apiClass;
-        this.syncOrAsync = syncOrAsync;
+    public RestLog(Class<?> apiClass, boolean async) {
+        this.syncOrAsync = async ? "asyn" : "sync";
+        this.logger = LoggerFactory.getLogger(apiClass);
     }
 
     public void log(HttpRequest httpRequest) {
-        Logger logger = LoggerFactory.getLogger(apiClass);
-        if (logger.isInfoEnabled()) {
-            this.start = System.currentTimeMillis();
-            String methodName = httpRequest.getHttpMethod().name();
-            String url = httpRequest.getUrl();
-            String headers = buildHeaders(httpRequest.getHeaders());
-            String body = toString(httpRequest);
-            logger.info("API {} request: {} {} headers:{} body: {}",
-                    syncOrAsync, methodName, url, headers, singleLine(body));
-        }
+        if (!logger.isInfoEnabled()) return;
+
+        this.start = System.currentTimeMillis();
+        String methodName = httpRequest.getHttpMethod().name();
+        String url = httpRequest.getUrl();
+        String headers = buildHeaders(httpRequest.getHeaders());
+        String body = toString(httpRequest);
+        logger.info("spring rest client {} {} request: {} {} headers:{} body: {}",
+                syncOrAsync, uuid, methodName, url, headers, singleLine(body));
     }
 
     private String toString(HttpRequest httpRequest) {
         try {
             Body body = httpRequest.getBody();
-            if(body == null) return "";
+            if (body == null) return "";
 
             InputStream context = body.getEntity().getContent();
             return new String(ByteStreams.toByteArray(context), Charsets.UTF_8);
@@ -52,47 +53,32 @@ public class RestLog {
     }
 
     public void log(Throwable e) {
-        Logger logger = LoggerFactory.getLogger(apiClass);
-        if (logger.isWarnEnabled()) {
-            long costTimeMillis = System.currentTimeMillis() - start;
-            logger.warn("API {} exception: cost {} millis", syncOrAsync, costTimeMillis, e);
-        }
+        if (!logger.isWarnEnabled()) return;
+
+        long costTimeMillis = System.currentTimeMillis() - start;
+        logger.warn("spring rest client {} {} exception: cost {} millis", syncOrAsync, uuid, costTimeMillis, e);
     }
 
     public void log(HttpResponse<String> response) {
-        Logger logger = LoggerFactory.getLogger(apiClass);
-        if (logger.isInfoEnabled()) {
-            int status = response.getStatus();
-            String headers = buildHeaders(response.getHeaders());
-            String body = response.getBody();
-            long costTimeMillis = System.currentTimeMillis() - start;
-            logger.info("API {} response: cost {} millis, {} headers:{} body: {}",
-                    syncOrAsync, costTimeMillis, status, headers, singleLine(body));
-        }
+        if (!logger.isInfoEnabled()) return;
+
+        int status = response.getStatus();
+        String headers = buildHeaders(response.getHeaders());
+        String body = response.getBody();
+        long costTimeMillis = System.currentTimeMillis() - start;
+        logger.info("spring rest client {} {} response: cost {} millis, {} headers:{} body: {}",
+                syncOrAsync, uuid, costTimeMillis, status, headers, singleLine(body));
     }
 
     public void log(String status) {
-        Logger logger = LoggerFactory.getLogger(apiClass);
-        if (logger.isInfoEnabled()) {
-            long costTimeMillis = System.currentTimeMillis() - start;
-            logger.info("API {} {}: cost {} millis", syncOrAsync, status, costTimeMillis);
-        }
+        if (!logger.isInfoEnabled()) return;
+
+        long costTimeMillis = System.currentTimeMillis() - start;
+        logger.info("spring rest client {} {} {}: cost {} millis", syncOrAsync, uuid, status, costTimeMillis);
     }
 
     private String buildHeaders(Map<String, List<String>> headers) {
-        StringBuilder sb = new StringBuilder();
-        Joiner joiner = Joiner.on(',');
-
-        for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
-            sb.append(entry.getKey())
-                    .append('=')
-                    .append(joiner.join(entry.getValue()))
-                    .append('&');
-        }
-
-        if (sb.length() > 0) sb.delete(sb.length() - 1, sb.length());
-
-        return sb.toString();
+        return Joiner.on('&').withKeyValueSeparator("=").join(headers);
     }
 
     static Pattern lineBreakPattern = Pattern.compile("(\\r?\\n)+");
