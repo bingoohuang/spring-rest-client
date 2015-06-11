@@ -27,13 +27,13 @@ public class RestLog {
 
     public void log(HttpRequest httpRequest) {
         Logger logger = LoggerFactory.getLogger(apiClass);
-        if (logger.isDebugEnabled()) {
+        if (logger.isInfoEnabled()) {
             this.start = System.currentTimeMillis();
             String methodName = httpRequest.getHttpMethod().name();
             String url = httpRequest.getUrl();
             String headers = buildHeaders(httpRequest.getHeaders());
             String body = toString(httpRequest);
-            logger.debug("API {} request: {} {} headers:{} body: {}",
+            logger.info("API {} request: {} {} headers:{} body: {}",
                     syncOrAsync, methodName, url, headers, singleLine(body));
         }
     }
@@ -49,29 +49,29 @@ public class RestLog {
 
     public void log(Throwable e) {
         Logger logger = LoggerFactory.getLogger(apiClass);
-        if (logger.isDebugEnabled()) {
+        if (logger.isWarnEnabled()) {
             long costTimeMillis = System.currentTimeMillis() - start;
-            logger.debug("API {} exception: cost {} millis", syncOrAsync, costTimeMillis, e);
+            logger.warn("API {} exception: cost {} millis", syncOrAsync, costTimeMillis, e);
         }
     }
 
     public void log(HttpResponse<String> response) {
         Logger logger = LoggerFactory.getLogger(apiClass);
-        if (logger.isDebugEnabled()) {
+        if (logger.isInfoEnabled()) {
             int status = response.getStatus();
             String headers = buildHeaders(response.getHeaders());
             String body = response.getBody();
             long costTimeMillis = System.currentTimeMillis() - start;
-            logger.debug("API {} response: cost {} millis, {} headers:{} body: {}",
+            logger.info("API {} response: cost {} millis, {} headers:{} body: {}",
                     syncOrAsync, costTimeMillis, status, headers, singleLine(body));
         }
     }
 
     public void log(String status) {
         Logger logger = LoggerFactory.getLogger(apiClass);
-        if (logger.isDebugEnabled()) {
+        if (logger.isInfoEnabled()) {
             long costTimeMillis = System.currentTimeMillis() - start;
-            logger.debug("API {} {}: cost {} millis", syncOrAsync, status, costTimeMillis);
+            logger.info("API {} {}: cost {} millis", syncOrAsync, status, costTimeMillis);
         }
     }
 
