@@ -6,6 +6,7 @@ import com.google.common.base.Joiner;
 import com.google.common.io.ByteStreams;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.request.HttpRequest;
+import com.mashape.unirest.request.body.Body;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +41,10 @@ public class RestLog {
 
     private String toString(HttpRequest httpRequest) {
         try {
-            InputStream context = httpRequest.getBody().getEntity().getContent();
+            Body body = httpRequest.getBody();
+            if(body == null) return "";
+
+            InputStream context = body.getEntity().getContent();
             return new String(ByteStreams.toByteArray(context), Charsets.UTF_8);
         } catch (IOException e) {
             return "";
