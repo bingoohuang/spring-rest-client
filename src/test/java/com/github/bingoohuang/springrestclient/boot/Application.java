@@ -15,6 +15,10 @@ public class Application {
     public static void shutdown() {
         context.close();
     }
+
+    public static void main(String[] args) {
+        startup();
+    }
 }
 
 
