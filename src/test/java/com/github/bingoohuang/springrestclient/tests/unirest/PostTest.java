@@ -3,16 +3,75 @@ package com.github.bingoohuang.springrestclient.tests.unirest;
 import com.alibaba.fastjson.JSON;
 import com.github.bingoohuang.springrestclient.boot.domain.Account;
 import com.github.bingoohuang.springrestclient.boot.domain.PayParty;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import com.mashape.unirest.request.HttpRequestWithBody;
+import com.mashape.unirest.request.body.MultipartBody;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 public class PostTest {
+
+    @Test
+    public void uploadOne() throws IOException {
+        // Create temp file.
+        File temp = File.createTempFile("myimage", ".image");
+        Files.write("Hello world", temp, Charsets.UTF_8);
+
+
+        try {
+            HttpRequestWithBody post = Unirest.post("http://localhost:4849/upload/image");
+            post.field("name", "bingoo.txt");
+            post.field("file", temp);
+            HttpResponse<String> file = post
+                    .asString();
+            System.out.println(file.getStatus());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        temp.delete();
+    }
+
+    @Test
+    public void uploadTwo() throws IOException {
+        // Create temp file.
+        File temp1 = File.createTempFile("myimage", ".image");
+        Files.write("Hello world1111", temp1, Charsets.UTF_8);
+
+        File temp2 = File.createTempFile("myimage", ".image");
+        Files.write("Hello world2222", temp2, Charsets.UTF_8);
+
+
+        try {
+            MultipartBody field = Unirest.post("http://localhost:4849/upload/images")
+                    .field("name", "bingoo.txt")
+                    .field("files", temp1)
+                    .field("files", temp2);
+            HttpResponse<String> file = field
+                    .asString();
+            System.out.println(file.getStatus());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        temp1.delete();
+        temp2.delete();
+    }
+
     @Test
     public void test1() throws UnirestException {
         PayParty payParty = new PayParty("s100", "b200", "p300", "n400");

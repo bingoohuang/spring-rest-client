@@ -24,6 +24,7 @@ import org.n3r.diamond.client.impl.MockDiamondServer;
         YunpianTest.class,
         YunpianAsyncTest.class,
         GetApiTest.class,
+        UploadApiTest.class,
 })
 public class RestTestSuite {
     @ClassRule

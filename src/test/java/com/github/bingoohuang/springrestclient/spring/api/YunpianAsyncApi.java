@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.concurrent.Future;
 
-@SpringRestClientEnabled(baseUrl = "http://yunpian.com/v1", createClassFileForDiagnose = true)
+@SpringRestClientEnabled(baseUrl = "http://yunpian.com/v1")
 @RequestMapping("/sms/send.json")
 @FixedRequestParam(name = "apikey", value = "xxx")
 public interface YunpianAsyncApi {
@@ -23,5 +23,5 @@ public interface YunpianAsyncApi {
                                           @RequestParam("mobile") String mobile);
 
     Future<HttpResponse<String>> sendAsyncResponse(@RequestParam("text") String text,
-                                          @RequestParam("mobile") String mobile);
+                                                   @RequestParam("mobile") String mobile);
 }

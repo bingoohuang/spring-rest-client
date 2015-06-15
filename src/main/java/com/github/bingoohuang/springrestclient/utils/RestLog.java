@@ -7,6 +7,7 @@ import com.google.common.io.ByteStreams;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.request.HttpRequest;
 import com.mashape.unirest.request.body.Body;
+import org.apache.http.HttpEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,25 +29,29 @@ public class RestLog {
         this.logger = LoggerFactory.getLogger(apiClass);
     }
 
-    public void log(HttpRequest httpRequest) {
+    public void log(Map<String, Object> requestParams, HttpRequest httpRequest) {
         if (!logger.isInfoEnabled()) return;
 
         this.start = System.currentTimeMillis();
         String methodName = httpRequest.getHttpMethod().name();
         String url = httpRequest.getUrl();
         String headers = buildHeaders(httpRequest.getHeaders());
-        String body = toString(httpRequest);
+        String body = getBodyAsString(requestParams, httpRequest);
         logger.info("spring rest client {} {} request: {} {} headers:{} body: {}",
                 syncOrAsync, uuid, methodName, url, headers, singleLine(body));
     }
 
-    private String toString(HttpRequest httpRequest) {
+    private String getBodyAsString(Map<String, Object> requestParams, HttpRequest httpRequest) {
         try {
             Body body = httpRequest.getBody();
             if (body == null) return "";
 
-            InputStream context = body.getEntity().getContent();
+            HttpEntity entity = body.getEntity();
+
+            InputStream context = entity.getContent();
             return new String(ByteStreams.toByteArray(context), Charsets.UTF_8);
+        } catch (UnsupportedOperationException e) {
+            return requestParams.toString();
         } catch (IOException e) {
             return "";
         }
