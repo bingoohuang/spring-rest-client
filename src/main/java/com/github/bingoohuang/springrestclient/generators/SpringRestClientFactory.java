@@ -3,7 +3,7 @@ package com.github.bingoohuang.springrestclient.generators;
 import com.github.bingoohuang.springrestclient.annotations.*;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
 import com.github.bingoohuang.springrestclient.provider.FixedBaseUrlProvider;
-import com.github.bingoohuang.springrestclient.provider.NoneBaseUrlProvider;
+import com.github.bingoohuang.springrestclient.provider.SignProvider;
 import com.github.bingoohuang.springrestclient.utils.Obj;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
@@ -28,6 +28,7 @@ public class SpringRestClientFactory {
                     Class<?> restClientImplClass = generator.generate();
                     Object object = Obj.createObject(restClientImplClass);
 
+                    setSignProvider(restClientImplClass, object, restClientClass);
                     setBaseUrlProvider(restClientImplClass, object, restClientClass);
                     setStatusMappings(restClientImplClass, object, restClientClass);
                     setFixedRequestParams(restClientImplClass, object, restClientClass);
@@ -36,6 +37,7 @@ public class SpringRestClientFactory {
                     return object;
                 }
             });
+
 
     public static <T> T getRestClient(final Class<T> restClientClass) {
         Obj.ensureInterface(restClientClass);
@@ -55,7 +57,7 @@ public class SpringRestClientFactory {
         for (Method method : restClientClass.getDeclaredMethods()) {
             SuccInResponseJSONProperty property = method.getAnnotation(SuccInResponseJSONProperty.class);
             if (property == null) property = restClientClass.getAnnotation(SuccInResponseJSONProperty.class);
-            
+
             String fieldName = method.getName() + MethodGenerator.SuccInResponseJSONProperty;
             Obj.setField(restClientImplClass, object, fieldName, property);
         }
@@ -139,11 +141,28 @@ public class SpringRestClientFactory {
                 + " is checked exception and should be declared on the method " + method);
     }
 
-    private static void setBaseUrlProvider(Class<?> restClientImplClass,
-                                           Object object, Class restClientClass) {
+    private static void setBaseUrlProvider(Class<?> restClientImplClass, Object object, Class restClientClass) {
         BaseUrlProvider provider = createBaseUrlProvider(restClientClass);
 
-        Obj.setField(restClientImplClass, object, "baseUrlProvider", provider);
+        Obj.setField(restClientImplClass, object, MethodGenerator.baseUrlProvider, provider);
+    }
+
+    private static void setSignProvider(Class<?> restClientImplClass, Object object, Class restClientClass) {
+        SignProvider provider = createSignProvider(restClientClass);
+        Obj.setField(restClientImplClass, object, MethodGenerator.signProvider, provider);
+    }
+
+    private static SignProvider createSignProvider(Class<?> restClientClass) {
+        SpringRestClientEnabled restClientEnabled =
+                restClientClass.getAnnotation(SpringRestClientEnabled.class);
+        Class<? extends SignProvider> signProviderClass = restClientEnabled.signProvider();
+        if (signProviderClass.isInterface()) return null;
+
+        try {
+            return signProviderClass.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException("signProvider configuration error for api " + restClientClass, e);
+        }
     }
 
     private static BaseUrlProvider createBaseUrlProvider(Class<?> restClientClass) {
@@ -153,16 +172,10 @@ public class SpringRestClientFactory {
         if (!Strings.isNullOrEmpty(baseUrl)) return new FixedBaseUrlProvider(baseUrl);
 
         Class<? extends BaseUrlProvider> providerClass = restClientEnabled.baseUrlProvider();
-        if (providerClass == NoneBaseUrlProvider.class) {
+        if (providerClass.isInterface()) {
             throw new RuntimeException("base url should be configured for api " + restClientClass);
         }
 
-        try {
-            return providerClass.newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException("base url configuration error for api " + restClientClass, e);
-        }
+        return Obj.createObject(providerClass, restClientClass);
     }
-
-
 }

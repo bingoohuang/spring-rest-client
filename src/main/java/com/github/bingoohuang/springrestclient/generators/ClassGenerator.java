@@ -3,6 +3,7 @@ package com.github.bingoohuang.springrestclient.generators;
 import com.github.bingoohuang.springrestclient.annotations.SpringRestClientEnabled;
 import com.github.bingoohuang.springrestclient.annotations.SuccInResponseJSONProperty;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
+import com.github.bingoohuang.springrestclient.provider.SignProvider;
 import com.google.common.io.Files;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
@@ -20,6 +21,7 @@ import static com.github.bingoohuang.springrestclient.utils.Asms.p;
 import static org.objectweb.asm.Opcodes.*;
 
 public class ClassGenerator<T> {
+
     private final Class<T> restClientClass;
     private final String implName;
     private final ClassWriter classWriter;
@@ -86,7 +88,10 @@ public class ClassGenerator<T> {
         String[] interfaces = {Type.getInternalName(restClientClass)};
         cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, implName.replace('.', '/'), null, p(Object.class), interfaces);
 
-        FieldVisitor fv = cw.visitField(0, "baseUrlProvider", ci(BaseUrlProvider.class), null, null);
+        FieldVisitor fv = cw.visitField(0, MethodGenerator.baseUrlProvider, ci(BaseUrlProvider.class), null, null);
+        fv.visitEnd();
+
+        fv = cw.visitField(0, MethodGenerator.signProvider, ci(SignProvider.class), null, null);
         fv.visitEnd();
 
         for (Method method : restClientClass.getDeclaredMethods()) {

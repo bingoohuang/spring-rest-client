@@ -53,14 +53,17 @@ public class PostTest {
         File temp2 = File.createTempFile("myimage", ".image");
         Files.write("Hello world2222", temp2, Charsets.UTF_8);
 
+        File temp3 = File.createTempFile("myimage", ".image");
+        Files.write("Hello 33333", temp3, Charsets.UTF_8);
+
 
         try {
             MultipartBody field = Unirest.post("http://localhost:4849/upload/images")
                     .field("name", "bingoo.txt")
                     .field("files", temp1)
-                    .field("files", temp2);
-            HttpResponse<String> file = field
-                    .asString();
+                    .field("files", temp2)
+                    .field("files", temp3);
+            HttpResponse<String> file = field.asString();
             System.out.println(file.getStatus());
 
         } catch (Exception e) {
@@ -161,4 +164,19 @@ public class PostTest {
         Integer account = JSON.parseObject(response.getBody(), Integer.class);
         assertThat(account, is(equalTo(123)));
     }
+
+    @Test
+    public void testNullPost() throws UnirestException {
+        Account account = new Account(110, "java");
+        String json = JSON.toJSONString(account);
+        HttpResponse<String> response = Unirest.post("http://localhost:4849/null/null-account")
+                .header("Content-Type", "application/json;charset=UTF-8")
+                .body(json)
+                .asString();
+
+        assertThat(response.getBody().length(), is(0));
+        assertThat(response.getHeaders().getFirst("returnNull"), is(equalTo("true")));
+    }
+
+
 }

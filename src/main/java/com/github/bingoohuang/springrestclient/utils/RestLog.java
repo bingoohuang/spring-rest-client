@@ -1,6 +1,8 @@
 package com.github.bingoohuang.springrestclient.utils;
 
+import com.github.bingoohuang.springrestclient.provider.SignProvider;
 import com.github.bingoohuang.utils.net.Url;
+import com.github.bingoohuang.utils.time.Now;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.io.ByteStreams;
@@ -22,23 +24,34 @@ public class RestLog {
     private final String syncOrAsync;
     private final String uuid = UUID.randomUUID().toString();
     private final Logger logger;
+    private final Class<?> apiClass;
     private long start;
 
     public RestLog(Class<?> apiClass, boolean async) {
+        this.apiClass = apiClass;
         this.syncOrAsync = async ? "asyn" : "sync";
         this.logger = LoggerFactory.getLogger(apiClass);
     }
 
-    public void log(Map<String, Object> requestParams, HttpRequest httpRequest) {
+    public void logAndSign(SignProvider signProvider, Map<String, Object> requestParams, HttpRequest httpRequest) {
         if (!logger.isInfoEnabled()) return;
 
+        signReq(signProvider, requestParams, httpRequest);
         this.start = System.currentTimeMillis();
         String methodName = httpRequest.getHttpMethod().name();
         String url = httpRequest.getUrl();
         String headers = buildHeaders(httpRequest.getHeaders());
         String body = getBodyAsString(requestParams, httpRequest);
+
         logger.info("spring rest client {} {} request: {} {} headers:{} body: {}",
                 syncOrAsync, uuid, methodName, url, headers, singleLine(body));
+    }
+
+    private void signReq(SignProvider signProvider, Map<String, Object> requestParams, HttpRequest httpRequest) {
+        if (signProvider == null) return;
+
+        signProvider.sign(apiClass, uuid, requestParams, httpRequest);
+
     }
 
     private String getBodyAsString(Map<String, Object> requestParams, HttpRequest httpRequest) {
@@ -47,7 +60,7 @@ public class RestLog {
             if (body == null) return "";
 
             HttpEntity entity = body.getEntity();
-
+            // MultipartFormEntity // StringEntity // UrlEncodedFormEntity;
             InputStream context = entity.getContent();
             return new String(ByteStreams.toByteArray(context), Charsets.UTF_8);
         } catch (UnsupportedOperationException e) {

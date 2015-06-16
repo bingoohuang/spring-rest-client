@@ -3,6 +3,7 @@ package com.github.bingoohuang.springrestclient.generators;
 import com.alibaba.fastjson.JSON;
 import com.github.bingoohuang.springrestclient.annotations.SuccInResponseJSONProperty;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
+import com.github.bingoohuang.springrestclient.provider.SignProvider;
 import com.github.bingoohuang.springrestclient.utils.Futures;
 import com.github.bingoohuang.springrestclient.utils.RestReq;
 import com.github.bingoohuang.springrestclient.utils.RestReqBuilder;
@@ -29,6 +30,8 @@ public class MethodGenerator {
     public static final String StatusExceptionMappings = "StatusExceptionMappings";
     public static final String FixedRequestParams = "FixedRequestParams";
     public static final String SuccInResponseJSONProperty = "SuccInResponseJSONProperty";
+    public static final String baseUrlProvider = "baseUrlProvider";
+    public static final String signProvider = "signProvider";
 
     private final Method method;
     private final MethodVisitor mv;
@@ -140,23 +143,33 @@ public class MethodGenerator {
         mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "async", sigRest(boolean.class), false);
         mv.visitLdcInsn(Type.getType(method.getDeclaringClass()));
         mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "apiClass", sigRest(Class.class), false);
+
         mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, impl, "baseUrlProvider", ci(BaseUrlProvider.class));
-        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "baseUrlProvider", sigRest(BaseUrlProvider.class), false);
+        mv.visitFieldInsn(GETFIELD, impl, baseUrlProvider, ci(BaseUrlProvider.class));
+        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, baseUrlProvider, sigRest(BaseUrlProvider.class), false);
+
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitFieldInsn(GETFIELD, impl, signProvider, ci(SignProvider.class));
+        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, signProvider, sigRest(SignProvider.class), false);
+
         mv.visitVarInsn(ALOAD, 0);
         String methodName = method.getName();
         mv.visitFieldInsn(GETFIELD, impl, methodName + SuccInResponseJSONProperty, ci(SuccInResponseJSONProperty.class));
         mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "succInResponseJSONProperty",
                 sigRest(SuccInResponseJSONProperty.class), false);
+
         mv.visitVarInsn(ALOAD, 0);
         mv.visitFieldInsn(GETFIELD, impl, methodName + StatusExceptionMappings, ci(Map.class));
         String sigMap = sigRest(Map.class);
         mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "statusExceptionMappings", sigMap, false);
+
         mv.visitVarInsn(ALOAD, 0);
         mv.visitFieldInsn(GETFIELD, impl, methodName + FixedRequestParams, ci(Map.class));
         mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "fixedRequestParams", sigMap, false);
+
         mv.visitVarInsn(ALOAD, offsetSize + 1);
         mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "routeParams", sigMap, false);
+
         mv.visitVarInsn(ALOAD, offsetSize + 2);
         mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "requestParams", sigMap, false);
         mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "build", sig(RestReq.class), false);

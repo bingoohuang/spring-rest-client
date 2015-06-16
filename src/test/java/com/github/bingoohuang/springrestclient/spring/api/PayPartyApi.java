@@ -3,6 +3,7 @@ package com.github.bingoohuang.springrestclient.spring.api;
 import com.github.bingoohuang.springrestclient.annotations.SpringRestClientEnabled;
 import com.github.bingoohuang.springrestclient.boot.domain.Account;
 import com.github.bingoohuang.springrestclient.boot.domain.PayParty;
+import com.github.bingoohuang.springrestclient.provider.DefaultSignProvider;
 import com.github.bingoohuang.springrestclient.provider.PropertiesBaseUrlProvider;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,7 +12,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
-@SpringRestClientEnabled(baseUrlProvider = PropertiesBaseUrlProvider.class)
+@SpringRestClientEnabled(baseUrlProvider = PropertiesBaseUrlProvider.class,
+        signProvider = DefaultSignProvider.class)
 @RequestMapping("/pay-party")
 public interface PayPartyApi {
     @RequestMapping("/party/{sellerId}/{buyerId}")

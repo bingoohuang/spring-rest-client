@@ -1,12 +1,8 @@
 package com.github.bingoohuang.springrestclient.tests.api;
 
-import com.alibaba.fastjson.JSON;
 import com.github.bingoohuang.springrestclient.boot.domain.Account;
 import com.github.bingoohuang.springrestclient.spring.SpringRestClientConfig;
 import com.github.bingoohuang.springrestclient.spring.api.NullApi;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,30 +33,4 @@ public class NullApiTest {
         assertThat(a, is(equalTo("")));
     }
 
-    @Test
-    public void testNullPost() throws UnirestException {
-        Account account = new Account(110, "java");
-        String json = JSON.toJSONString(account);
-        HttpResponse<String> response = Unirest.post("http://localhost:4849/null/null-account")
-                .header("Content-Type", "application/json;charset=UTF-8")
-                .body(json)
-                .asString();
-
-        assertThat(response.getBody().length(), is(0));
-        assertThat(response.getHeaders().getFirst("returnNull"), is(equalTo("true")));
-    }
-
-
-    @Test
-    public void testEmptyPost() throws UnirestException {
-        Account account = new Account(100, "java");
-        String json = JSON.toJSONString(account);
-        HttpResponse<String> response = Unirest.post("http://localhost:4849/null/empty-string")
-                .header("Content-Type", "application/json;charset=UTF-8")
-                .body(json)
-                .asString();
-
-        assertThat(response.getBody().length(), is(0));
-        assertThat(response.getHeaders().getFirst("returnNull"), is(nullValue()));
-    }
 }

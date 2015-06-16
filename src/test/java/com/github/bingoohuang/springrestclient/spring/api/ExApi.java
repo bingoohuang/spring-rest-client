@@ -3,6 +3,7 @@ package com.github.bingoohuang.springrestclient.spring.api;
 import com.github.bingoohuang.springrestclient.annotations.RespStatusMapping;
 import com.github.bingoohuang.springrestclient.annotations.RespStatusMappings;
 import com.github.bingoohuang.springrestclient.annotations.SpringRestClientEnabled;
+import com.github.bingoohuang.springrestclient.provider.DefaultSignProvider;
 import com.github.bingoohuang.springrestclient.spring.exception.BadArgumentError;
 import com.github.bingoohuang.springrestclient.spring.exception.NotFoundError;
 import com.github.bingoohuang.springrestclient.spring.exception.OtherError;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @RequestMapping("/exception")
-@SpringRestClientEnabled(baseUrl = "http://localhost:4849")
+@SpringRestClientEnabled(baseUrl = "http://localhost:4849", signProvider = DefaultSignProvider.class)
 public interface ExApi {
     /**
      * 如果不根据HTTP返回状态码定义异常，则统一抛出

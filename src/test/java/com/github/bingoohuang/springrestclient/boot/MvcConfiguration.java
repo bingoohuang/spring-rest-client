@@ -1,6 +1,7 @@
 package com.github.bingoohuang.springrestclient.boot;
 
 
+import com.github.bingoohuang.springrestclient.boot.interceptor.SignInterceptor;
 import com.github.bingoohuang.springrestclient.boot.interceptor.ThreadLocalInterceptor;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.context.annotation.Bean;
@@ -11,6 +12,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @Configuration
 public class MvcConfiguration extends WebMvcConfigurerAdapter {
     public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new SignInterceptor());
         registry.addInterceptor(new ThreadLocalInterceptor());
     }
 

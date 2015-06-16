@@ -5,9 +5,9 @@ import java.lang.reflect.Field;
 
 public class Obj {
 
-    public static <T> T createObject(Class<T> clazz, String ctorArg) {
+    public static <T> T createObject(Class<T> clazz, Object ctorArg) {
         try {
-            Constructor<T> constructor = clazz.getConstructor(String.class);
+            Constructor<T> constructor = clazz.getConstructor(ctorArg.getClass());
             return constructor.newInstance(ctorArg);
         } catch (NoSuchMethodException ex) {
 

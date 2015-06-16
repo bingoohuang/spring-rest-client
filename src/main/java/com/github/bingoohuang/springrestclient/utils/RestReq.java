@@ -4,12 +4,14 @@ import com.alibaba.fastjson.JSON;
 import com.github.bingoohuang.springrestclient.annotations.SuccInResponseJSONProperty;
 import com.github.bingoohuang.springrestclient.exception.RestException;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
+import com.github.bingoohuang.springrestclient.provider.SignProvider;
 import com.github.bingoohuang.utils.codec.Json;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import com.mashape.unirest.request.BaseRequest;
 import com.mashape.unirest.request.HttpRequest;
 import com.mashape.unirest.request.HttpRequestWithBody;
 import com.mashape.unirest.request.body.MultipartBody;
@@ -31,7 +33,8 @@ public class RestReq {
     final String prefix;
     final Map<String, Object> routeParams;
     final Map<String, Object> requestParams;
-    private final RestLog restLog;
+    final RestLog restLog;
+    final SignProvider signProvider;
 
     RestReq(SuccInResponseJSONProperty succInResponseJSONProperty,
             Map<String, Object> fixedRequestParams,
@@ -41,7 +44,8 @@ public class RestReq {
             String prefix,
             Map<String, Object> routeParams,
             Map<String, Object> requestParams,
-            boolean async) {
+            boolean async,
+            SignProvider signProvider) {
         this.succInResponseJSONProperty = succInResponseJSONProperty;
         this.fixedRequestParams = fixedRequestParams;
         this.sendStatusExceptionMappings = sendStatusExceptionMappings;
@@ -51,6 +55,7 @@ public class RestReq {
         this.routeParams = routeParams;
         this.requestParams = requestParams;
         this.restLog = new RestLog(apiClass, async);
+        this.signProvider = signProvider;
     }
 
     static ThreadLocal<HttpResponse<String>> lastResponseTL;
@@ -66,34 +71,38 @@ public class RestReq {
     public String get() throws Throwable {
         String url = createUrl();
         HttpRequest get = Unirest.get(url);
+        setRouteParams(get);
 
         get.queryString(mergeRequestParams());
 
-        return request(get);
+        return request(null, get);
     }
 
     public Future<HttpResponse<String>> getAsync() throws Throwable {
         String url = createUrl();
         HttpRequest get = Unirest.get(url);
+        setRouteParams(get);
 
         get.queryString(mergeRequestParams());
 
-        return requestAsync(get);
+        return requestAsync(null, get);
     }
 
     public String post() throws Throwable {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
+        setRouteParams(post);
 
-        fields(post);
+        Map<String, Object> requestParams = mergeRequestParams();
+        BaseRequest fields = fields(post, requestParams);
 
-        return request(post);
+        return request(requestParams, fields);
     }
 
-    private void fields(HttpRequestWithBody post) {
+    private BaseRequest fields(HttpRequestWithBody post, Map<String, Object> requestParams) {
         MultipartBody field = null;
-        Map<String, Object> parameters = mergeRequestParams();
-        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+
+        for (Map.Entry<String, Object> entry : requestParams.entrySet()) {
             Object value = entry.getValue();
             if (value instanceof Collection) {
                 for (Object o : (Collection) value) {
@@ -103,9 +112,14 @@ public class RestReq {
                 field = fieldFileOrElse(post, field, entry, value);
             }
         }
+
+        return field == null ? post : field;
     }
 
-    private MultipartBody fieldFileOrElse(HttpRequestWithBody post, MultipartBody field, Map.Entry<String, Object> entry, Object value) {
+    private MultipartBody fieldFileOrElse(HttpRequestWithBody post,
+                                          MultipartBody field,
+                                          Map.Entry<String, Object> entry,
+                                          Object value) {
         if (value instanceof File) {
             if (field != null) field.field(entry.getKey(), (File) value);
             else field = post.field(entry.getKey(), (File) value);
@@ -121,33 +135,49 @@ public class RestReq {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
 
-        fields(post);
+        Map<String, Object> requestParams = mergeRequestParams();
+        BaseRequest fields = fields(post, requestParams);
 
-        return requestAsync(post);
+        return requestAsync(requestParams, fields);
+    }
+
+    private void setRouteParams(HttpRequest httpRequest) {
+        for (Map.Entry<String, Object> entry : routeParams.entrySet()) {
+            httpRequest.routeParam(entry.getKey(), String.valueOf(entry.getValue()));
+        }
     }
 
     public String postAsJson(Object bean) throws Throwable {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
+        setRouteParams(post);
 
         post.queryString(mergeRequestParams());
 
         post.header("Content-Type", "application/json;charset=UTF-8");
-        post.body(JSON.toJSONString(bean));
+        String body = JSON.toJSONString(bean);
+        post.body(body);
 
-        return request(post);
+        Map<String, Object> requestParams = Maps.newHashMap();
+        requestParams.put("_json", body);
+
+        return request(requestParams, post);
     }
 
     public Future<HttpResponse<String>> postAsJsonAsync(Object bean) throws Throwable {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
-
+        setRouteParams(post);
         post.queryString(mergeRequestParams());
 
         post.header("Content-Type", "application/json;charset=UTF-8");
-        post.body(JSON.toJSONString(bean));
+        String body = JSON.toJSONString(bean);
+        post.body(body);
 
-        return requestAsync(post);
+        Map<String, Object> requestParams = Maps.newHashMap();
+        requestParams.put("_json", body);
+
+        return requestAsync(requestParams, post);
     }
 
     private Map<String, Object> mergeRequestParams() {
@@ -156,12 +186,10 @@ public class RestReq {
         return mergedRequestParams;
     }
 
-    private String request(HttpRequest httpRequest) throws Throwable {
-        setRouteParams(httpRequest);
-
+    private String request(Map<String, Object> requestParams, BaseRequest httpRequest) throws Throwable {
         boolean loggedResponse = false;
         try {
-            restLog.log(requestParams, httpRequest);
+            restLog.logAndSign(signProvider, requestParams, httpRequest.getHttpRequest());
             lastResponseTL.remove();
             HttpResponse<String> response = httpRequest.asString();
             restLog.log(response);
@@ -180,10 +208,8 @@ public class RestReq {
         }
     }
 
-    private Future<HttpResponse<String>> requestAsync(HttpRequest httpRequest) throws Throwable {
-        setRouteParams(httpRequest);
-
-        restLog.log(requestParams, httpRequest);
+    private Future<HttpResponse<String>> requestAsync(Map<String, Object> requestParams, BaseRequest httpRequest) throws Throwable {
+        restLog.logAndSign(signProvider, requestParams, httpRequest.getHttpRequest());
         lastResponseTL.remove(); // clear response threadlocal before execution
         final UniRestCallback callback = new UniRestCallback(apiClass, restLog);
 
@@ -217,11 +243,6 @@ public class RestReq {
         };
     }
 
-    private void setRouteParams(HttpRequest httpRequest) {
-        for (Map.Entry<String, Object> entry : routeParams.entrySet()) {
-            httpRequest.routeParam(entry.getKey(), String.valueOf(entry.getValue()));
-        }
-    }
 
     public Throwable processStatusExceptionMappings(HttpResponse<String> response) throws Throwable {
         Class<? extends Throwable> exceptionClass = sendStatusExceptionMappings.get(response.getStatus());
