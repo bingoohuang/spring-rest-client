@@ -22,7 +22,8 @@ public class Http {
 
     public static void error(HttpServletResponse response, int statusCode, Throwable ex) {
         response.setStatus(statusCode);
-        respondText(response, ex.getMessage());
+        String message = ex.getMessage();
+        respondText(response, message != null ? message : ex.toString());
     }
 
 

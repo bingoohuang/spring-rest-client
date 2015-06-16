@@ -38,7 +38,15 @@ public class SignInterceptor extends HandlerInterceptorAdapter {
 
         HandlerMethod method = (HandlerMethod) handler;
         Class<?> beanType = method.getBeanType();
-        if (ignoreSign(beanType, method)) return true;
+        boolean ignoreSign = ignoreSign(beanType, method);
+        Logger logger = LoggerFactory.getLogger("rest." + beanType.getName());
+
+        if (ignoreSign && !logger.isInfoEnabled()) return true;
+
+        String originalStr = createOriginalStringForSign(request);
+        logger.info("spring rest server {}", originalStr);
+
+        if (ignoreSign) return true;
 
         String hisv = request.getHeader("hisv");
         if (Strings.isNullOrEmpty(hisv)) {
@@ -46,13 +54,7 @@ public class SignInterceptor extends HandlerInterceptorAdapter {
             return false;
         }
 
-        String originalStr = createOriginalStringForSign(request);
-
-        Logger logger = LoggerFactory.getLogger(beanType);
-        logger.debug("string to be signed : {}", originalStr);
-
         String sign = hmacSHA256(originalStr, CLIENT_SECURITY);
-
         boolean signOk = sign.equals(hisv);
         if (!signOk) Http.error(response, 416, "invalid signature");
 
@@ -156,8 +158,7 @@ public class SignInterceptor extends HandlerInterceptorAdapter {
 
         try {
             BufferedReader reader = request.getReader();
-            String s = CharStreams.toString(reader);
-            return s;
+            return CharStreams.toString(reader);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -169,9 +170,7 @@ public class SignInterceptor extends HandlerInterceptorAdapter {
         int index = queryString.indexOf(parameterName);
         if (index < 0) return false;
 
-        if (index > 0) {
-            if (queryString.charAt(index - 1) != '&') return false;
-        }
+        if (index > 0 && queryString.charAt(index - 1) != '&') return false;
 
         int offset = index + parameterName.length();
         if (offset >= queryString.length()) return true;
@@ -196,7 +195,6 @@ public class SignInterceptor extends HandlerInterceptorAdapter {
 
             joinEnumeration(signStr, headers);
         }
-
     }
 
     private void joinEnumeration(StringBuilder signStr, Enumeration<String> headers) {
