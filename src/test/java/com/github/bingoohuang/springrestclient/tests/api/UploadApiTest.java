@@ -8,8 +8,10 @@ import com.google.common.io.Files;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,5 +49,25 @@ public class UploadApiTest {
 
         temp.delete();
         temp2.delete();
+    }
+
+    @Test
+    public void testOne2() throws IOException {
+        MockMultipartFile file = new MockMultipartFile("myimage.image",
+                "/originial/name", null, "Hello test one2".getBytes("UTF-8"));
+        uploadApi.image2("bingoohuang.txt", file);
+    }
+
+
+    @Test
+    public void testTwo2() throws IOException {
+        MockMultipartFile file1 = new MockMultipartFile("myimage1.image",
+                "/originial/name1", null, "Hello test one1111".getBytes("UTF-8"));
+
+        MockMultipartFile file2 = new MockMultipartFile("myimage2.image",
+                "/originial/name2", null, "Hello test one22222".getBytes("UTF-8"));
+
+
+        uploadApi.images2("bingoohuang.txt", Lists.<MultipartFile>newArrayList(file1, file2));
     }
 }

@@ -123,6 +123,11 @@ public class RestReq {
         if (value instanceof File) {
             if (field != null) field.field(entry.getKey(), (File) value);
             else field = post.field(entry.getKey(), (File) value);
+        } else if (value instanceof org.springframework.web.multipart.MultipartFile) {
+            org.springframework.web.multipart.MultipartFile file;
+            file = (org.springframework.web.multipart.MultipartFile) value;
+            if (field != null) field.field(entry.getKey(), file);
+            else field = post.field(entry.getKey(), file);
         } else {
             if (field != null) field.field(entry.getKey(), value);
             else field = post.field(entry.getKey(), value);

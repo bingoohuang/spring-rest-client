@@ -4,6 +4,7 @@ import com.github.bingoohuang.springrestclient.annotations.SpringRestClientEnabl
 import com.github.bingoohuang.springrestclient.provider.DefaultSignProvider;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.util.List;
@@ -18,4 +19,10 @@ public interface UploadApi {
 
     @RequestMapping(value = "/images", method = POST)
     void images(@RequestParam("name") String name, @RequestParam("files") List<File> files);
+
+    @RequestMapping(value = "/image", method = POST)
+    void image2(@RequestParam("name") String name, @RequestParam("file") MultipartFile file);
+
+    @RequestMapping(value = "/images", method = POST)
+    void images2(@RequestParam("name") String name, @RequestParam("files") List<MultipartFile> files);
 }

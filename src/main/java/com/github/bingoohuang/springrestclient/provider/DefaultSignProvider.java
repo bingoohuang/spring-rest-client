@@ -10,6 +10,7 @@ import com.mashape.unirest.request.HttpRequest;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -114,10 +115,24 @@ public class DefaultSignProvider implements SignProvider {
     private void append(StringBuilder signStr, Object object) {
         if (object instanceof File) {
             signStr.append(md5((File) object));
+        } else if (object instanceof org.springframework.web.multipart.MultipartFile) {
+            org.springframework.web.multipart.MultipartFile file;
+            file = (org.springframework.web.multipart.MultipartFile) object;
+            byte[] bytes = fuckFileGetBytesException(file);
+            signStr.append(md5(bytes));
         } else {
             signStr.append("" + object);
         }
         signStr.append('$');
+    }
+
+    private byte[] fuckFileGetBytesException(MultipartFile file) {
+        try {
+            return file.getBytes();
+        } catch (IOException e) {
+            // fuck this will never happen
+            return new byte[0];
+        }
     }
 
     private String md5(File file) {
