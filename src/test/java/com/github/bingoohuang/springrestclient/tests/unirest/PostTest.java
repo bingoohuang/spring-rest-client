@@ -122,7 +122,7 @@ public class PostTest {
                 .queryString("sellerId", sellerId)
                 .asString();
         assertThat(response.getStatus(), is(equalTo(200)));
-        assertThat(response.getHeaders().getFirst("sellerId"), is(equalTo("123456abc")));
+        assertThat(response.header("sellerId"), is(equalTo("123456abc")));
     }
 
     @Test
@@ -175,7 +175,7 @@ public class PostTest {
                 .asString();
 
         assertThat(response.getBody().length(), is(0));
-        assertThat(response.getHeaders().getFirst("returnNull"), is(equalTo("true")));
+        assertThat(response.header("returnNull"), is(equalTo("true")));
     }
 
 

@@ -2,7 +2,6 @@ package com.github.bingoohuang.springrestclient.utils;
 
 import com.github.bingoohuang.springrestclient.provider.SignProvider;
 import com.github.bingoohuang.utils.net.Url;
-import com.github.bingoohuang.utils.time.Now;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.io.ByteStreams;

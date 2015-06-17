@@ -1,6 +1,5 @@
 package com.github.bingoohuang.springrestclient.boot.controller;
 
-import com.github.bingoohuang.springrestclient.boot.annotations.RestfulSign;
 import com.github.bingoohuang.springrestclient.boot.exception.RestException;
 import com.google.common.io.Files;
 import org.springframework.web.bind.annotation.RequestMapping;

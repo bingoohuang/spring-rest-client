@@ -1,11 +1,9 @@
 package com.github.bingoohuang.springrestclient.tests.api;
 
-import com.alibaba.fastjson.JSON;
 import com.github.bingoohuang.springrestclient.exception.RestException;
 import com.github.bingoohuang.springrestclient.spring.SpringRestClientConfig;
 import com.github.bingoohuang.springrestclient.spring.api.YunpianApi;
 import com.github.bingoohuang.springrestclient.spring.api.YunpianResult;
-import com.mashape.unirest.http.HttpResponse;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -251,7 +251,7 @@ public class RestReq {
 
     public Throwable processStatusExceptionMappings(HttpResponse<String> response) throws Throwable {
         Class<? extends Throwable> exceptionClass = sendStatusExceptionMappings.get(response.getStatus());
-        String msg = response.getHeaders().getFirst("error-msg");
+        String msg = response.header("error-msg");
         if (Strings.isNullOrEmpty(msg)) msg = response.getBody();
 
         if (exceptionClass == null) throw new RestException(response.getStatus(), msg);
@@ -268,7 +268,7 @@ public class RestReq {
     }
 
     public static String nullOrBody(HttpResponse<String> response) {
-        return "true".equals(response.getHeaders().getFirst("returnNull")) ? null : response.getBody();
+        return "true".equals(response.header("returnNull")) ? null : response.getBody();
     }
 
     public boolean isSuccessful(HttpResponse<String> response) {
@@ -287,7 +287,7 @@ public class RestReq {
     }
 
     private static boolean isResponseJsonContentType(HttpResponse<String> response) {
-        String contentType = response.getHeaders().getFirst("Content-Type");
+        String contentType = response.header("Content-Type");
         return contentType != null && contentType.contains("application/json");
     }
 }

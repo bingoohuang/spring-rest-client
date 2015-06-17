@@ -1,6 +1,6 @@
 package com.github.bingoohuang.springrestclient.boot.exception;
 
-import com.github.bingoohuang.springrestclient.boot.Http;
+import com.github.bingoohuang.utils.net.Http;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 

@@ -107,12 +107,12 @@
         <dependency>
             <groupId>com.github.bingoohuang</groupId>
             <artifactId>java-utils</artifactId>
-            <version>0.0.3</version>
+            <version>0.0.4</version>
         </dependency>
         <dependency>
             <groupId>com.github.bingoohuang</groupId>
             <artifactId>unirest-java</artifactId>
-            <version>0.0.3-SNAPSHOT</version>
+            <version>0.0.3</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>

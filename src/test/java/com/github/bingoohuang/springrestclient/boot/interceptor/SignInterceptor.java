@@ -1,8 +1,8 @@
 package com.github.bingoohuang.springrestclient.boot.interceptor;
 
-import com.github.bingoohuang.springrestclient.boot.Http;
 import com.github.bingoohuang.springrestclient.boot.annotations.RestfulSign;
 import com.github.bingoohuang.utils.codec.Base64;
+import com.github.bingoohuang.utils.net.Http;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
