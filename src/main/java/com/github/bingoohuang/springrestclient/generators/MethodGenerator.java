@@ -1,6 +1,5 @@
 package com.github.bingoohuang.springrestclient.generators;
 
-import com.alibaba.fastjson.JSON;
 import com.github.bingoohuang.springrestclient.annotations.SuccInResponseJSONProperty;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
 import com.github.bingoohuang.springrestclient.provider.SignProvider;
@@ -46,6 +45,7 @@ public class MethodGenerator {
     private final String implName;
     private final boolean futureReturnType;
     private final boolean isBinaryReturnType;
+    private final boolean isFutureBinaryReturnType;
 
     public MethodGenerator(ClassWriter classWriter, String implName, Method method, String classRequestMapping) {
         this.implName = implName;
@@ -60,6 +60,7 @@ public class MethodGenerator {
         this.requestMapping = method.getAnnotation(RequestMapping.class);
         this.futureReturnType = Futures.isFutureReturnType(method);
         this.isBinaryReturnType = returnType == InputStream.class;
+        this.isFutureBinaryReturnType = futureReturnType && Futures.getGenericTypeArgument(method) == InputStream.class;
     }
 
     private MethodVisitor visitMethod(Method method, ClassWriter classWriter) {
@@ -117,29 +118,36 @@ public class MethodGenerator {
                 mv.visitVarInsn(ALOAD, requestBodyOffset + 1);
                 getOrPost(futureReturnType,
                         "postAsJsonAsync", sig(Future.class, Object.class),
+                        "postAsJsonAsyncBinary", sig(Future.class, Object.class),
                         "postAsJson", sig(String.class, Object.class),
                         "postAsJsonBinary", sig(InputStream.class, Object.class));
             } else {
                 getOrPost(futureReturnType,
                         "postAsync", sig(Future.class),
+                        "postAsyncBinary", sig(Future.class),
                         "post", sig(String.class),
                         "postBinary", sig(InputStream.class));
             }
         } else if (isGetMethod()) {
             getOrPost(futureReturnType,
                     "getAsync", sig(Future.class),
+                    "getAsyncBinary", sig(Future.class),
                     "get", sig(String.class),
                     "getBinary", sig(InputStream.class));
         }
     }
 
-    private void getOrPost(boolean futureReturnType, String getAsync, String asyncSig,
+    private void getOrPost(boolean futureReturnType,
+                           String async, String asyncSig,
+                           String asyncBinary, String asyncSigBinary,
                            String sync, String syncSig,
                            String syncBinary, String syncSigBinary) {
         if (futureReturnType) {
-            mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReq.class), getAsync, asyncSig, false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReq.class), async, asyncSig, false);
         } else if (isBinaryReturnType) {
             mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReq.class), syncBinary, syncSigBinary, false);
+        } else if (isFutureBinaryReturnType) {
+            mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReq.class), asyncBinary, asyncSigBinary, false);
         } else {
             mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReq.class), sync, syncSig, false);
         }
@@ -254,9 +262,16 @@ public class MethodGenerator {
                     futureType == Void.class ? "convertFutureVoid" : "convertFuture",
                     sig(Future.class, Future.class, Class.class, RestReq.class), false);
         } else {
-            mv.visitLdcInsn(Type.getType(returnType));
-            mv.visitMethodInsn(INVOKESTATIC, p(JSON.class), "parseObject",
-                    sig(Object.class, String.class, Class.class), false);
+            java.lang.reflect.Type typeArgument = Futures.getGenericTypeArgument(method);
+            if (typeArgument == null) {
+                mv.visitLdcInsn(Type.getType(returnType));
+                mv.visitMethodInsn(INVOKESTATIC, p(Futures.class), "convertReturn",
+                        sig(Object.class, String.class, Class.class), false);
+            } else {
+                mv.visitLdcInsn(Type.getType((Class) typeArgument));
+                mv.visitMethodInsn(INVOKESTATIC, p(Futures.class), "convertArrReturn",
+                        sig(Object.class, String.class, Class.class), false);
+            }
 
         }
         mv.visitTypeInsn(CHECKCAST, p(returnType));

@@ -12,6 +12,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import static org.junit.Assert.assertTrue;
 
@@ -27,6 +29,17 @@ public class DownloadApiTest {
 
         ClassPathResource resource = new ClassPathResource("image/xx.jpg");
         InputStream inputStream = resource.getInputStream();
+        boolean contentEquals = IOUtils.contentEquals(image, inputStream);
+        assertTrue(contentEquals);
+    }
+
+    @Test
+    public void test1Async() throws IOException, ExecutionException, InterruptedException {
+        Future<InputStream> imageFuture = downloadApi.imageAsync();
+
+        ClassPathResource resource = new ClassPathResource("image/xx.jpg");
+        InputStream inputStream = resource.getInputStream();
+        InputStream image = imageFuture.get();
         boolean contentEquals = IOUtils.contentEquals(image, inputStream);
         assertTrue(contentEquals);
     }

@@ -11,10 +11,7 @@ import org.n3r.diamond.client.impl.MockDiamondServer;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-//        GetTest.class,
-//        PostTest.class,
         AnotherApiTest.class,
-//        ExceptionTest.class,
         PayPartyApiTest.class,
         ExApiTest.class,
         NullApiTest.class,
@@ -25,6 +22,7 @@ import org.n3r.diamond.client.impl.MockDiamondServer;
         NotRequiredApiTest.class,
         EnumApiTest.class,
         DownloadApiTest.class,
+        JsonRequestParamApiTest.class,
 })
 public class RestTestSuite {
     @ClassRule

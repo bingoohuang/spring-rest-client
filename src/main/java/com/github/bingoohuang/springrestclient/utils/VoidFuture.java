@@ -8,11 +8,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class VoidFuture implements Future<Void>, ResponseAware {
-    private final Future<HttpResponse<String>> future;
+    private final Future<HttpResponse<?>> future;
     private final RestReq restReq;
-    private HttpResponse<String> response;
+    private HttpResponse<?> response;
 
-    public VoidFuture(Future<HttpResponse<String>> future,
+    public VoidFuture(Future<HttpResponse<?>> future,
                       final RestReq restReq) {
         this.future = future;
         this.restReq = restReq;
@@ -45,7 +45,7 @@ public class VoidFuture implements Future<Void>, ResponseAware {
     }
 
 
-    private Void processReturnVoid(HttpResponse<String> response) throws ExecutionException {
+    private Void processReturnVoid(HttpResponse<?> response) throws ExecutionException {
         this.response = response;
         if (restReq.isSuccessful(response)) return null;
 
@@ -57,7 +57,7 @@ public class VoidFuture implements Future<Void>, ResponseAware {
     }
 
     @Override
-    public HttpResponse<String> getResponse() {
+    public HttpResponse<?> getResponse() {
         if (response != null) return response;
 
         try {

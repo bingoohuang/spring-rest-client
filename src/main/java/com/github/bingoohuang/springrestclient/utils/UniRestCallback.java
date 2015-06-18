@@ -4,12 +4,12 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.async.Callback;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
-class UniRestCallback implements Callback<String> {
+class UniRestCallback<T> implements Callback<T> {
     private final Class<?> apiClass;
     private final RestLog restLog;
     private volatile boolean done;
     private volatile boolean cancelled;
-    private HttpResponse<String> response;
+    private HttpResponse<T> response;
 
     public UniRestCallback(final Class<?> apiClass, RestLog restLog) {
         this.apiClass = apiClass;
@@ -17,7 +17,7 @@ class UniRestCallback implements Callback<String> {
     }
 
     @Override
-    public void completed(HttpResponse<String> response) {
+    public void completed(HttpResponse<T> response) {
         this.response = response;
         done = true;
         restLog.log(response);
@@ -43,12 +43,12 @@ class UniRestCallback implements Callback<String> {
         return cancelled;
     }
 
-    public HttpResponse<String> get() throws InterruptedException {
+    public HttpResponse<T> get() throws InterruptedException {
         while (!isDone()) Thread.sleep(1);
         return response;
     }
 
-    public HttpResponse<String> get(long timeout) throws InterruptedException {
+    public HttpResponse<T> get(long timeout) throws InterruptedException {
         long start = System.currentTimeMillis();
         while (!isDone() && System.currentTimeMillis() - start < timeout) Thread.sleep(1);
 

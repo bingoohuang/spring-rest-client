@@ -3,18 +3,19 @@ package com.github.bingoohuang.springrestclient.utils;
 import com.alibaba.fastjson.JSON;
 import com.mashape.unirest.http.HttpResponse;
 
+import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class RestFuture<T> implements Future<T>, ResponseAware {
-    private final Future<HttpResponse<String>> future;
+    private final Future<HttpResponse<?>> future;
     private final Class<T> beanClass;
     private final RestReq restReq;
-    private HttpResponse<String> response;
+    private HttpResponse<?> response;
 
-    public RestFuture(Future<HttpResponse<String>> future,
+    public RestFuture(Future<HttpResponse<?>> future,
                       final Class<T> beanClass,
                       final RestReq restReq) {
         this.future = future;
@@ -38,7 +39,7 @@ public class RestFuture<T> implements Future<T>, ResponseAware {
     }
 
     @Override
-    public HttpResponse<String> getResponse() {
+    public HttpResponse<?> getResponse() {
         if (response != null) return response;
 
         try {
@@ -58,12 +59,15 @@ public class RestFuture<T> implements Future<T>, ResponseAware {
         return processReturn(future.get(timeout, unit));
     }
 
-    private T processReturn(HttpResponse<String> response) throws ExecutionException {
+    private T processReturn(HttpResponse<?> response) throws ExecutionException {
         this.response = response;
 
         if (restReq.isSuccessful(response)) {
-            String body = restReq.nullOrBody(response);
-            T bean = JSON.parseObject(body, beanClass);
+            Object body = restReq.nullOrBody(response);
+            if (body == null) return null;
+            if (beanClass == InputStream.class) return (T) response.getRawBody();
+
+            T bean = JSON.parseObject("" + body, beanClass);
             return bean;
         }
 
