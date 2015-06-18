@@ -26,10 +26,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SignInterceptor extends HandlerInterceptorAdapter {
     public static final String CLIENT_SECURITY = "d51fd93e-f6c9-4eae-ae7a-9b37af1a60cc";
@@ -47,10 +44,14 @@ public class SignInterceptor extends HandlerInterceptorAdapter {
 
         if (ignoreSign && !logger.isInfoEnabled()) return true;
 
+        String hici = request.getHeader("hici");
+        if (StringUtils.isEmpty(hici)) hici = UUID.randomUUID().toString();
+
+        request.setAttribute("_log_hici", hici);
         request.setAttribute("_log_start", System.currentTimeMillis());
 
         String originalStr = createOriginalStringForSign(request);
-        logger.info("spring rest server request {}", originalStr);
+        logger.info("spring rest server {} request {}", hici, originalStr);
 
         if (ignoreSign) return true;
 
@@ -96,10 +97,11 @@ public class SignInterceptor extends HandlerInterceptorAdapter {
             body = new String(baos.toByteArray(), "UTF-8");
         }
 
+        String hici = (String) request.getAttribute("_log_hici");
         Long start = (Long) request.getAttribute("_log_start");
         long costMillis = System.currentTimeMillis() - start;
 
-        logger.info("spring rest server response cost {} millis, headers: {}, body: {}", costMillis, headerSb, body);
+        logger.info("spring rest server {} response cost {} millis, headers: {}, body: {}", hici, costMillis, headerSb, body);
     }
 
     private String createOriginalStringForSign(HttpServletRequest request) {
