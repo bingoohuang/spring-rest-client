@@ -76,12 +76,12 @@ public class RestLog {
         logger.warn("spring rest client {} {} exception: cost {} millis", syncOrAsync, uuid, costTimeMillis, e);
     }
 
-    public void log(HttpResponse<String> response) {
+    public void log(HttpResponse<?> response) {
         if (!logger.isInfoEnabled()) return;
 
         int status = response.getStatus();
         String headers = buildHeaders(response.getHeaders());
-        String body = response.getBody();
+        Object body = response.getBody();
         long costTimeMillis = System.currentTimeMillis() - start;
         logger.info("spring rest client {} {} response: cost {} millis, {} headers:{} body: {}",
                 syncOrAsync, uuid, costTimeMillis, status, headers, singleLine(body));
@@ -100,7 +100,10 @@ public class RestLog {
 
     static Pattern lineBreakPattern = Pattern.compile("(\\r?\\n)+");
 
-    public String singleLine(String str) {
+    public String singleLine(Object object) {
+        if (object instanceof InputStream) return "inputstream";
+
+        String str = "" + object;
         String s = lineBreakPattern.matcher(str).replaceAll("\\n");
         return Url.decode(s);
     }

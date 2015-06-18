@@ -14,7 +14,7 @@ public class NullReturnValueInterceptor implements MethodInterceptor {
         try {
             Object retValue = invocation.proceed();
 
-            nullProcess(retValue);
+            nullProcess(invocation, retValue);
 
             return retValue;
         } catch (Throwable throwable) {
@@ -22,8 +22,12 @@ public class NullReturnValueInterceptor implements MethodInterceptor {
         }
     }
 
-    private void nullProcess(Object retValue) {
+    private void nullProcess(MethodInvocation invocation, Object retValue) {
         if (retValue != null) return;
+        Class<?> returnType = invocation.getMethod().getReturnType();
+        if (returnType == void.class) return;
+        if (returnType == Void.class) return;
+
 
         HttpServletResponse response = ThreadLocalInterceptor.getResponse();
         response.addHeader("returnNull", "true");

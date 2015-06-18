@@ -27,7 +27,7 @@ public class AnotherApiTest {
         int account = anotherApi.add(a);
         assertThat(account, is(equalTo(123)));
 
-        HttpResponse<String> response = RestReq.lastResponse();
+        HttpResponse<?> response = RestReq.lastResponse();
         String fuck = response.header("fuck");
         assertThat(fuck, is(equalTo("you123")));
     }

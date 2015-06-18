@@ -3,11 +3,13 @@ package com.github.bingoohuang.springrestclient.boot.interceptor;
 import com.github.bingoohuang.springrestclient.boot.annotations.RestfulSign;
 import com.github.bingoohuang.utils.codec.Base64;
 import com.github.bingoohuang.utils.net.Http;
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.google.common.io.CharStreams;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
@@ -21,8 +23,10 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -43,8 +47,10 @@ public class SignInterceptor extends HandlerInterceptorAdapter {
 
         if (ignoreSign && !logger.isInfoEnabled()) return true;
 
+        request.setAttribute("_log_start", System.currentTimeMillis());
+
         String originalStr = createOriginalStringForSign(request);
-        logger.info("spring rest server {}", originalStr);
+        logger.info("spring rest server request {}", originalStr);
 
         if (ignoreSign) return true;
 
@@ -59,6 +65,41 @@ public class SignInterceptor extends HandlerInterceptorAdapter {
         if (!signOk) Http.error(response, 416, "invalid signature");
 
         return signOk;
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        if (!(handler instanceof HandlerMethod)) return;
+
+        HandlerMethod method = (HandlerMethod) handler;
+        Class<?> beanType = method.getBeanType();
+        Logger logger = LoggerFactory.getLogger("rest." + beanType.getName());
+        if (!logger.isInfoEnabled()) return;
+
+        StringBuilder headerSb = new StringBuilder();
+        Collection<String> headerNames = response.getHeaderNames();
+        Joiner joiner = Joiner.on(',');
+        for (String headerName : headerNames) {
+            headerSb.append(headerName).append('=');
+            Collection<String> headers = response.getHeaders(headerName);
+            joiner.join(headers);
+            headerSb.append(headers).append('&');
+        }
+
+        String body;
+
+        ByteArrayOutputStream baos = (ByteArrayOutputStream) request.getAttribute("_log_baos");
+        String contentType = response.getContentType();
+        if (StringUtils.contains(contentType, "image")) {
+            body = "image";
+        } else {
+            body = new String(baos.toByteArray(), "UTF-8");
+        }
+
+        Long start = (Long) request.getAttribute("_log_start");
+        long costMillis = System.currentTimeMillis() - start;
+
+        logger.info("spring rest server response cost {} millis, headers: {}, body: {}", costMillis, headerSb, body);
     }
 
     private String createOriginalStringForSign(HttpServletRequest request) {

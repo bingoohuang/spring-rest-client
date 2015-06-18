@@ -24,6 +24,7 @@ import org.n3r.diamond.client.impl.MockDiamondServer;
         UploadApiTest.class,
         NotRequiredApiTest.class,
         EnumApiTest.class,
+        DownloadApiTest.class,
 })
 public class RestTestSuite {
     @ClassRule

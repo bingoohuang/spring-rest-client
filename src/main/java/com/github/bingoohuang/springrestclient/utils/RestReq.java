@@ -17,6 +17,7 @@ import com.mashape.unirest.request.HttpRequestWithBody;
 import com.mashape.unirest.request.body.MultipartBody;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -58,13 +59,13 @@ public class RestReq {
         this.signProvider = signProvider;
     }
 
-    static ThreadLocal<HttpResponse<String>> lastResponseTL;
+    static ThreadLocal<HttpResponse<?>> lastResponseTL;
 
     static {
-        lastResponseTL = new ThreadLocal<HttpResponse<String>>();
+        lastResponseTL = new ThreadLocal<HttpResponse<?>>();
     }
 
-    public static HttpResponse<String> lastResponse() {
+    public static HttpResponse<?> lastResponse() {
         return lastResponseTL.get();
     }
 
@@ -76,6 +77,16 @@ public class RestReq {
         get.queryString(mergeRequestParams());
 
         return request(null, get);
+    }
+
+    public InputStream getBinary() throws Throwable {
+        String url = createUrl();
+        HttpRequest get = Unirest.get(url);
+        setRouteParams(get);
+
+        get.queryString(mergeRequestParams());
+
+        return requestBinary(null, get);
     }
 
     public Future<HttpResponse<String>> getAsync() throws Throwable {
@@ -98,6 +109,18 @@ public class RestReq {
 
         return request(requestParams, fields);
     }
+
+    public InputStream postBinary() throws Throwable {
+        String url = createUrl();
+        HttpRequestWithBody post = Unirest.post(url);
+        setRouteParams(post);
+
+        Map<String, Object> requestParams = mergeRequestParams();
+        BaseRequest fields = fields(post, requestParams);
+
+        return requestBinary(requestParams, fields);
+    }
+
 
     private BaseRequest fields(HttpRequestWithBody post, Map<String, Object> requestParams) {
         MultipartBody field = null;
@@ -169,6 +192,23 @@ public class RestReq {
         return request(requestParams, post);
     }
 
+    public InputStream postAsJsonBinary(Object bean) throws Throwable {
+        String url = createUrl();
+        HttpRequestWithBody post = Unirest.post(url);
+        setRouteParams(post);
+
+        post.queryString(mergeRequestParams());
+
+        post.header("Content-Type", "application/json;charset=UTF-8");
+        String body = JSON.toJSONString(bean);
+        post.body(body);
+
+        Map<String, Object> requestParams = Maps.newHashMap();
+        requestParams.put("_json", body);
+
+        return requestBinary(requestParams, post);
+    }
+
     public Future<HttpResponse<String>> postAsJsonAsync(Object bean) throws Throwable {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
@@ -197,6 +237,28 @@ public class RestReq {
             restLog.logAndSign(signProvider, requestParams, httpRequest.getHttpRequest());
             lastResponseTL.remove();
             HttpResponse<String> response = httpRequest.asString();
+            restLog.log(response);
+            loggedResponse = true;
+            lastResponseTL.set(response);
+
+            if (isSuccessful(response)) return nullOrBody(response);
+
+            throw processStatusExceptionMappings(response);
+        } catch (UnirestException e) {
+            if (!loggedResponse) restLog.log(e);
+            throw new RuntimeException(e);
+        } catch (Throwable e) {
+            if (!loggedResponse) restLog.log(e);
+            throw e;
+        }
+    }
+
+    private InputStream requestBinary(Map<String, Object> requestParams, BaseRequest httpRequest) throws Throwable {
+        boolean loggedResponse = false;
+        try {
+            restLog.logAndSign(signProvider, requestParams, httpRequest.getHttpRequest());
+            lastResponseTL.remove();
+            HttpResponse<InputStream> response = httpRequest.asBinary();
             restLog.log(response);
             loggedResponse = true;
             lastResponseTL.set(response);
@@ -248,11 +310,13 @@ public class RestReq {
         };
     }
 
-
-    public Throwable processStatusExceptionMappings(HttpResponse<String> response) throws Throwable {
+    public Throwable processStatusExceptionMappings(HttpResponse<?> response) throws Throwable {
         Class<? extends Throwable> exceptionClass = sendStatusExceptionMappings.get(response.getStatus());
         String msg = response.header("error-msg");
-        if (Strings.isNullOrEmpty(msg)) msg = response.getBody();
+        if (Strings.isNullOrEmpty(msg)) {
+            Object body = response.getBody();
+            msg = body instanceof InputStream ? "" : ("" + body);
+        }
 
         if (exceptionClass == null) throw new RestException(response.getStatus(), msg);
 
@@ -267,11 +331,11 @@ public class RestReq {
         return baseUrl + prefix;
     }
 
-    public static String nullOrBody(HttpResponse<String> response) {
+    public static <T> T nullOrBody(HttpResponse<T> response) {
         return "true".equals(response.header("returnNull")) ? null : response.getBody();
     }
 
-    public boolean isSuccessful(HttpResponse<String> response) {
+    public boolean isSuccessful(HttpResponse<?> response) {
         int status = response.getStatus();
         boolean isHttpSucc = status >= 200 && status < 300;
         if (!isHttpSucc) return false;
@@ -279,14 +343,17 @@ public class RestReq {
         if (succInResponseJSONProperty == null) return true;
         if (!isResponseJsonContentType(response)) return true;
 
-        Map<String, Object> map = Json.unJson(response.getBody());
+        Object body = response.getBody();
+        if (body instanceof InputStream) return true;
+
+        Map<String, Object> map = Json.unJson("" + body);
         String key = succInResponseJSONProperty.key();
         Object realValue = map.get(key);
         String expectedValue = succInResponseJSONProperty.value();
         return expectedValue.equals("" + realValue);
     }
 
-    private static boolean isResponseJsonContentType(HttpResponse<String> response) {
+    private static boolean isResponseJsonContentType(HttpResponse<?> response) {
         String contentType = response.header("Content-Type");
         return contentType != null && contentType.contains("application/json");
     }

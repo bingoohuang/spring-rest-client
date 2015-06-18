@@ -15,6 +15,7 @@ import org.objectweb.asm.Type;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
@@ -44,6 +45,7 @@ public class MethodGenerator {
     private final RequestMapping requestMapping;
     private final String implName;
     private final boolean futureReturnType;
+    private final boolean isBinaryReturnType;
 
     public MethodGenerator(ClassWriter classWriter, String implName, Method method, String classRequestMapping) {
         this.implName = implName;
@@ -57,6 +59,7 @@ public class MethodGenerator {
         this.classRequestMapping = classRequestMapping;
         this.requestMapping = method.getAnnotation(RequestMapping.class);
         this.futureReturnType = Futures.isFutureReturnType(method);
+        this.isBinaryReturnType = returnType == InputStream.class;
     }
 
     private MethodVisitor visitMethod(Method method, ClassWriter classWriter) {
@@ -112,21 +115,33 @@ public class MethodGenerator {
             int requestBodyOffset = findRequestBodyParameterOffset();
             if (requestBodyOffset > -1) {
                 mv.visitVarInsn(ALOAD, requestBodyOffset + 1);
-                getOrPost(futureReturnType, "postAsJsonAsync", sig(Future.class, Object.class),
-                        "postAsJson", sig(String.class, Object.class));
+                getOrPost(futureReturnType,
+                        "postAsJsonAsync", sig(Future.class, Object.class),
+                        "postAsJson", sig(String.class, Object.class),
+                        "postAsJsonBinary", sig(InputStream.class, Object.class));
             } else {
-                getOrPost(futureReturnType, "postAsync", sig(Future.class), "post", sig(String.class));
+                getOrPost(futureReturnType,
+                        "postAsync", sig(Future.class),
+                        "post", sig(String.class),
+                        "postBinary", sig(InputStream.class));
             }
         } else if (isGetMethod()) {
-            getOrPost(futureReturnType, "getAsync", sig(Future.class), "get", sig(String.class));
+            getOrPost(futureReturnType,
+                    "getAsync", sig(Future.class),
+                    "get", sig(String.class),
+                    "getBinary", sig(InputStream.class));
         }
     }
 
-    private void getOrPost(boolean futureReturnType, String getAsync, String sig, String get, String sig2) {
+    private void getOrPost(boolean futureReturnType, String getAsync, String asyncSig,
+                           String sync, String syncSig,
+                           String syncBinary, String syncSigBinary) {
         if (futureReturnType) {
-            mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReq.class), getAsync, sig, false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReq.class), getAsync, asyncSig, false);
+        } else if (isBinaryReturnType) {
+            mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReq.class), syncBinary, syncSigBinary, false);
         } else {
-            mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReq.class), get, sig2, false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, p(RestReq.class), sync, syncSig, false);
         }
     }
 
@@ -221,7 +236,7 @@ public class MethodGenerator {
     }
 
     private void objectValueOfAndReturn() {
-        if (returnType == String.class || returnType == Object.class) {
+        if (returnType == String.class || returnType == Object.class || isBinaryReturnType) {
             mv.visitInsn(ARETURN);
             return;
         }
