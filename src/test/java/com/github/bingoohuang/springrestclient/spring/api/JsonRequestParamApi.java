@@ -11,7 +11,7 @@ import java.util.List;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 @RequestMapping("/json")
-@SpringRestClientEnabled(baseUrl = "http://localhost:4849", createClassFileForDiagnose = true)
+@SpringRestClientEnabled(baseUrl = "http://localhost:4849")
 public interface JsonRequestParamApi {
     @RequestMapping("/case1")
     Person case1(@RequestParam("person") Person person);
