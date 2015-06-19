@@ -1,10 +1,14 @@
 package com.github.bingoohuang.springrestclient.spring;
 
 import com.github.bingoohuang.springrestclient.generators.SpringRestClientFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
-public class SpringRestClientFactoryBean<T> implements FactoryBean<T> {
+public class SpringRestClientFactoryBean<T> implements FactoryBean<T>, ApplicationContextAware {
     private Class<T> interfaceClazz;
+    private ApplicationContext appContext;
 
     public void setInterfaceClazz(Class<T> interfaceClazz) {
         this.interfaceClazz = interfaceClazz;
@@ -12,7 +16,7 @@ public class SpringRestClientFactoryBean<T> implements FactoryBean<T> {
 
     @Override
     public T getObject() throws Exception {
-        return SpringRestClientFactory.getRestClient(interfaceClazz);
+        return SpringRestClientFactory.getRestClient(interfaceClazz, appContext);
     }
 
     @Override
@@ -23,5 +27,10 @@ public class SpringRestClientFactoryBean<T> implements FactoryBean<T> {
     @Override
     public boolean isSingleton() {
         return true;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.appContext = applicationContext;
     }
 }

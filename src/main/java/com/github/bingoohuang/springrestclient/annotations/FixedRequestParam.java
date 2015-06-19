@@ -8,5 +8,7 @@ import java.lang.annotation.*;
 public @interface FixedRequestParam {
     String name();
 
-    String value();
+    String value() default "";
+
+    Class<?> clazz() default void.class;
 }

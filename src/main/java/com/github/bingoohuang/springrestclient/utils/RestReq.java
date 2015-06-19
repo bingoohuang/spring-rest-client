@@ -15,6 +15,9 @@ import com.mashape.unirest.request.BaseRequest;
 import com.mashape.unirest.request.HttpRequest;
 import com.mashape.unirest.request.HttpRequestWithBody;
 import com.mashape.unirest.request.body.MultipartBody;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.ApplicationContext;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -37,6 +40,7 @@ public class RestReq {
     final Map<String, Object> requestParams;
     final RestLog restLog;
     final SignProvider signProvider;
+    final ApplicationContext appContext;
 
     RestReq(SuccInResponseJSONProperty succInResponseJSONProperty,
             Map<String, Object> fixedRequestParams,
@@ -47,7 +51,8 @@ public class RestReq {
             Map<String, Object> routeParams,
             Map<String, Object> requestParams,
             boolean async,
-            SignProvider signProvider) {
+            SignProvider signProvider,
+            ApplicationContext appContext) {
         this.succInResponseJSONProperty = succInResponseJSONProperty;
         this.fixedRequestParams = fixedRequestParams;
         this.sendStatusExceptionMappings = sendStatusExceptionMappings;
@@ -58,6 +63,7 @@ public class RestReq {
         this.requestParams = requestParams;
         this.restLog = new RestLog(apiClass, async);
         this.signProvider = signProvider;
+        this.appContext = appContext;
     }
 
     static ThreadLocal<HttpResponse<?>> lastResponseTL;
@@ -271,7 +277,20 @@ public class RestReq {
     }
 
     private Map<String, Object> mergeRequestParams() {
-        Map<String, Object> mergedRequestParams = Maps.newHashMap(fixedRequestParams);
+        Map<String, Object> mergedRequestParams = Maps.newHashMap();
+        for (Map.Entry<String, Object> entry : fixedRequestParams.entrySet()) {
+            Object value = entry.getValue();
+            if (value instanceof Class && value != void.class) {
+                Class requiredType = (Class) value;
+                try {
+                    Object bean = appContext.getBean(requiredType);
+                    value = bean.toString();
+                } catch (NoSuchBeanDefinitionException e) {
+                    value = Obj.createObject(requiredType).toString();
+                }
+            }
+            mergedRequestParams.put(entry.getKey(), value);
+        }
         mergedRequestParams.putAll(requestParams);
         return mergedRequestParams;
     }

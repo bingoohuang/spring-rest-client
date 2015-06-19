@@ -7,42 +7,34 @@ import com.github.bingoohuang.springrestclient.provider.SignProvider;
 import com.github.bingoohuang.springrestclient.utils.Obj;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
+import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.UncheckedExecutionException;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 public class SpringRestClientFactory {
-    private static LoadingCache<Class, Object> restClientCache =
-            CacheBuilder.newBuilder().build(new CacheLoader<Class, Object>() {
-                @Override
-                public Object load(Class restClientClass) throws Exception {
-                    ClassGenerator generator = new ClassGenerator(restClientClass);
-                    Class<?> restClientImplClass = generator.generate();
-                    Object object = Obj.createObject(restClientImplClass);
-
-                    setSignProvider(restClientImplClass, object, restClientClass);
-                    setBaseUrlProvider(restClientImplClass, object, restClientClass);
-                    setStatusMappings(restClientImplClass, object, restClientClass);
-                    setFixedRequestParams(restClientImplClass, object, restClientClass);
-                    setSuccInResponseJSONProperty(restClientImplClass, object, restClientClass);
-
-                    return object;
-                }
-            });
+    private static Cache<Class, Object> restClientCache = CacheBuilder.newBuilder().build();
 
 
-    public static <T> T getRestClient(final Class<T> restClientClass) {
+    public static <T> T getRestClient(final Class<T> restClientClass, final ApplicationContext appContext) {
         Obj.ensureInterface(restClientClass);
         try {
-            return (T) restClientCache.get(restClientClass);
+            return (T) restClientCache.get(restClientClass, new Callable<Object>() {
+                @Override
+                public Object call() throws Exception {
+                    return load(restClientClass, appContext);
+                }
+            });
         } catch (ExecutionException e) {
             Throwable cause = e.getCause();
             throw Throwables.propagate(cause);
@@ -50,6 +42,26 @@ public class SpringRestClientFactory {
             Throwable cause = e.getCause();
             throw Throwables.propagate(cause);
         }
+    }
+
+    public static Object load(Class restClientClass, ApplicationContext appContext) throws Exception {
+        ClassGenerator generator = new ClassGenerator(restClientClass);
+        Class<?> restClientImplClass = generator.generate();
+        Object object = Obj.createObject(restClientImplClass);
+
+        setSignProvider(restClientImplClass, object, restClientClass);
+        setBaseUrlProvider(restClientImplClass, object, restClientClass);
+        setStatusMappings(restClientImplClass, object, restClientClass);
+        setFixedRequestParams(restClientImplClass, object, restClientClass);
+        setSuccInResponseJSONProperty(restClientImplClass, object, restClientClass);
+        setAppContext(restClientImplClass, object, restClientClass, appContext);
+
+        return object;
+    }
+
+    private static void setAppContext(Class<?> restClientImplClass, Object object,
+                                      Class restClientClass, ApplicationContext appContext) {
+        Obj.setField(restClientImplClass, object, MethodGenerator.appContext, appContext);
     }
 
     private static void setSuccInResponseJSONProperty(
@@ -72,31 +84,37 @@ public class SpringRestClientFactory {
     }
 
     private static Map<String, Object> createFixedRequestParams(Method method, Class<?> restClientClass) {
-        HashMap<String, Object> map = Maps.newHashMap();
+        Map<String, Object> map = Maps.newHashMap();
 
-        putRequestParams(map, restClientClass.getAnnotation(FixedRequestParam.class),
-                restClientClass.getAnnotation(FixedRequestParams.class));
-
-        putRequestParams(map, method.getAnnotation(FixedRequestParam.class),
-                method.getAnnotation(FixedRequestParams.class));
+        putRequestParams(map, restClientClass);
+        putRequestParams(map, method);
 
         return Collections.unmodifiableMap(map);
     }
 
-    private static void putRequestParams(HashMap<String, Object> map,
-                                         FixedRequestParam fixedRequestParam,
-                                         FixedRequestParams fixedRequestParams) {
-        if (fixedRequestParam != null) {
-            map.put(fixedRequestParam.name(), fixedRequestParam.value());
-        }
-
-        if (fixedRequestParams != null) {
-            for (FixedRequestParam paramValue : fixedRequestParams.value()) {
-                map.put(paramValue.name(), paramValue.value());
+    private static void putRequestParams(Map<String, Object> map, AnnotatedElement accessibleObject) {
+        // 按声明顺序来添加固定请求参数
+        for (Annotation annotation : accessibleObject.getAnnotations()) {
+            if (annotation instanceof FixedRequestParam) {
+                putFixedRequestParam(map, (FixedRequestParam) annotation);
+            } else if (annotation instanceof FixedRequestParams) {
+                for (FixedRequestParam paramValue : ((FixedRequestParams) annotation).value()) {
+                    putFixedRequestParam(map, paramValue);
+                }
             }
         }
     }
 
+    private static void putFixedRequestParam(Map<String, Object> map, FixedRequestParam fixedRequestParam) {
+        if (fixedRequestParam.clazz() != void.class) {
+            map.put(fixedRequestParam.name(), fixedRequestParam.clazz());
+        } else if (StringUtils.isNotEmpty(fixedRequestParam.value())) {
+            map.put(fixedRequestParam.name(), fixedRequestParam.value());
+        } else {
+            throw new RuntimeException("bad config for @FixedRequestParam" + fixedRequestParam
+                    + " value or clazz should be assigned");
+        }
+    }
 
     private static void setStatusMappings(Class<?> restClientImplClass, Object object, Class restClientClass) {
         for (Method method : restClientClass.getDeclaredMethods()) {
@@ -143,7 +161,6 @@ public class SpringRestClientFactory {
 
     private static void setBaseUrlProvider(Class<?> restClientImplClass, Object object, Class restClientClass) {
         BaseUrlProvider provider = createBaseUrlProvider(restClientClass);
-
         Obj.setField(restClientImplClass, object, MethodGenerator.baseUrlProvider, provider);
     }
 

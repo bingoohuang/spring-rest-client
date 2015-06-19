@@ -3,6 +3,7 @@ package com.github.bingoohuang.springrestclient.utils;
 import com.github.bingoohuang.springrestclient.annotations.SuccInResponseJSONProperty;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
 import com.github.bingoohuang.springrestclient.provider.SignProvider;
+import org.springframework.context.ApplicationContext;
 
 import java.util.Map;
 
@@ -17,6 +18,12 @@ public class RestReqBuilder {
     Map<String, Object> requestParams;
     boolean async;
     SignProvider signProvider;
+    ApplicationContext appContext;
+
+    public RestReqBuilder appContext(ApplicationContext appContext) {
+        this.appContext = appContext;
+        return this;
+    }
 
     public RestReqBuilder signProvider(SignProvider signProvider) {
         this.signProvider = signProvider;
@@ -78,6 +85,7 @@ public class RestReqBuilder {
                 routeParams,
                 requestParams,
                 async,
-                signProvider);
+                signProvider,
+                appContext);
     }
 }

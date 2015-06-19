@@ -23,6 +23,7 @@ import org.n3r.diamond.client.impl.MockDiamondServer;
         EnumApiTest.class,
         DownloadApiTest.class,
         JsonRequestParamApiTest.class,
+        TidApiTest.class,
 })
 public class RestTestSuite {
     @ClassRule

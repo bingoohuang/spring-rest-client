@@ -7,10 +7,12 @@ import com.github.bingoohuang.springrestclient.utils.Futures;
 import com.github.bingoohuang.springrestclient.utils.RestReq;
 import com.github.bingoohuang.springrestclient.utils.RestReqBuilder;
 import com.google.common.primitives.Primitives;
+import org.apache.commons.lang3.StringUtils;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,13 +27,13 @@ import static com.github.bingoohuang.springrestclient.utils.Asms.*;
 import static com.github.bingoohuang.springrestclient.utils.PrimitiveWrappers.getParseXxMethodName;
 import static org.objectweb.asm.Opcodes.*;
 
-
 public class MethodGenerator {
     public static final String StatusExceptionMappings = "StatusExceptionMappings";
     public static final String FixedRequestParams = "FixedRequestParams";
     public static final String SuccInResponseJSONProperty = "SuccInResponseJSONProperty";
     public static final String baseUrlProvider = "baseUrlProvider";
     public static final String signProvider = "signProvider";
+    public static final String appContext = "appContext";
 
     private final Method method;
     private final MethodVisitor mv;
@@ -47,8 +49,13 @@ public class MethodGenerator {
     private final boolean isBinaryReturnType;
     private final boolean isFutureBinaryReturnType;
 
+    private final String implp;
+    String restReqBuilder = p(RestReqBuilder.class);
+
+
     public MethodGenerator(ClassWriter classWriter, String implName, Method method, String classRequestMapping) {
         this.implName = implName;
+        this.implp = p(implName);
         this.method = method;
         this.mv = visitMethod(method, classWriter);
         this.annotations = method.getParameterAnnotations();
@@ -88,9 +95,7 @@ public class MethodGenerator {
         createMap(2, RequestParam.class);
 
         buildUniRestReq();
-
         request();
-
         dealResult();
     }
 
@@ -154,12 +159,8 @@ public class MethodGenerator {
     }
 
     private void buildUniRestReq() {
-        String impl = p(implName);
+        newObject(restReqBuilder);
 
-        String restReqBuilder = p(RestReqBuilder.class);
-        mv.visitTypeInsn(NEW, restReqBuilder);
-        mv.visitInsn(DUP);
-        mv.visitMethodInsn(INVOKESPECIAL, restReqBuilder, "<init>", "()V", false);
         mv.visitLdcInsn(getFullRequestMapping());
         mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "prefix", sigRest(String.class), false);
         mv.visitInsn(futureReturnType ? ICONST_1 : ICONST_0);
@@ -167,35 +168,38 @@ public class MethodGenerator {
         mv.visitLdcInsn(Type.getType(method.getDeclaringClass()));
         mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "apiClass", sigRest(Class.class), false);
 
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, impl, baseUrlProvider, ci(BaseUrlProvider.class));
-        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, baseUrlProvider, sigRest(BaseUrlProvider.class), false);
-
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, impl, signProvider, ci(SignProvider.class));
-        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, signProvider, sigRest(SignProvider.class), false);
-
-        mv.visitVarInsn(ALOAD, 0);
-        String methodName = method.getName();
-        mv.visitFieldInsn(GETFIELD, impl, methodName + SuccInResponseJSONProperty, ci(SuccInResponseJSONProperty.class));
-        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "succInResponseJSONProperty",
-                sigRest(SuccInResponseJSONProperty.class), false);
-
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, impl, methodName + StatusExceptionMappings, ci(Map.class));
-        String sigMap = sigRest(Map.class);
-        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "statusExceptionMappings", sigMap, false);
-
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, impl, methodName + FixedRequestParams, ci(Map.class));
-        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "fixedRequestParams", sigMap, false);
+        setField(appContext, ApplicationContext.class);
+        setField(baseUrlProvider, BaseUrlProvider.class);
+        setField(signProvider, SignProvider.class);
+        setFieldPerMethod(SuccInResponseJSONProperty, SuccInResponseJSONProperty.class);
+        setFieldPerMethod(StatusExceptionMappings, Map.class);
+        setFieldPerMethod(FixedRequestParams, Map.class);
 
         mv.visitVarInsn(ALOAD, offsetSize + 1);
-        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "routeParams", sigMap, false);
+        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "routeParams", sigRest(Map.class), false);
 
         mv.visitVarInsn(ALOAD, offsetSize + 2);
-        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "requestParams", sigMap, false);
+        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "requestParams", sigRest(Map.class), false);
+
         mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "build", sig(RestReq.class), false);
+    }
+
+    private void newObject(String objectClassPath) {
+        mv.visitTypeInsn(NEW, objectClassPath);
+        mv.visitInsn(DUP);
+        mv.visitMethodInsn(INVOKESPECIAL, objectClassPath, "<init>", "()V", false);
+    }
+
+    private void setFieldPerMethod(String namePostFix, Class propertyClass) {
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitFieldInsn(GETFIELD, implp, method.getName() + namePostFix, ci(propertyClass));
+        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, StringUtils.uncapitalize(namePostFix), sigRest(propertyClass), false);
+    }
+
+    private void setField(String buildMethodName, Class propertyClass) {
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitFieldInsn(GETFIELD, implp, buildMethodName, ci(propertyClass));
+        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, buildMethodName, sigRest(propertyClass), false);
     }
 
     private String sigRest(Class<?> clazz) {
@@ -287,9 +291,7 @@ public class MethodGenerator {
     }
 
     private <T extends Annotation> void createMap(int index, Class<T> annotationClass) {
-        mv.visitTypeInsn(NEW, p(LinkedHashMap.class));
-        mv.visitInsn(DUP);
-        mv.visitMethodInsn(INVOKESPECIAL, p(LinkedHashMap.class), "<init>", "()V", false);
+        newObject(p(LinkedHashMap.class));
         mv.visitVarInsn(ASTORE, offsetSize + index);
 
         for (int i = 0, incr = 0; i < paramSize; i++) {

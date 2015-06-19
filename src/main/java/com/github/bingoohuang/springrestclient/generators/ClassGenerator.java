@@ -9,6 +9,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
+import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.io.File;
@@ -92,6 +93,9 @@ public class ClassGenerator<T> {
         fv.visitEnd();
 
         fv = cw.visitField(0, MethodGenerator.signProvider, ci(SignProvider.class), null, null);
+        fv.visitEnd();
+
+        fv = cw.visitField(0, MethodGenerator.appContext, ci(ApplicationContext.class), null, null);
         fv.visitEnd();
 
         for (Method method : restClientClass.getDeclaredMethods()) {
