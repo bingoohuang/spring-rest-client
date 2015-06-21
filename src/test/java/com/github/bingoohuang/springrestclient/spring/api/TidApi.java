@@ -1,5 +1,6 @@
 package com.github.bingoohuang.springrestclient.spring.api;
 
+import com.github.bingoohuang.springrediscache.RedisCacheEnabled;
 import com.github.bingoohuang.springrestclient.annotations.FixedRequestParam;
 import com.github.bingoohuang.springrestclient.annotations.SpringRestClientEnabled;
 import com.github.bingoohuang.springrestclient.provider.DefaultSignProvider;
@@ -13,4 +14,9 @@ public interface TidApi {
     @RequestMapping(value = "/get-mobile", method = GET)
     @FixedRequestParam(name = "tid", clazz = EasyHiTid.class)
     String getMobile();
+
+    @RequestMapping(value = "/get-mobile", method = GET)
+    @FixedRequestParam(name = "tid", clazz = EasyHiTid.class)
+    @RedisCacheEnabled(expirationMillis = 5 * 1000, aheadMillis = 1000)
+    String getMobile2();
 }

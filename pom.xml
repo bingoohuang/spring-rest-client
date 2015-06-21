@@ -79,6 +79,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.github.bingoohuang</groupId>
+            <artifactId>spring-redis-cache</artifactId>
+            <version>0.0.1</version>
+            <version>test</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpasyncclient</artifactId>
             <version>4.1</version>

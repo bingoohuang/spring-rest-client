@@ -26,4 +26,16 @@ public class TidApiTest {
         String mobile = tidApi.getMobile();
         assertThat(mobile, is(equalTo("bingoo:1000")));
     }
+
+    @Test
+    public void getMobile2() {
+        EasyHiTid.tid.set("1000");
+
+        String mobile = tidApi.getMobile2();
+        assertThat(mobile, is(equalTo("bingoo:1000")));
+
+        EasyHiTid.tid.set("2000");
+        mobile = tidApi.getMobile2();
+        assertThat(mobile, is(equalTo("bingoo:1000")));
+    }
 }
