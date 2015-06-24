@@ -1,6 +1,7 @@
 package com.github.bingoohuang.springrestclient.boot.controller;
 
-import com.github.bingoohuang.springrestclient.boot.exception.RestException;
+import com.github.bingoohuang.springrest.boot.annotations.RestfulSign;
+import com.github.bingoohuang.springrestclient.exception.RestException;
 import com.google.common.io.Files;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,7 +16,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
 @RequestMapping("/upload")
-//@RestfulSign(ignore = true)
+@RestfulSign(ignore = true)
 public class UploadController {
     @RequestMapping(value = "/image", method = POST)
     public void image(@RequestParam("name") String name,

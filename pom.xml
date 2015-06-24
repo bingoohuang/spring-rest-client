@@ -81,8 +81,13 @@
         <dependency>
             <groupId>com.github.bingoohuang</groupId>
             <artifactId>spring-redis-cache</artifactId>
-            <version>0.0.2</version>
+            <version>0.0.4</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.bingoohuang</groupId>
+            <artifactId>spring-rest-boot</artifactId>
+            <version>0.0.4-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>

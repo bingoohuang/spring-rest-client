@@ -1,8 +1,9 @@
 package com.github.bingoohuang.springrestclient.boot.controller;
 
-import com.github.bingoohuang.springrestclient.boot.annotations.RestfulSign;
+import com.github.bingoohuang.springrest.boot.annotations.RestfulSign;
 import com.github.bingoohuang.springrestclient.boot.domain.Car;
 import com.github.bingoohuang.springrestclient.boot.domain.Person;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/json")
-@RestfulSign(ignore = true)
+@RestfulSign
 public class JsonRequestParamController {
     @RequestMapping("/case1")
     public Person case1(@RequestParam("person") Person person) {
@@ -20,7 +21,7 @@ public class JsonRequestParamController {
 
     @RequestMapping("/case2")
     public Car case2(@RequestParam("person") Person person,
-                        @RequestParam("car") Car car) {
+                     @RequestParam("car") Car car) {
         System.out.println(person);
         return car;
     }
@@ -31,7 +32,15 @@ public class JsonRequestParamController {
     }
 
     @RequestMapping("/case4")
-    public List<Person> case4(@RequestParam("car") Car car, @RequestParam("persons") List<Person> persons) {
+    public List<Person> case4(@RequestParam("car") Car car,
+                              @RequestParam("persons") List<Person> persons) {
+        return persons;
+    }
+
+    @RequestMapping("/case5")
+    public List<Person> case5(@RequestParam("car") Car car,
+                              @RequestParam("persons") List<Person> persons,
+                              @RequestBody String xml) {
         return persons;
     }
 

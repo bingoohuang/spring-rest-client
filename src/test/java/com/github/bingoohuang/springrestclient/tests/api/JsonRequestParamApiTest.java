@@ -93,4 +93,16 @@ public class JsonRequestParamApiTest {
 
         assertThat(persons2, is(equalTo(persons1)));
     }
+
+    @Test
+    public void case5() {
+        Car bmw = new Car("bmw", 1);
+        Person person10 = new Person("bingooaa", "nanjingaa");
+        Person person11 = new Person("bingoobb", "nanjingbb");
+        List<Person> persons1 = Lists.newArrayList(person10, person11);
+        List<Person> persons2 = api.case5(bmw, persons1, "<xml>\n<name>bingoo</name>\n</xml>");
+
+        assertThat(persons2, is(equalTo(persons1)));
+    }
+
 }

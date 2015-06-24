@@ -14,8 +14,8 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.BaseRequest;
 import com.mashape.unirest.request.HttpRequest;
 import com.mashape.unirest.request.HttpRequestWithBody;
+import com.mashape.unirest.request.ValueUtils;
 import com.mashape.unirest.request.body.MultipartBody;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.multipart.MultipartFile;
@@ -144,19 +144,20 @@ public class RestReq {
 
         for (Map.Entry<String, Object> entry : requestParams.entrySet()) {
             Object value = entry.getValue();
+            boolean isFileCollection = false;
             if (value instanceof Collection) {
-                int isFileCollection = 0;
+                isFileCollection = true;
                 for (Object o : (Collection) value) {
-                    if (isFileCollection == 0) {
-                        isFileCollection = (o instanceof File || o instanceof MultipartFile) ? 1 : 2;
-                        if (isFileCollection == 2) break;
+                    if (o instanceof File || o instanceof MultipartFile)
+                        field = fieldFileOrElse(post, field, entry, o);
+                    else {
+                        isFileCollection = false;
+                        break;
                     }
-                    field = fieldFileOrElse(post, field, entry, o);
                 }
-                if (isFileCollection == 2) {
-                    field = fieldFileOrElse(post, field, entry, value);
-                }
-            } else {
+            }
+
+            if (!isFileCollection) {
                 field = fieldFileOrElse(post, field, entry, value);
             }
         }
@@ -171,11 +172,9 @@ public class RestReq {
         if (value instanceof File) {
             if (field != null) field.field(entry.getKey(), (File) value);
             else field = post.field(entry.getKey(), (File) value);
-        } else if (value instanceof org.springframework.web.multipart.MultipartFile) {
-            org.springframework.web.multipart.MultipartFile file;
-            file = (org.springframework.web.multipart.MultipartFile) value;
-            if (field != null) field.field(entry.getKey(), file);
-            else field = post.field(entry.getKey(), file);
+        } else if (value instanceof MultipartFile) {
+            if (field != null) field.field(entry.getKey(), (MultipartFile) value);
+            else field = post.field(entry.getKey(), (MultipartFile) value);
         } else {
             if (field != null) field.field(entry.getKey(), value);
             else field = post.field(entry.getKey(), value);
@@ -218,7 +217,7 @@ public class RestReq {
         post.queryString(mergeRequestParams());
 
         post.header("Content-Type", "application/json;charset=UTF-8");
-        String body = JSON.toJSONString(bean);
+        String body = ValueUtils.processValue(bean);
         post.body(body);
 
         Map<String, Object> requestParams = Maps.newHashMap();
@@ -235,7 +234,7 @@ public class RestReq {
         post.queryString(mergeRequestParams());
 
         post.header("Content-Type", "application/json;charset=UTF-8");
-        String body = JSON.toJSONString(bean);
+        String body = ValueUtils.processValue(bean);
         post.body(body);
 
         Map<String, Object> requestParams = Maps.newHashMap();

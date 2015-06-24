@@ -1,8 +1,9 @@
 package com.github.bingoohuang.springrestclient.boot.controller;
 
+import com.github.bingoohuang.springrest.boot.annotations.RestfulSign;
+import com.github.bingoohuang.springrest.boot.exception.NotFoundException;
+import com.github.bingoohuang.springrest.boot.exception.RestException;
 import com.github.bingoohuang.springrestclient.boot.exception.BadArgumentException;
-import com.github.bingoohuang.springrestclient.boot.exception.NotFoundException;
-import com.github.bingoohuang.springrestclient.boot.exception.RestException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/exception")
+@RestfulSign
 public class ExceptionController {
     @RequestMapping("/error/{error}")
     public int error(@PathVariable("error") int error) {

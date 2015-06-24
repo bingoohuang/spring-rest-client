@@ -1,6 +1,6 @@
 package com.github.bingoohuang.springrestclient.boot.controller;
 
-import com.github.bingoohuang.springrestclient.boot.annotations.RestfulSign;
+import com.github.bingoohuang.springrest.boot.annotations.RestfulSign;
 import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,7 +14,7 @@ import java.io.OutputStream;
 
 @RestController
 @RequestMapping("/download")
-@RestfulSign(ignore = true)
+@RestfulSign
 public class DownloadController {
     @RequestMapping("/image")
     public void image(HttpServletRequest request,

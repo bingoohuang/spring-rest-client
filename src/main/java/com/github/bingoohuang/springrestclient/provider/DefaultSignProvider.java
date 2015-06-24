@@ -7,6 +7,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.mashape.unirest.request.HttpRequest;
+import com.mashape.unirest.request.ValueUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +58,7 @@ public class DefaultSignProvider implements SignProvider {
         String originalStr = createOriginalStringForSign(requestParams, httpRequest);
 
         Logger logger = LoggerFactory.getLogger(apiClass);
-        logger.debug("string to be signed : {}", originalStr);
+        logger.debug("string to be signed : {}", originalStr.replace("\n", "\\n"));
 
         return hmacSHA256(originalStr, clientSecurity);
     }
@@ -84,13 +85,20 @@ public class DefaultSignProvider implements SignProvider {
             signStr.append(entry.getKey()).append('$');
 
             Object value = entry.getValue();
+            boolean isFile = false;
             if (value instanceof Collection) {
+                isFile = true;
                 for (Object s : (Collection) value) {
-                    append(signStr, s);
+                    if (s instanceof File || s instanceof MultipartFile)
+                        append(signStr, s);
+                    else {
+                        isFile = false;
+                        break;
+                    }
                 }
-            } else {
-                append(signStr, value);
             }
+
+            if (!isFile) append(signStr, value);
         }
     }
 
@@ -115,13 +123,11 @@ public class DefaultSignProvider implements SignProvider {
     private void append(StringBuilder signStr, Object object) {
         if (object instanceof File) {
             signStr.append(md5((File) object));
-        } else if (object instanceof org.springframework.web.multipart.MultipartFile) {
-            org.springframework.web.multipart.MultipartFile file;
-            file = (org.springframework.web.multipart.MultipartFile) object;
-            byte[] bytes = fuckFileGetBytesException(file);
+        } else if (object instanceof MultipartFile) {
+            byte[] bytes = fuckFileGetBytesException((MultipartFile) object);
             signStr.append(md5(bytes));
         } else {
-            signStr.append("" + object);
+            signStr.append(ValueUtils.processValue(object));
         }
         signStr.append('$');
     }
