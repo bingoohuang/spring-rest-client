@@ -1,4 +1,4 @@
-package com.github.bingoohuang.springrestclient.xml;
+package com.github.bingoohuang.springrestclient.tests.xml;
 
 import javax.xml.bind.annotation.*;
 

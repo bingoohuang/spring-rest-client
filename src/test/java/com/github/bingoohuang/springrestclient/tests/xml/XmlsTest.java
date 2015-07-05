@@ -1,5 +1,6 @@
-package com.github.bingoohuang.springrestclient.xml;
+package com.github.bingoohuang.springrestclient.tests.xml;
 
+import com.github.bingoohuang.springrestclient.xml.Xmls;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
