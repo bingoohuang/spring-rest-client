@@ -1,9 +1,28 @@
 package com.github.bingoohuang.springrestclient.utils;
 
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.ApplicationContext;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 
 public class Obj {
+    public static Object getOrCreateBean(ApplicationContext appContext, Class<?> requiredType) {
+        try {
+            return appContext.getBean(requiredType);
+        } catch (NoSuchBeanDefinitionException e) {
+            return createObject(requiredType).toString();
+        }
+    }
+
+    public static <T> T getBean(ApplicationContext appContext, Class<T> beanClass) {
+        try {
+            return appContext.getBean(beanClass);
+        } catch (BeansException e) {
+            return null;
+        }
+    }
 
     public static <T> T createObject(Class<T> clazz, Object ctorArg) {
         try {

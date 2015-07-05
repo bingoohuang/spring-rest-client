@@ -49,8 +49,8 @@ public class SpringRestClientFactory {
         Class<?> restClientImplClass = generator.generate();
         Object object = Obj.createObject(restClientImplClass);
 
-        setSignProvider(restClientImplClass, object, restClientClass);
-        setBaseUrlProvider(restClientImplClass, object, restClientClass);
+        setSignProvider(restClientImplClass, object, restClientClass, appContext);
+        setBaseUrlProvider(restClientImplClass, object, restClientClass, appContext);
         setStatusMappings(restClientImplClass, object, restClientClass);
         setFixedRequestParams(restClientImplClass, object, restClientClass);
         setSuccInResponseJSONProperty(restClientImplClass, object, restClientClass);
@@ -159,20 +159,22 @@ public class SpringRestClientFactory {
                 + " is checked exception and should be declared on the method " + method);
     }
 
-    private static void setBaseUrlProvider(Class<?> restClientImplClass, Object object, Class restClientClass) {
-        BaseUrlProvider provider = createBaseUrlProvider(restClientClass);
+    private static void setBaseUrlProvider(Class<?> restClientImplClass, Object object, Class restClientClass, ApplicationContext appContext) {
+        BaseUrlProvider provider = createBaseUrlProvider(restClientClass, appContext);
         Obj.setField(restClientImplClass, object, MethodGenerator.baseUrlProvider, provider);
     }
 
-    private static void setSignProvider(Class<?> restClientImplClass, Object object, Class restClientClass) {
-        SignProvider provider = createSignProvider(restClientClass);
+    private static void setSignProvider(Class<?> restClientImplClass, Object object, Class restClientClass, ApplicationContext appContext) {
+        SignProvider provider = createSignProvider(restClientClass, appContext);
         Obj.setField(restClientImplClass, object, MethodGenerator.signProvider, provider);
     }
 
-    private static SignProvider createSignProvider(Class<?> restClientClass) {
-        SpringRestClientEnabled restClientEnabled =
-                restClientClass.getAnnotation(SpringRestClientEnabled.class);
+    private static SignProvider createSignProvider(Class<?> restClientClass, ApplicationContext appContext) {
+        SpringRestClientEnabled restClientEnabled = restClientClass.getAnnotation(SpringRestClientEnabled.class);
         Class<? extends SignProvider> signProviderClass = restClientEnabled.signProvider();
+        SignProvider bean = Obj.getBean(appContext, signProviderClass);
+        if (bean != null) return bean;
+
         if (signProviderClass.isInterface()) return null;
 
         try {
@@ -182,13 +184,15 @@ public class SpringRestClientFactory {
         }
     }
 
-    private static BaseUrlProvider createBaseUrlProvider(Class<?> restClientClass) {
-        SpringRestClientEnabled restClientEnabled =
-                restClientClass.getAnnotation(SpringRestClientEnabled.class);
+    private static BaseUrlProvider createBaseUrlProvider(Class<?> restClientClass, ApplicationContext appContext) {
+        SpringRestClientEnabled restClientEnabled = restClientClass.getAnnotation(SpringRestClientEnabled.class);
         String baseUrl = restClientEnabled.baseUrl();
         if (!Strings.isNullOrEmpty(baseUrl)) return new FixedBaseUrlProvider(baseUrl);
 
         Class<? extends BaseUrlProvider> providerClass = restClientEnabled.baseUrlProvider();
+        BaseUrlProvider bean = Obj.getBean(appContext, providerClass);
+        if (bean != null) return bean;
+
         if (providerClass.isInterface()) {
             throw new RuntimeException("base url should be configured for api " + restClientClass);
         }

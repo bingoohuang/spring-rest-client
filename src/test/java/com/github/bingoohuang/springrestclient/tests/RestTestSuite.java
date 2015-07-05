@@ -24,6 +24,8 @@ import org.n3r.diamond.client.impl.MockDiamondServer;
         DownloadApiTest.class,
         JsonRequestParamApiTest.class,
         TidApiTest.class,
+        EmployeeXmlApiTest.class,
+        MixQueryAndFieldsApiTest.class,
 })
 public class RestTestSuite {
     @ClassRule

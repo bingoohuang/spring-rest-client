@@ -16,7 +16,6 @@ import com.mashape.unirest.request.HttpRequest;
 import com.mashape.unirest.request.HttpRequestWithBody;
 import com.mashape.unirest.request.ValueUtils;
 import com.mashape.unirest.request.body.MultipartBody;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -41,6 +40,7 @@ public class RestReq {
     final RestLog restLog;
     final SignProvider signProvider;
     final ApplicationContext appContext;
+    final RequestParamsHelper requestParamsHelper;
 
     RestReq(SuccInResponseJSONProperty succInResponseJSONProperty,
             Map<String, Object> fixedRequestParams,
@@ -64,6 +64,8 @@ public class RestReq {
         this.restLog = new RestLog(apiClass, async);
         this.signProvider = signProvider;
         this.appContext = appContext;
+
+        this.requestParamsHelper = new RequestParamsHelper(fixedRequestParams, requestParams, appContext);
     }
 
     static ThreadLocal<HttpResponse<?>> lastResponseTL;
@@ -81,7 +83,7 @@ public class RestReq {
         HttpRequest get = Unirest.get(url);
         setRouteParams(get);
 
-        get.queryString(mergeRequestParams());
+        get.queryString(requestParamsHelper.mergeRequestParams());
 
         return request(null, get);
     }
@@ -91,7 +93,7 @@ public class RestReq {
         HttpRequest get = Unirest.get(url);
         setRouteParams(get);
 
-        get.queryString(mergeRequestParams());
+        get.queryString(requestParamsHelper.mergeRequestParams());
 
         return requestBinary(null, get);
     }
@@ -101,7 +103,7 @@ public class RestReq {
         HttpRequest get = Unirest.get(url);
         setRouteParams(get);
 
-        get.queryString(mergeRequestParams());
+        get.queryString(requestParamsHelper.mergeRequestParams());
 
         return requestAsync(null, get);
     }
@@ -111,7 +113,7 @@ public class RestReq {
         HttpRequest get = Unirest.get(url);
         setRouteParams(get);
 
-        get.queryString(mergeRequestParams());
+        get.queryString(requestParamsHelper.mergeRequestParams());
 
         return requestAsyncBinary(null, get);
     }
@@ -120,8 +122,9 @@ public class RestReq {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
         setRouteParams(post);
+        post.queryString(requestParamsHelper.createQueryParams());
 
-        Map<String, Object> requestParams = mergeRequestParams();
+        Map<String, Object> requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
         BaseRequest fields = fields(post, requestParams);
 
         return request(requestParams, fields);
@@ -131,8 +134,9 @@ public class RestReq {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
         setRouteParams(post);
+        post.queryString(requestParamsHelper.createQueryParams());
 
-        Map<String, Object> requestParams = mergeRequestParams();
+        Map<String, Object> requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
         BaseRequest fields = fields(post, requestParams);
 
         return requestBinary(requestParams, fields);
@@ -186,8 +190,10 @@ public class RestReq {
     public Future<HttpResponse<String>> postAsync() throws Throwable {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
+        setRouteParams(post);
+        post.queryString(requestParamsHelper.createQueryParams());
 
-        Map<String, Object> requestParams = mergeRequestParams();
+        Map<String, Object> requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
         BaseRequest fields = fields(post, requestParams);
 
         return requestAsync(requestParams, fields);
@@ -196,8 +202,10 @@ public class RestReq {
     public Future<HttpResponse<InputStream>> postAsyncBinary() throws Throwable {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
+        setRouteParams(post);
+        post.queryString(requestParamsHelper.createQueryParams());
 
-        Map<String, Object> requestParams = mergeRequestParams();
+        Map<String, Object> requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
         BaseRequest fields = fields(post, requestParams);
 
         return requestAsyncBinary(requestParams, fields);
@@ -213,8 +221,7 @@ public class RestReq {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
         setRouteParams(post);
-
-        post.queryString(mergeRequestParams());
+        post.queryString(requestParamsHelper.mergeRequestParams());
 
         post.header("Content-Type", "application/json;charset=UTF-8");
         String body = ValueUtils.processValue(bean);
@@ -230,8 +237,7 @@ public class RestReq {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
         setRouteParams(post);
-
-        post.queryString(mergeRequestParams());
+        post.queryString(requestParamsHelper.mergeRequestParams());
 
         post.header("Content-Type", "application/json;charset=UTF-8");
         String body = ValueUtils.processValue(bean);
@@ -247,7 +253,7 @@ public class RestReq {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
         setRouteParams(post);
-        post.queryString(mergeRequestParams());
+        post.queryString(requestParamsHelper.mergeRequestParams());
 
         post.header("Content-Type", "application/json;charset=UTF-8");
         String body = JSON.toJSONString(bean);
@@ -263,7 +269,7 @@ public class RestReq {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
         setRouteParams(post);
-        post.queryString(mergeRequestParams());
+        post.queryString(requestParamsHelper.mergeRequestParams());
 
         post.header("Content-Type", "application/json;charset=UTF-8");
         String body = JSON.toJSONString(bean);
@@ -275,24 +281,6 @@ public class RestReq {
         return requestAsyncBinary(requestParams, post);
     }
 
-    private Map<String, Object> mergeRequestParams() {
-        Map<String, Object> mergedRequestParams = Maps.newHashMap();
-        for (Map.Entry<String, Object> entry : fixedRequestParams.entrySet()) {
-            Object value = entry.getValue();
-            if (value instanceof Class && value != void.class) {
-                Class requiredType = (Class) value;
-                try {
-                    Object bean = appContext.getBean(requiredType);
-                    value = bean.toString();
-                } catch (NoSuchBeanDefinitionException e) {
-                    value = Obj.createObject(requiredType).toString();
-                }
-            }
-            mergedRequestParams.put(entry.getKey(), value);
-        }
-        mergedRequestParams.putAll(requestParams);
-        return mergedRequestParams;
-    }
 
     private String request(Map<String, Object> requestParams, BaseRequest httpRequest) throws Throwable {
         boolean loggedResponse = false;
@@ -304,7 +292,7 @@ public class RestReq {
             loggedResponse = true;
             lastResponseTL.set(response);
 
-            if (isSuccessful(response)) return nullOrBody(response);
+            if (isSuccessful(response)) return RestClientUtils.nullOrBody(response);
 
             throw processStatusExceptionMappings(response);
         } catch (UnirestException e) {
@@ -326,7 +314,7 @@ public class RestReq {
             loggedResponse = true;
             lastResponseTL.set(response);
 
-            if (isSuccessful(response)) return nullOrBody(response);
+            if (isSuccessful(response)) return RestClientUtils.nullOrBody(response);
 
             throw processStatusExceptionMappings(response);
         } catch (UnirestException e) {
@@ -429,12 +417,6 @@ public class RestReq {
         return baseUrl + prefix;
     }
 
-    public static <T> T nullOrBody(HttpResponse<T> response) {
-        String returnNull = response.header("returnNull");
-        if ("true".equals(returnNull)) return null;
-
-        return response.getBody();
-    }
 
     public boolean isSuccessful(HttpResponse<?> response) {
         int status = response.getStatus();
@@ -442,7 +424,7 @@ public class RestReq {
         if (!isHttpSucc) return false;
 
         if (succInResponseJSONProperty == null) return true;
-        if (!isResponseJsonContentType(response)) return true;
+        if (!RestClientUtils.isResponseJsonContentType(response)) return true;
 
         Object body = response.getBody();
         if (body instanceof InputStream) return true;
@@ -454,8 +436,4 @@ public class RestReq {
         return expectedValue.equals("" + realValue);
     }
 
-    private static boolean isResponseJsonContentType(HttpResponse<?> response) {
-        String contentType = response.header("Content-Type");
-        return contentType != null && contentType.contains("application/json");
-    }
 }

@@ -3,9 +3,7 @@ package com.github.bingoohuang.springrestclient.generators;
 import com.github.bingoohuang.springrestclient.annotations.SuccInResponseJSONProperty;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
 import com.github.bingoohuang.springrestclient.provider.SignProvider;
-import com.github.bingoohuang.springrestclient.utils.Futures;
-import com.github.bingoohuang.springrestclient.utils.RestReq;
-import com.github.bingoohuang.springrestclient.utils.RestReqBuilder;
+import com.github.bingoohuang.springrestclient.utils.*;
 import com.google.common.primitives.Primitives;
 import org.apache.commons.lang3.StringUtils;
 import org.objectweb.asm.ClassWriter;
@@ -65,9 +63,9 @@ public class MethodGenerator {
         returnType = method.getReturnType();
         this.classRequestMapping = classRequestMapping;
         this.requestMapping = method.getAnnotation(RequestMapping.class);
-        this.futureReturnType = Futures.isFutureReturnType(method);
+        this.futureReturnType = Types.isFutureReturnType(method);
         this.isBinaryReturnType = returnType == InputStream.class;
-        this.isFutureBinaryReturnType = futureReturnType && Futures.getGenericTypeArgument(method) == InputStream.class;
+        this.isFutureBinaryReturnType = futureReturnType && Types.getGenericTypeArgument(method) == InputStream.class;
     }
 
     private MethodVisitor visitMethod(Method method, ClassWriter classWriter) {
@@ -254,7 +252,7 @@ public class MethodGenerator {
         }
 
         if (futureReturnType) {
-            java.lang.reflect.Type futureType = Futures.getFutureGenericArgClass(method);
+            java.lang.reflect.Type futureType = Types.getFutureGenericArgClass(method);
             if (!(futureType instanceof Class)) {
                 mv.visitInsn(ARETURN);
                 return;
@@ -266,17 +264,16 @@ public class MethodGenerator {
                     futureType == Void.class ? "convertFutureVoid" : "convertFuture",
                     sig(Future.class, Future.class, Class.class, RestReq.class), false);
         } else {
-            java.lang.reflect.Type typeArgument = Futures.getGenericTypeArgument(method);
+            java.lang.reflect.Type typeArgument = Types.getGenericTypeArgument(method);
             if (typeArgument == null) {
                 mv.visitLdcInsn(Type.getType(returnType));
-                mv.visitMethodInsn(INVOKESTATIC, p(Futures.class), "convertReturn",
+                mv.visitMethodInsn(INVOKESTATIC, p(Beans.class), "unmarshal",
                         sig(Object.class, String.class, Class.class), false);
             } else {
                 mv.visitLdcInsn(Type.getType((Class) typeArgument));
-                mv.visitMethodInsn(INVOKESTATIC, p(Futures.class), "convertArrReturn",
+                mv.visitMethodInsn(INVOKESTATIC, p(Beans.class), "unmarshalArr",
                         sig(Object.class, String.class, Class.class), false);
             }
-
         }
         mv.visitTypeInsn(CHECKCAST, p(returnType));
         mv.visitInsn(ARETURN);

@@ -18,7 +18,7 @@ public class SpringRestClientConfig {
     public Redis redis() {
         RedisConfig redisConfig = new RedisConfig();
         redisConfig.setHost("127.0.0.1");
-        redisConfig.setPort(16379);
+        redisConfig.setPort(6379);
         return new Redis(redisConfig);
     }
 

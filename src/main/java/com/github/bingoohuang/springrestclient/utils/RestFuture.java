@@ -1,6 +1,5 @@
 package com.github.bingoohuang.springrestclient.utils;
 
-import com.alibaba.fastjson.JSON;
 import com.mashape.unirest.http.HttpResponse;
 
 import java.io.InputStream;
@@ -63,11 +62,11 @@ public class RestFuture<T> implements Future<T>, ResponseAware {
         this.response = response;
 
         if (restReq.isSuccessful(response)) {
-            Object body = restReq.nullOrBody(response);
+            Object body = RestClientUtils.nullOrBody(response);
             if (body == null) return null;
             if (beanClass == InputStream.class) return (T) response.getRawBody();
 
-            T bean = JSON.parseObject("" + body, beanClass);
+            T bean = (T) Beans.unmarshal(body.toString(), beanClass);
             return bean;
         }
 
