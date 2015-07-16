@@ -1,7 +1,6 @@
 package com.github.bingoohuang.springrestclient.boot;
 
 import com.github.bingoohuang.springrest.boot.RestConfiguration;
-import com.github.bingoohuang.springrest.boot.advisor.RequestMappingAdvisor;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
