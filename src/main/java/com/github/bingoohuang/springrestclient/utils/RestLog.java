@@ -83,8 +83,12 @@ public class RestLog {
         String headers = buildHeaders(response.getHeaders());
         Object body = response.getBody();
         long costTimeMillis = System.currentTimeMillis() - start;
-        logger.info("spring rest client {} {} response: cost {} millis, {} headers:{} body: {}",
+        if (status >= 200 & status < 300)
+            logger.info("spring rest client {} {} response: cost {} millis, {} headers:{} body: {}",
                 syncOrAsync, uuid, costTimeMillis, status, headers, singleLine(body));
+        else
+            logger.error("spring rest client {} {} response: cost {} millis, {} headers:{} body: {}",
+                    syncOrAsync, uuid, costTimeMillis, status, headers, singleLine(body));
     }
 
     public void log(String status) {

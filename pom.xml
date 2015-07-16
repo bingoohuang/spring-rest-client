@@ -82,11 +82,7 @@
             <!--<artifactId>jaxb-impl</artifactId>-->
             <!--<version>2.2.11</version>-->
         <!--</dependency>-->
-        <dependency>
-            <groupId>com.github.bingoohuang</groupId>
-            <artifactId>spring-rest-boot</artifactId>
-            <version>0.0.4</version>
-        </dependency>
+
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpasyncclient</artifactId>
@@ -134,6 +130,12 @@
             <version>1.2.4</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.bingoohuang</groupId>
+            <artifactId>spring-rest-boot</artifactId>
+            <version>0.0.8</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.jmockit</groupId>
             <artifactId>jmockit</artifactId>
