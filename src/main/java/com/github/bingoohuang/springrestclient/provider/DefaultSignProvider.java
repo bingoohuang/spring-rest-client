@@ -55,30 +55,31 @@ public class DefaultSignProvider implements SignProvider {
     }
 
     private String hmac(Class<?> apiClass, Map<String, Object> requestParams, HttpRequest httpRequest) {
-        String originalStr = createOriginalStringForSign(requestParams, httpRequest);
-
-        Logger logger = LoggerFactory.getLogger(apiClass);
-        logger.debug("string to be signed : {}", originalStr.replace("\n", "\\n"));
-
+        String originalStr = createOriginalStringForSign(apiClass, requestParams, httpRequest);
         return hmacSHA256(originalStr, clientSecurity);
     }
 
-    private String createOriginalStringForSign(Map<String, Object> requestParams, HttpRequest httpRequest) {
-        StringBuilder signStr = new StringBuilder();
+    private String createOriginalStringForSign(Class<?> apiClass, Map<String, Object> requestParams, HttpRequest httpRequest) {
+        final StringBuilder signStr = new StringBuilder();
+        final StringBuilder logStr = new StringBuilder();
+        Appendable proxy = new AbbreviateAppendable(logStr, signStr);
 
-        appendMethodAndUrl(httpRequest, signStr);
-        appendHeaders(httpRequest, signStr);
-        appendRequestParams(requestParams, signStr);
+        appendMethodAndUrl(httpRequest, proxy);
+        appendHeaders(httpRequest, proxy);
+        appendRequestParams(requestParams, proxy);
+
+        Logger logger = LoggerFactory.getLogger(apiClass);
+        logger.debug("string to be signed : {}", logStr);
 
         return signStr.toString();
     }
 
-    private void appendMethodAndUrl(HttpRequest httpRequest, StringBuilder signStr) {
+    private void appendMethodAndUrl(HttpRequest httpRequest, Appendable signStr) {
         signStr.append(httpRequest.getHttpMethod().name()).append('$');
         signStr.append(httpRequest.getUrl()).append('$');
     }
 
-    private void appendRequestParams(Map<String, Object> requestParams, StringBuilder signStr) {
+    private void appendRequestParams(Map<String, Object> requestParams, Appendable signStr) {
         Map<String, Object> params = Maps.newTreeMap();
         if (requestParams != null) params.putAll(requestParams);
         for (Map.Entry<String, Object> entry : params.entrySet()) {
@@ -106,7 +107,7 @@ public class DefaultSignProvider implements SignProvider {
             "Content-Type"
     };
 
-    private void appendHeaders(HttpRequest httpRequest, StringBuilder signStr) {
+    private void appendHeaders(HttpRequest httpRequest, Appendable signStr) {
         Map<String, List<String>> headers = Maps.newTreeMap();
         headers.putAll(httpRequest.getHeaders());
 
@@ -120,14 +121,14 @@ public class DefaultSignProvider implements SignProvider {
         }
     }
 
-    private void append(StringBuilder signStr, Object object) {
+    private void append(Appendable signStr, Object object) {
         if (object instanceof File) {
             signStr.append(md5((File) object));
         } else if (object instanceof MultipartFile) {
             byte[] bytes = fuckFileGetBytesException((MultipartFile) object);
             signStr.append(md5(bytes));
         } else {
-            signStr.append(ValueUtils.processValue(object));
+            signStr.appendAbbreviate(ValueUtils.processValue(object));
         }
         signStr.append('$');
     }
@@ -171,4 +172,5 @@ public class DefaultSignProvider implements SignProvider {
             throw Throwables.propagate(e);
         }
     }
+
 }
