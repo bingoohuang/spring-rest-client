@@ -12,7 +12,6 @@ import org.apache.http.HttpEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +24,7 @@ public class RestLog {
     private final Logger logger;
     private final Class<?> apiClass;
     private long start;
+    Logger log = LoggerFactory.getLogger(RestLog.class);
 
     public RestLog(Class<?> apiClass, boolean async) {
         this.apiClass = apiClass;
@@ -50,7 +50,6 @@ public class RestLog {
         if (signProvider == null) return;
 
         signProvider.sign(apiClass, uuid, requestParams, httpRequest);
-
     }
 
     private String getBodyAsString(Map<String, Object> requestParams, HttpRequest httpRequest) {
@@ -62,10 +61,9 @@ public class RestLog {
             // MultipartFormEntity // StringEntity // UrlEncodedFormEntity;
             InputStream context = entity.getContent();
             return new String(ByteStreams.toByteArray(context), Charsets.UTF_8);
-        } catch (UnsupportedOperationException e) {
+        } catch (Exception e) {
+            log.warn("exception", e);
             return requestParams.toString();
-        } catch (IOException e) {
-            return "";
         }
     }
 
@@ -85,7 +83,7 @@ public class RestLog {
         long costTimeMillis = System.currentTimeMillis() - start;
         if (status >= 200 & status < 300)
             logger.info("spring rest client {} {} response: cost {} millis, {} headers:{} body: {}",
-                syncOrAsync, uuid, costTimeMillis, status, headers, singleLine(body));
+                    syncOrAsync, uuid, costTimeMillis, status, headers, singleLine(body));
         else
             logger.error("spring rest client {} {} response: cost {} millis, {} headers:{} body: {}",
                     syncOrAsync, uuid, costTimeMillis, status, headers, singleLine(body));
