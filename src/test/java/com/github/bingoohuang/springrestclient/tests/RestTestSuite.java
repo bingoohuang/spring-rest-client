@@ -28,6 +28,7 @@ import org.n3r.diamond.client.impl.MockDiamondServer;
         EmployeeXmlApiTest.class,
         MixQueryAndFieldsApiTest.class,
         XmlsTest.class,
+        GetCodeByMobileApiTest.class,
 })
 public class RestTestSuite {
     @ClassRule

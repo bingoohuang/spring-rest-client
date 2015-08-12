@@ -1,11 +1,11 @@
 package com.github.bingoohuang.springrestclient.generators;
 
+import com.github.bingoohuang.asmvalidator.AsmParamsValidatorFactory;
 import com.github.bingoohuang.springrestclient.annotations.SuccInResponseJSONProperty;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
 import com.github.bingoohuang.springrestclient.provider.SignProvider;
 import com.github.bingoohuang.springrestclient.utils.*;
 import com.google.common.primitives.Primitives;
-import org.apache.commons.lang3.StringUtils;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -21,8 +21,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 
+import static com.github.bingoohuang.asmvalidator.AsmParamsValidatorFactory.createValidatorSignature;
 import static com.github.bingoohuang.springrestclient.utils.Asms.*;
 import static com.github.bingoohuang.springrestclient.utils.PrimitiveWrappers.getParseXxMethodName;
+import static org.apache.commons.lang3.StringUtils.uncapitalize;
 import static org.objectweb.asm.Opcodes.*;
 
 public class MethodGenerator {
@@ -49,6 +51,8 @@ public class MethodGenerator {
 
     private final String implp;
     String restReqBuilder = p(RestReqBuilder.class);
+    private String methodValidatorSignature;
+    private boolean validatorsEnabled;
 
 
     public MethodGenerator(ClassWriter classWriter, String implName, Method method, String classRequestMapping) {
@@ -65,7 +69,8 @@ public class MethodGenerator {
         this.requestMapping = method.getAnnotation(RequestMapping.class);
         this.futureReturnType = Types.isFutureReturnType(method);
         this.isBinaryReturnType = returnType == InputStream.class;
-        this.isFutureBinaryReturnType = futureReturnType && Types.getGenericTypeArgument(method) == InputStream.class;
+        this.isFutureBinaryReturnType = futureReturnType
+                && Types.getGenericTypeArgument(method) == InputStream.class;
     }
 
     private MethodVisitor visitMethod(Method method, ClassWriter classWriter) {
@@ -83,18 +88,51 @@ public class MethodGenerator {
     }
 
     public void generate() {
+        prepare();
         start();
         body();
         end();
     }
 
+    private void prepare() {
+        prepareMethodParametersValidators();
+    }
+
+    private void prepareMethodParametersValidators() {
+        this.validatorsEnabled = AsmParamsValidatorFactory.createValidators(method);
+        this.methodValidatorSignature = createValidatorSignature(method);
+    }
+
     private void body() {
+        generateValidateCode();
         createMap(1, PathVariable.class);
         createMap(2, RequestParam.class);
 
         buildUniRestReq();
         request();
         dealResult();
+    }
+
+    private void generateValidateCode() {
+        if (paramSize == 0) return;
+        if (!validatorsEnabled) return;
+
+        mv.visitLdcInsn(methodValidatorSignature);
+        if (paramSize <= 5) mv.visitInsn(ICONST_0 + paramSize);
+        else mv.visitIntInsn(BIPUSH, paramSize);
+        mv.visitTypeInsn(ANEWARRAY, p(Object.class));
+
+        for (int i = 0; i < paramSize; ++i) {
+            mv.visitInsn(DUP);
+            if (i <= 5) mv.visitInsn(ICONST_0 + i);
+            else mv.visitIntInsn(BIPUSH, i);
+            mv.visitVarInsn(ALOAD, i + 1);
+            mv.visitInsn(AASTORE);
+        }
+
+        mv.visitMethodInsn(INVOKESTATIC,
+                p(AsmParamsValidatorFactory.class), "validate",
+                sig(void.class, String.class, Object[].class), false);
     }
 
     private void dealResult() {
@@ -190,14 +228,17 @@ public class MethodGenerator {
 
     private void setFieldPerMethod(String namePostFix, Class propertyClass) {
         mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, implp, method.getName() + namePostFix, ci(propertyClass));
-        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, StringUtils.uncapitalize(namePostFix), sigRest(propertyClass), false);
+        mv.visitFieldInsn(GETFIELD, implp,
+                method.getName() + namePostFix, ci(propertyClass));
+        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder,
+                uncapitalize(namePostFix), sigRest(propertyClass), false);
     }
 
     private void setField(String buildMethodName, Class propertyClass) {
         mv.visitVarInsn(ALOAD, 0);
         mv.visitFieldInsn(GETFIELD, implp, buildMethodName, ci(propertyClass));
-        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, buildMethodName, sigRest(propertyClass), false);
+        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder,
+                buildMethodName, sigRest(propertyClass), false);
     }
 
     private String sigRest(Class<?> clazz) {
