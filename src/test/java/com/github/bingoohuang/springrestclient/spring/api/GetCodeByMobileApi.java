@@ -1,7 +1,6 @@
 package com.github.bingoohuang.springrestclient.spring.api;
 
 import com.github.bingoohuang.asmvalidator.annotations.*;
-import com.github.bingoohuang.asmvalidator.asm.AsmCreateClassFile4Debug;
 import com.github.bingoohuang.springrestclient.annotations.SpringRestClientEnabled;
 import com.github.bingoohuang.springrestclient.provider.DefaultSignProvider;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,7 +18,6 @@ public interface GetCodeByMobileApi {
     String getCode(@PathVariable("mobile") @AsmMobile String mobile);
 
     @AsmValid
-    @AsmCreateClassFile4Debug
     @RequestMapping(value = "/update-user-mobile", method = POST)
     boolean updateUserMobile(
             @RequestParam("userId")

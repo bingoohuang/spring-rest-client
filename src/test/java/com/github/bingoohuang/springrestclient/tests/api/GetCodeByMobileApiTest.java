@@ -25,7 +25,7 @@ public class GetCodeByMobileApiTest {
         api.getCode("1XXX");
     }
 
-    @Test
+    @Test(expected = AsmValidatorException.class)
     public void nullMobile() {
         api.getCode(null);
     }
@@ -44,12 +44,12 @@ public class GetCodeByMobileApiTest {
     }
 
 
-    @Test
+    @Test(expected = AsmValidatorException.class)
     public void updateUserMobileUserIdTooLong() {
-         api.updateUserMobile("12345678901234567890", "18602506990");
+        api.updateUserMobile("12345678901234567890", "18602506990");
     }
 
-    @Test
+    @Test(expected = AsmValidatorException.class)
     public void updateUserMobileBadUserId() {
         api.updateUserMobile("123456789012345678X", "18602506990");
     }
