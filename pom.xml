@@ -9,7 +9,7 @@
 
     <groupId>com.github.bingoohuang</groupId>
     <artifactId>spring-rest-client</artifactId>
-    <version>0.0.12-SNAPSHOT</version>
+    <version>0.0.12</version>
     <packaging>jar</packaging>
 
     <name>spring rest client</name>
