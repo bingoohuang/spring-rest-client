@@ -1,6 +1,6 @@
 package com.github.bingoohuang.springrestclient.tests.api;
 
-import com.github.bingoohuang.asmvalidator.ex.AsmValidatorException;
+import com.github.bingoohuang.asmvalidator.ex.AsmValidateException;
 import com.github.bingoohuang.springrestclient.spring.SpringRestClientConfig;
 import com.github.bingoohuang.springrestclient.spring.api.GetCodeByMobileApi;
 import org.junit.Test;
@@ -20,12 +20,12 @@ public class GetCodeByMobileApiTest {
     @Autowired
     GetCodeByMobileApi api;
 
-    @Test(expected = AsmValidatorException.class)
+    @Test(expected = AsmValidateException.class)
     public void badMobile() {
         api.getCode("1XXX");
     }
 
-    @Test(expected = AsmValidatorException.class)
+    @Test(expected = AsmValidateException.class)
     public void nullMobile() {
         api.getCode(null);
     }
@@ -44,12 +44,12 @@ public class GetCodeByMobileApiTest {
     }
 
 
-    @Test(expected = AsmValidatorException.class)
+    @Test(expected = AsmValidateException.class)
     public void updateUserMobileUserIdTooLong() {
         api.updateUserMobile("12345678901234567890", "18602506990");
     }
 
-    @Test(expected = AsmValidatorException.class)
+    @Test(expected = AsmValidateException.class)
     public void updateUserMobileBadUserId() {
         api.updateUserMobile("123456789012345678X", "18602506990");
     }
