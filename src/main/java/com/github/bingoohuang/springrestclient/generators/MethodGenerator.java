@@ -1,6 +1,5 @@
 package com.github.bingoohuang.springrestclient.generators;
 
-import com.github.bingoohuang.asmvalidator.AsmParamsValidatorFactory;
 import com.github.bingoohuang.springrestclient.annotations.SuccInResponseJSONProperty;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
 import com.github.bingoohuang.springrestclient.provider.SignProvider;
@@ -22,6 +21,7 @@ import java.util.Map;
 import java.util.concurrent.Future;
 
 import static com.github.bingoohuang.asmvalidator.AsmParamsValidatorFactory.createValidatorSignature;
+import static com.github.bingoohuang.asmvalidator.AsmParamsValidatorFactory.createValidators;
 import static com.github.bingoohuang.springrestclient.utils.Asms.*;
 import static com.github.bingoohuang.springrestclient.utils.PrimitiveWrappers.getParseXxMethodName;
 import static org.apache.commons.lang3.StringUtils.uncapitalize;
@@ -99,7 +99,7 @@ public class MethodGenerator {
     }
 
     private void prepareMethodParametersValidators() {
-        this.validatorsEnabled = AsmParamsValidatorFactory.createValidators(method);
+        this.validatorsEnabled = createValidators(method);
         this.methodValidatorSignature = createValidatorSignature(method);
     }
 
@@ -117,6 +117,7 @@ public class MethodGenerator {
         if (paramSize == 0) return;
         if (!validatorsEnabled) return;
 
+        mv.visitLdcInsn(Type.getType(method.getDeclaringClass()));
         mv.visitLdcInsn(methodValidatorSignature);
         if (paramSize <= 5) mv.visitInsn(ICONST_0 + paramSize);
         else mv.visitIntInsn(BIPUSH, paramSize);
@@ -131,8 +132,8 @@ public class MethodGenerator {
         }
 
         mv.visitMethodInsn(INVOKESTATIC,
-                p(AsmParamsValidatorFactory.class), "validate",
-                sig(void.class, String.class, Object[].class), false);
+                p(AsmValidatorLog.class), "validate",
+                sig(void.class, Class.class, String.class, Object[].class), false);
     }
 
     private void dealResult() {
