@@ -8,6 +8,7 @@ import com.google.common.io.ByteStreams;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.request.HttpRequest;
 import com.mashape.unirest.request.body.Body;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,10 +41,13 @@ public class RestLog {
         String methodName = httpRequest.getHttpMethod().name();
         String url = httpRequest.getUrl();
         String headers = buildHeaders(httpRequest.getHeaders());
+        List<String> contentTypes = httpRequest.getHeaders().get("Content-Type");
+        String contentType = contentTypes != null && contentTypes.size() > 0 ? contentTypes.get(0) : null;
+
         String body = getBodyAsString(requestParams, httpRequest);
 
         logger.info("spring rest client {} {} request: {} {} headers:{} body: {}",
-                syncOrAsync, uuid, methodName, url, headers, singleLine(body));
+                syncOrAsync, uuid, methodName, url, headers, singleLine(contentType, body));
     }
 
     private void signReq(SignProvider signProvider, Map<String, Object> requestParams, HttpRequest httpRequest) {
@@ -62,7 +66,7 @@ public class RestLog {
             InputStream context = entity.getContent();
             return new String(ByteStreams.toByteArray(context), Charsets.UTF_8);
         } catch (Exception e) {
-            log.warn("exception", e);
+            log.warn("exception:{}", e.toString());
             return requestParams.toString();
         }
     }
@@ -79,14 +83,15 @@ public class RestLog {
 
         int status = response.getStatus();
         String headers = buildHeaders(response.getHeaders());
+        String contentType = response.getHeaders().getFirst("Content-Type");
         Object body = response.getBody();
         long costTimeMillis = System.currentTimeMillis() - start;
         if (status >= 200 & status < 300)
             logger.info("spring rest client {} {} response: cost {} millis, {} headers:{} body: {}",
-                    syncOrAsync, uuid, costTimeMillis, status, headers, singleLine(body));
+                    syncOrAsync, uuid, costTimeMillis, status, headers, singleLine(contentType, body));
         else
             logger.error("spring rest client {} {} response: cost {} millis, {} headers:{} body: {}",
-                    syncOrAsync, uuid, costTimeMillis, status, headers, singleLine(body));
+                    syncOrAsync, uuid, costTimeMillis, status, headers, singleLine(contentType, body));
     }
 
     public void log(String status) {
@@ -102,12 +107,12 @@ public class RestLog {
 
     static Pattern lineBreakPattern = Pattern.compile("(\\r?\\n)+");
 
-    public String singleLine(Object object) {
-        if (object instanceof InputStream) return "inputstream";
+    public String singleLine(String contentType, Object object) {
+        if (StringUtils.contains(contentType, "image")) return "<image>";
+        if (object instanceof InputStream) return "<inputstream>";
 
         String str = "" + object;
         String s = lineBreakPattern.matcher(str).replaceAll("\\n");
-        return Url.decode(s);
+        return UrlDecodes.decodeQuietly(s);
     }
-
 }
