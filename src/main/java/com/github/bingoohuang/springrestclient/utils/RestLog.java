@@ -1,14 +1,12 @@
 package com.github.bingoohuang.springrestclient.utils;
 
 import com.github.bingoohuang.springrestclient.provider.SignProvider;
-import com.github.bingoohuang.utils.net.Url;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.io.ByteStreams;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.request.HttpRequest;
 import com.mashape.unirest.request.body.Body;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
+
+import static org.apache.commons.lang3.StringUtils.containsIgnoreCase;
 
 public class RestLog {
     private final String syncOrAsync;
@@ -108,11 +108,14 @@ public class RestLog {
     static Pattern lineBreakPattern = Pattern.compile("(\\r?\\n)+");
 
     public String singleLine(String contentType, Object object) {
-        if (StringUtils.contains(contentType, "image")) return "<image>";
+        if (containsIgnoreCase(contentType, "image")) return "<image>";
         if (object instanceof InputStream) return "<inputstream>";
 
         String str = "" + object;
         String s = lineBreakPattern.matcher(str).replaceAll("\\n");
+        if (containsIgnoreCase(contentType, "json")) return s;
+
         return UrlDecodes.decodeQuietly(s);
     }
+
 }
