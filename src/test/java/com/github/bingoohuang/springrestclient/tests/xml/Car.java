@@ -2,13 +2,12 @@ package com.github.bingoohuang.springrestclient.tests.xml;
 
 import javax.xml.bind.annotation.*;
 
-@XmlRootElement(name = "XXX")
+@XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(propOrder = {"brand", "description"})
 public class Car {
-    @XmlAttribute(name = "Reg")
+    @XmlAttribute
     private String registration;
-    @XmlElement(name = "BBBB")
     private String brand;
     private String description;
 
