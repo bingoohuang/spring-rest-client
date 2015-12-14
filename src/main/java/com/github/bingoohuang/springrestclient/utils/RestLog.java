@@ -39,7 +39,7 @@ public class RestLog {
         signReq(signProvider, requestParams, httpRequest);
         this.start = System.currentTimeMillis();
         String methodName = httpRequest.getHttpMethod().name();
-        String url = httpRequest.getUrl();
+        String url = UrlDecodes.decodeQuietly(httpRequest.getUrl());
         String headers = buildHeaders(httpRequest.getHeaders());
         List<String> contentTypes = httpRequest.getHeaders().get("Content-Type");
         String contentType = contentTypes != null && contentTypes.size() > 0 ? contentTypes.get(0) : null;
