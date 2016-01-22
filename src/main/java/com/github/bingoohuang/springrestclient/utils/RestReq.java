@@ -65,7 +65,8 @@ public class RestReq {
         this.signProvider = signProvider;
         this.appContext = appContext;
 
-        this.requestParamsHelper = new RequestParamsHelper(fixedRequestParams, requestParams, appContext);
+        this.requestParamsHelper = new RequestParamsHelper(
+                fixedRequestParams, requestParams, appContext);
     }
 
     static ThreadLocal<HttpResponse<?>> lastResponseTL;
@@ -124,7 +125,8 @@ public class RestReq {
         setRouteParams(post);
         post.queryString(requestParamsHelper.createQueryParams());
 
-        Map<String, Object> requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
+        Map<String, Object> requestParams;
+        requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
         BaseRequest fields = fields(post, requestParams);
 
         return request(requestParams, fields);
@@ -136,14 +138,16 @@ public class RestReq {
         setRouteParams(post);
         post.queryString(requestParamsHelper.createQueryParams());
 
-        Map<String, Object> requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
+        Map<String, Object> requestParams;
+        requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
         BaseRequest fields = fields(post, requestParams);
 
         return requestBinary(requestParams, fields);
     }
 
 
-    private BaseRequest fields(HttpRequestWithBody post, Map<String, Object> requestParams) {
+    private BaseRequest fields(
+            HttpRequestWithBody post, Map<String, Object> requestParams) {
         MultipartBody field = null;
 
         for (Map.Entry<String, Object> entry : requestParams.entrySet()) {
@@ -193,7 +197,8 @@ public class RestReq {
         setRouteParams(post);
         post.queryString(requestParamsHelper.createQueryParams());
 
-        Map<String, Object> requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
+        Map<String, Object> requestParams;
+        requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
         BaseRequest fields = fields(post, requestParams);
 
         return requestAsync(requestParams, fields);
@@ -205,15 +210,34 @@ public class RestReq {
         setRouteParams(post);
         post.queryString(requestParamsHelper.createQueryParams());
 
-        Map<String, Object> requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
+        Map<String, Object> requestParams;
+        requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
         BaseRequest fields = fields(post, requestParams);
 
         return requestAsyncBinary(requestParams, fields);
     }
 
+    static boolean callBlackcat = classExists(
+            "com.github.bingoohuang.blackcat.javaagent.callback.Blackcat");
+
+    public static boolean classExists(String className) {
+        try {
+            Class.forName(className);
+            return true;
+        } catch(Throwable e ) { // including ClassNotFoundException
+            return false;
+        }
+    }
+
     private void setRouteParams(HttpRequest httpRequest) {
+        if (callBlackcat) {
+            com.github.bingoohuang.blackcat.javaagent.callback
+                    .Blackcat.prepareRPC(httpRequest);
+        }
+
         for (Map.Entry<String, Object> entry : routeParams.entrySet()) {
-            httpRequest.routeParam(entry.getKey(), String.valueOf(entry.getValue()));
+            String value = String.valueOf(entry.getValue());
+            httpRequest.routeParam(entry.getKey(), value);
         }
     }
 
@@ -249,7 +273,8 @@ public class RestReq {
         return requestBinary(requestParams, post);
     }
 
-    public Future<HttpResponse<String>> postAsJsonAsync(Object bean) throws Throwable {
+    public Future<HttpResponse<String>> postAsJsonAsync(Object bean)
+            throws Throwable {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
         setRouteParams(post);
@@ -265,7 +290,8 @@ public class RestReq {
         return requestAsync(requestParams, post);
     }
 
-    public Future<HttpResponse<InputStream>> postAsJsonAsyncBinary(Object bean) throws Throwable {
+    public Future<HttpResponse<InputStream>> postAsJsonAsyncBinary(Object bean)
+            throws Throwable {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
         setRouteParams(post);
@@ -282,7 +308,9 @@ public class RestReq {
     }
 
 
-    private String request(Map<String, Object> requestParams, BaseRequest httpRequest) throws Throwable {
+    private String request(
+            Map<String, Object> requestParams, BaseRequest httpRequest)
+            throws Throwable {
         boolean loggedResponse = false;
         try {
             restLog.logAndSign(signProvider, requestParams, httpRequest.getHttpRequest());
@@ -304,7 +332,9 @@ public class RestReq {
         }
     }
 
-    private InputStream requestBinary(Map<String, Object> requestParams, BaseRequest httpRequest) throws Throwable {
+    private InputStream requestBinary(
+            Map<String, Object> requestParams, BaseRequest httpRequest)
+            throws Throwable {
         boolean loggedResponse = false;
         try {
             restLog.logAndSign(signProvider, requestParams, httpRequest.getHttpRequest());
@@ -326,7 +356,9 @@ public class RestReq {
         }
     }
 
-    private Future<HttpResponse<String>> requestAsync(Map<String, Object> requestParams, BaseRequest httpRequest) throws Throwable {
+    private Future<HttpResponse<String>> requestAsync(
+            Map<String, Object> requestParams, BaseRequest httpRequest)
+            throws Throwable {
         restLog.logAndSign(signProvider, requestParams, httpRequest.getHttpRequest());
         lastResponseTL.remove(); // clear response threadlocal before execution
         final UniRestCallback<String> callback = new UniRestCallback<String>(apiClass, restLog);
@@ -350,23 +382,29 @@ public class RestReq {
             }
 
             @Override
-            public HttpResponse<String> get() throws InterruptedException, ExecutionException {
+            public HttpResponse<String> get()
+                    throws InterruptedException, ExecutionException {
                 return callback.get();
             }
 
             @Override
-            public HttpResponse<String> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            public HttpResponse<String> get(long timeout, TimeUnit unit)
+                    throws InterruptedException, ExecutionException, TimeoutException {
                 return callback.get(unit.toMillis(timeout));
             }
         };
     }
 
-    private Future<HttpResponse<InputStream>> requestAsyncBinary(Map<String, Object> requestParams, BaseRequest httpRequest) throws Throwable {
+    private Future<HttpResponse<InputStream>> requestAsyncBinary(
+            Map<String, Object> requestParams, BaseRequest httpRequest)
+            throws Throwable {
         restLog.logAndSign(signProvider, requestParams, httpRequest.getHttpRequest());
         lastResponseTL.remove(); // clear response threadlocal before execution
-        final UniRestCallback<InputStream> callback = new UniRestCallback<InputStream>(apiClass, restLog);
+        final UniRestCallback<InputStream> callback;
+        callback = new UniRestCallback<InputStream>(apiClass, restLog);
 
-        final Future<HttpResponse<InputStream>> future = httpRequest.asBinaryAsync(callback);
+        final Future<HttpResponse<InputStream>> future;
+        future = httpRequest.asBinaryAsync(callback);
 
         return new Future<HttpResponse<InputStream>>() {
             @Override
@@ -385,19 +423,23 @@ public class RestReq {
             }
 
             @Override
-            public HttpResponse<InputStream> get() throws InterruptedException, ExecutionException {
+            public HttpResponse<InputStream> get()
+                    throws InterruptedException, ExecutionException {
                 return callback.get();
             }
 
             @Override
-            public HttpResponse<InputStream> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            public HttpResponse<InputStream> get(long timeout, TimeUnit unit)
+                    throws InterruptedException, ExecutionException, TimeoutException {
                 return callback.get(unit.toMillis(timeout));
             }
         };
     }
 
-    public Throwable processStatusExceptionMappings(HttpResponse<?> response) throws Throwable {
-        Class<? extends Throwable> exceptionClass = sendStatusExceptionMappings.get(response.getStatus());
+    public Throwable processStatusExceptionMappings(HttpResponse<?> response)
+            throws Throwable {
+        Class<? extends Throwable> exceptionClass;
+        exceptionClass = sendStatusExceptionMappings.get(response.getStatus());
         String msg = response.header("error-msg");
         if (Strings.isNullOrEmpty(msg)) {
             Object body = response.getBody();
@@ -412,7 +454,9 @@ public class RestReq {
     private String createUrl() {
         String baseUrl = baseUrlProvider.getBaseUrl(apiClass);
         if (Strings.isNullOrEmpty(baseUrl)) {
-            throw new RuntimeException("base url cannot be null generated by provider " + baseUrlProvider.getClass());
+            throw new RuntimeException(
+                    "base url cannot be null generated by provider "
+                            + baseUrlProvider.getClass());
         }
         return baseUrl + prefix;
     }

@@ -84,6 +84,12 @@
         <!--</dependency>-->
 
         <dependency>
+            <groupId>com.github.bingoohuang</groupId>
+            <artifactId>blackcat-javaagent</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpasyncclient</artifactId>
             <version>4.1</version>
