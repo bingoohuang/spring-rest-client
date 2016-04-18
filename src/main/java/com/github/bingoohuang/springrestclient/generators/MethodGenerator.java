@@ -1,5 +1,6 @@
 package com.github.bingoohuang.springrestclient.generators;
 
+import com.alibaba.fastjson.util.ASMUtils;
 import com.github.bingoohuang.springrestclient.annotations.SuccInResponseJSONProperty;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
 import com.github.bingoohuang.springrestclient.provider.SignProvider;
@@ -15,8 +16,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
@@ -24,6 +26,7 @@ import static com.github.bingoohuang.asmvalidator.AsmParamsValidatorFactory.crea
 import static com.github.bingoohuang.asmvalidator.AsmParamsValidatorFactory.createValidators;
 import static com.github.bingoohuang.springrestclient.utils.Asms.*;
 import static com.github.bingoohuang.springrestclient.utils.PrimitiveWrappers.getParseXxMethodName;
+import static org.apache.commons.lang3.StringUtils.defaultString;
 import static org.apache.commons.lang3.StringUtils.uncapitalize;
 import static org.objectweb.asm.Opcodes.*;
 
@@ -48,7 +51,6 @@ public class MethodGenerator {
     private final boolean futureReturnType;
     private final boolean isBinaryReturnType;
     private final boolean isFutureBinaryReturnType;
-    private final Class<?> supClass;
 
     private final String implp;
     String restReqBuilder = p(RestReqBuilder.class);
@@ -56,7 +58,7 @@ public class MethodGenerator {
     private boolean validatorsEnabled;
 
 
-    public MethodGenerator(ClassWriter classWriter, String implName, Method method, String classRequestMapping, Class<?> supClass) {
+    public MethodGenerator(ClassWriter classWriter, String implName, Method method, String classRequestMapping) {
         this.implName = implName;
         this.implp = p(implName);
         this.method = method;
@@ -72,7 +74,6 @@ public class MethodGenerator {
         this.isBinaryReturnType = returnType == InputStream.class;
         this.isFutureBinaryReturnType = futureReturnType
                 && Types.getGenericTypeArgument(method) == InputStream.class;
-        this.supClass = supClass;
     }
 
     private MethodVisitor visitMethod(Method method, ClassWriter classWriter) {
@@ -315,6 +316,7 @@ public class MethodGenerator {
                         sig(Object.class, String.class, Class.class), false);
             } else {
                 buildGenericReturn();
+
                 mv.visitMethodInsn(INVOKESTATIC, p(Beans.class), "unmarshal",
                         sig(Object.class, String.class, java.lang.reflect.Type.class), false);
             }
@@ -324,17 +326,20 @@ public class MethodGenerator {
     }
 
     private void buildGenericReturn() {
-        mv.visitLdcInsn(Type.getType(ci(supClass)));
+        mv.visitLdcInsn(Type.getType(ci(method.getDeclaringClass())));
         mv.visitLdcInsn(method.getName());
 
         if (paramSize <= 5) mv.visitInsn(ICONST_0 + paramSize);
         else mv.visitIntInsn(BIPUSH, paramSize);
+
         mv.visitTypeInsn(ANEWARRAY, p(Class.class));
 
         for (int i = 0; i < paramSize; ++i) {
             mv.visitInsn(DUP);
+
             if (i <= 5) mv.visitInsn(ICONST_0 + i);
             else mv.visitIntInsn(BIPUSH, i);
+
             mv.visitLdcInsn(Type.getType(ci(parameterTypes[i])));
             mv.visitInsn(AASTORE);
         }

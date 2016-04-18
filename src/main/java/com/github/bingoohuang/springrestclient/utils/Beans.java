@@ -13,14 +13,12 @@ public class Beans {
 
         return text.startsWith("<")
                 ? Xmls.unmarshal(text, clazz)
-                : Json.unJson(text, clazz);
+                : (text.startsWith("{")
+                ? Json.unJson(text, clazz)
+                : Json.unJsonArray(text, clazz));
     }
 
-    public static Object unmarshalArr(String text, Class<?> clazz) {
-        return Json.unJsonArray(text, clazz);
-    }
-
-    public static Object unmarshal(String text, Type returnType){
+    public static Object unmarshal(String text, Type returnType) {
         return JSON.parseObject(text, returnType);
     }
 
