@@ -17,7 +17,6 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
@@ -49,6 +48,7 @@ public class MethodGenerator {
     private final boolean futureReturnType;
     private final boolean isBinaryReturnType;
     private final boolean isFutureBinaryReturnType;
+    private final Class<?> supClass;
 
     private final String implp;
     String restReqBuilder = p(RestReqBuilder.class);
@@ -56,7 +56,7 @@ public class MethodGenerator {
     private boolean validatorsEnabled;
 
 
-    public MethodGenerator(ClassWriter classWriter, String implName, Method method, String classRequestMapping) {
+    public MethodGenerator(ClassWriter classWriter, String implName, Method method, String classRequestMapping, Class<?> supClass) {
         this.implName = implName;
         this.implp = p(implName);
         this.method = method;
@@ -72,6 +72,7 @@ public class MethodGenerator {
         this.isBinaryReturnType = returnType == InputStream.class;
         this.isFutureBinaryReturnType = futureReturnType
                 && Types.getGenericTypeArgument(method) == InputStream.class;
+        this.supClass = supClass;
     }
 
     private MethodVisitor visitMethod(Method method, ClassWriter classWriter) {
@@ -308,25 +309,40 @@ public class MethodGenerator {
                     sig(Future.class, Future.class, Class.class, RestReq.class), false);
         } else {
             java.lang.reflect.Type typeArgument = Types.getGenericTypeArgument(method);
-            Type unmarshalType;
-
             if (typeArgument == null) {
-                unmarshalType = Type.getType(returnType);
-            } else if (returnType.isAssignableFrom(List.class)) {
-                unmarshalType = Type.getType((Class) typeArgument);
-            } else if (returnType.isAssignableFrom(Map.class)) {
-                unmarshalType = Type.getType(Map.class);
+                mv.visitLdcInsn(Type.getType(returnType));
+                mv.visitMethodInsn(INVOKESTATIC, p(Beans.class), "unmarshal",
+                        sig(Object.class, String.class, Class.class), false);
             } else {
-                throw new RuntimeException("unknown unmarshal type for " + returnType);
+                buildGenericReturn();
+                mv.visitMethodInsn(INVOKESTATIC, p(Beans.class), "unmarshal",
+                        sig(Object.class, String.class, java.lang.reflect.Type.class), false);
             }
-
-            mv.visitLdcInsn(unmarshalType);
-            mv.visitMethodInsn(INVOKESTATIC, p(Beans.class), "unmarshal",
-                    sig(Object.class, String.class, Class.class), false);
         }
-
         mv.visitTypeInsn(CHECKCAST, p(returnType));
         mv.visitInsn(ARETURN);
+    }
+
+    private void buildGenericReturn() {
+        mv.visitLdcInsn(Type.getType(ci(supClass)));
+        mv.visitLdcInsn(method.getName());
+
+        if (paramSize <= 5) mv.visitInsn(ICONST_0 + paramSize);
+        else mv.visitIntInsn(BIPUSH, paramSize);
+        mv.visitTypeInsn(ANEWARRAY, p(Class.class));
+
+        for (int i = 0; i < paramSize; ++i) {
+            mv.visitInsn(DUP);
+            if (i <= 5) mv.visitInsn(ICONST_0 + i);
+            else mv.visitIntInsn(BIPUSH, i);
+            mv.visitLdcInsn(Type.getType(ci(parameterTypes[i])));
+            mv.visitInsn(AASTORE);
+        }
+
+        mv.visitMethodInsn(INVOKEVIRTUAL, p(Class.class), "getMethod",
+                sig(Method.class, String.class, Class[].class), false);
+        mv.visitMethodInsn(INVOKEVIRTUAL, p(Method.class), "getGenericReturnType",
+                sig(java.lang.reflect.Type.class), false);
     }
 
     private void primitiveValueOfAndReturn() {
