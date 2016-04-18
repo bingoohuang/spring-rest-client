@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
@@ -307,16 +308,23 @@ public class MethodGenerator {
                     sig(Future.class, Future.class, Class.class, RestReq.class), false);
         } else {
             java.lang.reflect.Type typeArgument = Types.getGenericTypeArgument(method);
+            Type unmarshalType;
+
             if (typeArgument == null) {
-                mv.visitLdcInsn(Type.getType(returnType));
-                mv.visitMethodInsn(INVOKESTATIC, p(Beans.class), "unmarshal",
-                        sig(Object.class, String.class, Class.class), false);
+                unmarshalType = Type.getType(returnType);
+            } else if (returnType.isAssignableFrom(List.class)) {
+                unmarshalType = Type.getType((Class) typeArgument);
+            } else if (returnType.isAssignableFrom(Map.class)) {
+                unmarshalType = Type.getType(Map.class);
             } else {
-                mv.visitLdcInsn(Type.getType((Class) typeArgument));
-                mv.visitMethodInsn(INVOKESTATIC, p(Beans.class), "unmarshalArr",
-                        sig(Object.class, String.class, Class.class), false);
+                throw new RuntimeException("unknown unmarshal type for " + returnType);
             }
+
+            mv.visitLdcInsn(unmarshalType);
+            mv.visitMethodInsn(INVOKESTATIC, p(Beans.class), "unmarshal",
+                    sig(Object.class, String.class, Class.class), false);
         }
+
         mv.visitTypeInsn(CHECKCAST, p(returnType));
         mv.visitInsn(ARETURN);
     }
