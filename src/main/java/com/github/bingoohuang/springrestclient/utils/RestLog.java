@@ -65,6 +65,8 @@ public class RestLog {
             // MultipartFormEntity // StringEntity // UrlEncodedFormEntity;
             InputStream context = entity.getContent();
             return new String(ByteStreams.toByteArray(context), Charsets.UTF_8);
+        } catch (UnsupportedOperationException e) {
+            return requestParams.toString();
         } catch (Exception e) {
             log.warn("exception:{}", e.toString());
             return requestParams.toString();
