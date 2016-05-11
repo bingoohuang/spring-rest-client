@@ -11,7 +11,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @SpringRestClientEnabled(baseUrl = "http://localhost:4849",
-        signProvider = DefaultSignProvider.class, createClassFileForDiagnose = true)
+        signProvider = DefaultSignProvider.class)
 public interface GetCodeByMobileApi {
     @AsmValid
     @RequestMapping(value = "/getCode/{mobile}", method = GET)

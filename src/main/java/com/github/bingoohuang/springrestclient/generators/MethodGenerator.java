@@ -108,6 +108,7 @@ public class MethodGenerator {
         generateValidateCode();
         createMap(1, PathVariable.class);
         createMap(2, RequestParam.class);
+        createMap(3, CookieValue.class);
 
         buildUniRestReq();
         request();
@@ -152,8 +153,8 @@ public class MethodGenerator {
     }
 
     private void request() {
-        mv.visitVarInsn(ASTORE, offsetSize + 3);
-        mv.visitVarInsn(ALOAD, offsetSize + 3);
+        mv.visitVarInsn(ASTORE, offsetSize + 4);
+        mv.visitVarInsn(ALOAD, offsetSize + 4);
 
         if (isPostMethodOrNone()) {
             int requestBodyOffset = findRequestBodyParameterOffset();
@@ -218,6 +219,9 @@ public class MethodGenerator {
 
         mv.visitVarInsn(ALOAD, offsetSize + 2);
         mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "requestParams", sigRest(Map.class), false);
+
+        mv.visitVarInsn(ALOAD, offsetSize + 3);
+        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "cookies", sigRest(Map.class), false);
 
         mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "build", sig(RestReq.class), false);
     }
@@ -302,7 +306,7 @@ public class MethodGenerator {
             }
 
             mv.visitLdcInsn(Type.getType((Class) futureType));
-            mv.visitVarInsn(ALOAD, offsetSize + 3);
+            mv.visitVarInsn(ALOAD, offsetSize + 4);
             mv.visitMethodInsn(INVOKESTATIC, p(Futures.class),
                     futureType == Void.class ? "convertFutureVoid" : "convertFuture",
                     sig(Future.class, Future.class, Class.class, RestReq.class), false);

@@ -16,6 +16,7 @@ public class RestReqBuilder {
     String prefix;
     Map<String, Object> routeParams;
     Map<String, Object> requestParams;
+    Map<String, Object> cookies;
     boolean async;
     SignProvider signProvider;
     ApplicationContext appContext;
@@ -70,6 +71,11 @@ public class RestReqBuilder {
         return this;
     }
 
+    public RestReqBuilder cookies(Map<String, Object> cookies) {
+        this.cookies = cookies;
+        return this;
+    }
+
     public RestReqBuilder succInResponseJSONProperty(SuccInResponseJSONProperty succInResponseJSONProperty) {
         this.succInResponseJSONProperty = succInResponseJSONProperty;
         return this;
@@ -84,6 +90,7 @@ public class RestReqBuilder {
                 prefix,
                 routeParams,
                 requestParams,
+                cookies,
                 async,
                 signProvider,
                 appContext);

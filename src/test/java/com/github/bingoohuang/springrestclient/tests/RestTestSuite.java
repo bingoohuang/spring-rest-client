@@ -31,6 +31,7 @@ import org.n3r.diamond.client.impl.MockDiamondServer;
         GetCodeByMobileApiTest.class,
         MapReturnApiTest.class,
         GenericApiTest.class,
+        CookieApiTest.class
 })
 public class RestTestSuite {
     @ClassRule

@@ -16,21 +16,11 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-/**
- * @author shuwei@asiainfo.com
- */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = SpringRestClientConfig.class)
 public class GenericApiTest {
-
     @Resource
     private GenericApi genericApi;
-
-    @Ignore
-    @Test(expected = JSONException.class)
-    public void testFailure() {
-        genericApi.map();
-    }
 
     @Test
     public void testSuccess() {

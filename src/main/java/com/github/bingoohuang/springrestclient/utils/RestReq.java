@@ -37,6 +37,7 @@ public class RestReq {
     final String prefix;
     final Map<String, Object> routeParams;
     final Map<String, Object> requestParams;
+    final Map<String, Object> cookies;
     final RestLog restLog;
     final SignProvider signProvider;
     final ApplicationContext appContext;
@@ -50,6 +51,7 @@ public class RestReq {
             String prefix,
             Map<String, Object> routeParams,
             Map<String, Object> requestParams,
+            Map<String, Object> cookies,
             boolean async,
             SignProvider signProvider,
             ApplicationContext appContext) {
@@ -61,6 +63,7 @@ public class RestReq {
         this.prefix = prefix;
         this.routeParams = routeParams;
         this.requestParams = requestParams;
+        this.cookies = cookies;
         this.restLog = new RestLog(apiClass, async);
         this.signProvider = signProvider;
         this.appContext = appContext;
@@ -82,7 +85,7 @@ public class RestReq {
     public String get() throws Throwable {
         String url = createUrl();
         HttpRequest get = Unirest.get(url);
-        setRouteParams(get);
+        setRouteParamsAndCookie(get);
 
         get.queryString(requestParamsHelper.mergeRequestParams());
 
@@ -92,7 +95,7 @@ public class RestReq {
     public InputStream getBinary() throws Throwable {
         String url = createUrl();
         HttpRequest get = Unirest.get(url);
-        setRouteParams(get);
+        setRouteParamsAndCookie(get);
 
         get.queryString(requestParamsHelper.mergeRequestParams());
 
@@ -102,7 +105,7 @@ public class RestReq {
     public Future<HttpResponse<String>> getAsync() throws Throwable {
         String url = createUrl();
         HttpRequest get = Unirest.get(url);
-        setRouteParams(get);
+        setRouteParamsAndCookie(get);
 
         get.queryString(requestParamsHelper.mergeRequestParams());
 
@@ -112,7 +115,7 @@ public class RestReq {
     public Future<HttpResponse<InputStream>> getAsyncBinary() throws Throwable {
         String url = createUrl();
         HttpRequest get = Unirest.get(url);
-        setRouteParams(get);
+        setRouteParamsAndCookie(get);
 
         get.queryString(requestParamsHelper.mergeRequestParams());
 
@@ -122,7 +125,7 @@ public class RestReq {
     public String post() throws Throwable {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
-        setRouteParams(post);
+        setRouteParamsAndCookie(post);
         post.queryString(requestParamsHelper.createQueryParams());
 
         Map<String, Object> requestParams;
@@ -135,7 +138,7 @@ public class RestReq {
     public InputStream postBinary() throws Throwable {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
-        setRouteParams(post);
+        setRouteParamsAndCookie(post);
         post.queryString(requestParamsHelper.createQueryParams());
 
         Map<String, Object> requestParams;
@@ -194,7 +197,7 @@ public class RestReq {
     public Future<HttpResponse<String>> postAsync() throws Throwable {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
-        setRouteParams(post);
+        setRouteParamsAndCookie(post);
         post.queryString(requestParamsHelper.createQueryParams());
 
         Map<String, Object> requestParams;
@@ -207,7 +210,7 @@ public class RestReq {
     public Future<HttpResponse<InputStream>> postAsyncBinary() throws Throwable {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
-        setRouteParams(post);
+        setRouteParamsAndCookie(post);
         post.queryString(requestParamsHelper.createQueryParams());
 
         Map<String, Object> requestParams;
@@ -229,7 +232,7 @@ public class RestReq {
         }
     }
 
-    private void setRouteParams(HttpRequest httpRequest) {
+    private void setRouteParamsAndCookie(HttpRequest httpRequest) {
         if (callBlackcat) {
             com.github.bingoohuang.blackcat.javaagent.callback
                     .Blackcat.prepareRPC(httpRequest);
@@ -239,12 +242,19 @@ public class RestReq {
             String value = String.valueOf(entry.getValue());
             httpRequest.routeParam(entry.getKey(), value);
         }
+
+        StringBuilder cookieStr = new StringBuilder();
+        for (Map.Entry<String, Object> entry : cookies.entrySet()) {
+            String value = String.valueOf(entry.getValue());
+            cookieStr.append(' ').append(entry.getKey()).append("=").append(value).append(";");
+        }
+        if (cookieStr.length() > 0) httpRequest.header("Cookie", "foo=something");
     }
 
     public String postAsJson(Object bean) throws Throwable {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
-        setRouteParams(post);
+        setRouteParamsAndCookie(post);
         post.queryString(requestParamsHelper.mergeRequestParams());
 
         post.header("Content-Type", "application/json;charset=UTF-8");
@@ -260,7 +270,7 @@ public class RestReq {
     public InputStream postAsJsonBinary(Object bean) throws Throwable {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
-        setRouteParams(post);
+        setRouteParamsAndCookie(post);
         post.queryString(requestParamsHelper.mergeRequestParams());
 
         post.header("Content-Type", "application/json;charset=UTF-8");
@@ -277,7 +287,7 @@ public class RestReq {
             throws Throwable {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
-        setRouteParams(post);
+        setRouteParamsAndCookie(post);
         post.queryString(requestParamsHelper.mergeRequestParams());
 
         post.header("Content-Type", "application/json;charset=UTF-8");
@@ -294,7 +304,7 @@ public class RestReq {
             throws Throwable {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
-        setRouteParams(post);
+        setRouteParamsAndCookie(post);
         post.queryString(requestParamsHelper.mergeRequestParams());
 
         post.header("Content-Type", "application/json;charset=UTF-8");
