@@ -1,6 +1,7 @@
 package com.github.bingoohuang.springrestclient.xml;
 
 import com.google.common.base.Throwables;
+import lombok.experimental.UtilityClass;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
@@ -20,12 +21,13 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.StringReader;
 import java.io.StringWriter;
 
+@UtilityClass
 public class Xmls {
-    public static String marshal(Object bean) {
+    public String marshal(Object bean) {
         return marshal(bean, bean.getClass());
     }
 
-    public static String marshal(Object bean, Class... types) {
+    public String marshal(Object bean, Class... types) {
         StringWriter sw = new StringWriter();
 
         try {
@@ -49,12 +51,12 @@ public class Xmls {
         }
     }
 
-    public static <T> T unmarshal(String xml, Class<T> beanClass) {
+    public <T> T unmarshal(String xml, Class<T> beanClass) {
         StringReader reader = new StringReader(xml);
         return JAXB.unmarshal(reader, beanClass);
     }
 
-    public static String prettyXml(String xml) {
+    public String prettyXml(String xml) {
         final boolean omitXmlDeclaration = !xml.startsWith("<?xml");
 
         try {
@@ -73,7 +75,7 @@ public class Xmls {
         }
     }
 
-    public static Document parseXmlFile(String xml) {
+    public Document parseXmlFile(String xml) {
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             DocumentBuilder db = dbf.newDocumentBuilder();

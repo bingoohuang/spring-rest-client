@@ -1,5 +1,7 @@
 package com.github.bingoohuang.springrestclient.utils;
 
+import lombok.val;
+
 public class Asms {
     // Creates a dotted class name from a path/package name
     public static String c(String p) {
@@ -78,7 +80,7 @@ public class Asms {
     }
 
     public static String sig(Class[] retvalParams) {
-        Class[] justParams = new Class[retvalParams.length - 1];
+        val justParams = new Class[retvalParams.length - 1];
         System.arraycopy(retvalParams, 1, justParams, 0, justParams.length);
         return sigParams(justParams) + ci(retvalParams[0]);
     }
@@ -88,7 +90,7 @@ public class Asms {
     }
 
     public static String sigParams(Class... params) {
-        StringBuilder signature = new StringBuilder("(");
+        val signature = new StringBuilder("(");
 
         for (int i = 0; i < params.length; i++) {
             signature.append(ci(params[i]));
@@ -100,8 +102,7 @@ public class Asms {
     }
 
     public static String sigParams(String descriptor, Class... params) {
-        StringBuilder signature = new StringBuilder("(");
-
+        val signature = new StringBuilder("(");
         signature.append(descriptor);
 
         for (int i = 0; i < params.length; i++) {
@@ -109,7 +110,6 @@ public class Asms {
         }
 
         signature.append(")");
-
         return signature.toString();
     }
 }

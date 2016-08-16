@@ -11,6 +11,8 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.UncheckedExecutionException;
+import lombok.experimental.UtilityClass;
+import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 
@@ -22,11 +24,12 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
+@UtilityClass
 public class SpringRestClientFactory {
-    private static Cache<Class, Object> restClientCache = CacheBuilder.newBuilder().build();
+    private Cache<Class, Object> restClientCache = CacheBuilder.newBuilder().build();
 
 
-    public static <T> T getRestClient(final Class<T> restClientClass, final ApplicationContext appContext) {
+    public <T> T getRestClient(final Class<T> restClientClass, final ApplicationContext appContext) {
         Obj.ensureInterface(restClientClass);
         try {
             return (T) restClientCache.get(restClientClass, new Callable<Object>() {
@@ -44,10 +47,10 @@ public class SpringRestClientFactory {
         }
     }
 
-    public static Object load(Class restClientClass, ApplicationContext appContext) throws Exception {
-        ClassGenerator generator = new ClassGenerator(restClientClass);
-        Class<?> restClientImplClass = generator.generate();
-        Object object = Obj.createObject(restClientImplClass);
+    public Object load(Class restClientClass, ApplicationContext appContext) throws Exception {
+        val generator = new ClassGenerator(restClientClass);
+        val restClientImplClass = generator.generate();
+        val object = Obj.createObject(restClientImplClass);
 
         setSignProvider(restClientImplClass, object, restClientClass, appContext);
         setBaseUrlProvider(restClientImplClass, object, restClientClass, appContext);
@@ -59,31 +62,32 @@ public class SpringRestClientFactory {
         return object;
     }
 
-    private static void setAppContext(Class<?> restClientImplClass, Object object,
-                                      Class restClientClass, ApplicationContext appContext) {
+    private void setAppContext(Class<?> restClientImplClass, Object object,
+                               Class restClientClass, ApplicationContext appContext) {
         Obj.setField(restClientImplClass, object, MethodGenerator.appContext, appContext);
     }
 
-    private static void setSuccInResponseJSONProperty(
-            Class<?> restClientImplClass, Object object, Class<?> restClientClass) {
+    private void setSuccInResponseJSONProperty(
+        Class<?> restClientImplClass, Object object, Class<?> restClientClass) {
         for (Method method : restClientClass.getDeclaredMethods()) {
             SuccInResponseJSONProperty property = method.getAnnotation(SuccInResponseJSONProperty.class);
-            if (property == null) property = restClientClass.getAnnotation(SuccInResponseJSONProperty.class);
+            if (property == null)
+                property = restClientClass.getAnnotation(SuccInResponseJSONProperty.class);
 
-            String fieldName = method.getName() + MethodGenerator.SuccInResponseJSONProperty;
+            val fieldName = method.getName() + MethodGenerator.SuccInResponseJSONProperty;
             Obj.setField(restClientImplClass, object, fieldName, property);
         }
     }
 
-    private static void setFixedRequestParams(Class<?> restClientImplClass, Object object, Class restClientClass) {
+    private void setFixedRequestParams(Class<?> restClientImplClass, Object object, Class restClientClass) {
         for (Method method : restClientClass.getDeclaredMethods()) {
-            Map<String, Object> mappings = createFixedRequestParams(method, restClientClass);
-            String fieldName = method.getName() + MethodGenerator.FixedRequestParams;
+            val mappings = createFixedRequestParams(method, restClientClass);
+            val fieldName = method.getName() + MethodGenerator.FixedRequestParams;
             Obj.setField(restClientImplClass, object, fieldName, mappings);
         }
     }
 
-    private static Map<String, Object> createFixedRequestParams(Method method, Class<?> restClientClass) {
+    private Map<String, Object> createFixedRequestParams(Method method, Class<?> restClientClass) {
         Map<String, Object> map = Maps.newHashMap();
 
         putRequestParams(map, restClientClass);
@@ -92,7 +96,7 @@ public class SpringRestClientFactory {
         return Collections.unmodifiableMap(map);
     }
 
-    private static void putRequestParams(Map<String, Object> map, AnnotatedElement accessibleObject) {
+    private void putRequestParams(Map<String, Object> map, AnnotatedElement accessibleObject) {
         // 按声明顺序来添加固定请求参数
         for (Annotation annotation : accessibleObject.getAnnotations()) {
             if (annotation instanceof FixedRequestParam) {
@@ -105,27 +109,27 @@ public class SpringRestClientFactory {
         }
     }
 
-    private static void putFixedRequestParam(Map<String, Object> map, FixedRequestParam fixedRequestParam) {
+    private void putFixedRequestParam(Map<String, Object> map, FixedRequestParam fixedRequestParam) {
         if (fixedRequestParam.clazz() != void.class) {
             map.put(fixedRequestParam.name(), fixedRequestParam.clazz());
         } else if (StringUtils.isNotEmpty(fixedRequestParam.value())) {
             map.put(fixedRequestParam.name(), fixedRequestParam.value());
         } else {
             throw new RuntimeException("bad config for @FixedRequestParam" + fixedRequestParam
-                    + " value or clazz should be assigned");
+                + " value or clazz should be assigned");
         }
     }
 
-    private static void setStatusMappings(Class<?> restClientImplClass, Object object, Class restClientClass) {
+    private void setStatusMappings(Class<?> restClientImplClass, Object object, Class restClientClass) {
         for (Method method : restClientClass.getDeclaredMethods()) {
-            Map<Integer, Class<? extends Throwable>> mappings = createStatusExceptionMappings(method, restClientClass);
-            String fieldName = method.getName() + MethodGenerator.StatusExceptionMappings;
+            val mappings = createStatusExceptionMappings(method, restClientClass);
+            val fieldName = method.getName() + MethodGenerator.StatusExceptionMappings;
             Obj.setField(restClientImplClass, object, fieldName, mappings);
         }
     }
 
-    private static Map<Integer, Class<? extends Throwable>> createStatusExceptionMappings(
-            Method method, Class<?> restClientClass) {
+    private Map<Integer, Class<? extends Throwable>> createStatusExceptionMappings(
+        Method method, Class<?> restClientClass) {
         Map<Integer, Class<? extends Throwable>> statusExceptionMappings = Maps.newHashMap();
 
         addStatusExceptionMapppings(method, statusExceptionMappings, restClientClass.getAnnotation(RespStatusMappings.class));
@@ -134,9 +138,9 @@ public class SpringRestClientFactory {
         return Collections.unmodifiableMap(statusExceptionMappings);
     }
 
-    private static void addStatusExceptionMapppings(
-            Method method, Map<Integer, Class<? extends Throwable>> statusExceptionMappings,
-            RespStatusMappings respStatusMappings) {
+    private void addStatusExceptionMapppings(
+        Method method, Map<Integer, Class<? extends Throwable>> statusExceptionMappings,
+        RespStatusMappings respStatusMappings) {
         if (respStatusMappings == null) return;
 
         for (RespStatusMapping respStatusMapping : respStatusMappings.value()) {
@@ -146,8 +150,8 @@ public class SpringRestClientFactory {
         }
     }
 
-    private static void checkMethodException(Method method,
-                                             Class<? extends Throwable> exceptionClass) {
+    private void checkMethodException(Method method,
+                                      Class<? extends Throwable> exceptionClass) {
         if (RuntimeException.class.isAssignableFrom(exceptionClass)) return;
 
         // checked exception should be declared
@@ -156,22 +160,22 @@ public class SpringRestClientFactory {
         }
 
         throw new RuntimeException(exceptionClass
-                + " is checked exception and should be declared on the method " + method);
+            + " is checked exception and should be declared on the method " + method);
     }
 
-    private static void setBaseUrlProvider(Class<?> restClientImplClass, Object object, Class restClientClass, ApplicationContext appContext) {
-        BaseUrlProvider provider = createBaseUrlProvider(restClientClass, appContext);
+    private void setBaseUrlProvider(Class<?> restClientImplClass, Object object, Class restClientClass, ApplicationContext appContext) {
+        val provider = createBaseUrlProvider(restClientClass, appContext);
         Obj.setField(restClientImplClass, object, MethodGenerator.baseUrlProvider, provider);
     }
 
-    private static void setSignProvider(Class<?> restClientImplClass, Object object, Class restClientClass, ApplicationContext appContext) {
-        SignProvider provider = createSignProvider(restClientClass, appContext);
+    private void setSignProvider(Class<?> restClientImplClass, Object object, Class restClientClass, ApplicationContext appContext) {
+        val provider = createSignProvider(restClientClass, appContext);
         Obj.setField(restClientImplClass, object, MethodGenerator.signProvider, provider);
     }
 
-    private static SignProvider createSignProvider(Class<?> restClientClass, ApplicationContext appContext) {
-        SpringRestClientEnabled restClientEnabled = restClientClass.getAnnotation(SpringRestClientEnabled.class);
-        Class<? extends SignProvider> signProviderClass = restClientEnabled.signProvider();
+    private SignProvider createSignProvider(Class<?> restClientClass, ApplicationContext appContext) {
+        val restClientEnabled = restClientClass.getAnnotation(SpringRestClientEnabled.class);
+        val signProviderClass = restClientEnabled.signProvider();
         SignProvider bean = Obj.getBean(appContext, signProviderClass);
         if (bean != null) return bean;
 
@@ -184,12 +188,13 @@ public class SpringRestClientFactory {
         }
     }
 
-    private static BaseUrlProvider createBaseUrlProvider(Class<?> restClientClass, ApplicationContext appContext) {
-        SpringRestClientEnabled restClientEnabled = restClientClass.getAnnotation(SpringRestClientEnabled.class);
+    private BaseUrlProvider createBaseUrlProvider(Class<?> restClientClass, ApplicationContext appContext) {
+        val restClientEnabled = restClientClass.getAnnotation(SpringRestClientEnabled.class);
         String baseUrl = restClientEnabled.baseUrl();
-        if (!Strings.isNullOrEmpty(baseUrl)) return new FixedBaseUrlProvider(baseUrl);
+        if (!Strings.isNullOrEmpty(baseUrl))
+            return new FixedBaseUrlProvider(baseUrl);
 
-        Class<? extends BaseUrlProvider> providerClass = restClientEnabled.baseUrlProvider();
+        val providerClass = restClientEnabled.baseUrlProvider();
         BaseUrlProvider bean = Obj.getBean(appContext, providerClass);
         if (bean != null) return bean;
 

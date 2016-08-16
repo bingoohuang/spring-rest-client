@@ -1,5 +1,6 @@
 package com.github.bingoohuang.springrestclient.utils;
 
+import lombok.experimental.UtilityClass;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
@@ -7,8 +8,9 @@ import org.springframework.context.ApplicationContext;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 
+@UtilityClass
 public class Obj {
-    public static Object getOrCreateBean(ApplicationContext appContext, Class<?> requiredType) {
+    public Object getOrCreateBean(ApplicationContext appContext, Class<?> requiredType) {
         try {
             return appContext.getBean(requiredType);
         } catch (NoSuchBeanDefinitionException e) {
@@ -16,7 +18,7 @@ public class Obj {
         }
     }
 
-    public static <T> T getBean(ApplicationContext appContext, Class<T> beanClass) {
+    public <T> T getBean(ApplicationContext appContext, Class<T> beanClass) {
         try {
             return appContext.getBean(beanClass);
         } catch (BeansException e) {
@@ -24,7 +26,7 @@ public class Obj {
         }
     }
 
-    public static <T> T createObject(Class<T> clazz, Object ctorArg) {
+    public <T> T createObject(Class<T> clazz, Object ctorArg) {
         try {
             Constructor<T> constructor = clazz.getConstructor(ctorArg.getClass());
             return constructor.newInstance(ctorArg);
@@ -38,7 +40,7 @@ public class Obj {
     }
 
 
-    public static <T> T createObject(Class<T> clazz) {
+    public <T> T createObject(Class<T> clazz) {
         try {
             return clazz.newInstance();
         } catch (Exception e) {
@@ -47,7 +49,7 @@ public class Obj {
     }
 
 
-    public static void setField(Class<?> clazz, Object object, String fieldName, Object fieldValue) {
+    public void setField(Class<?> clazz, Object object, String fieldName, Object fieldValue) {
         try {
             Field field = clazz.getDeclaredField(fieldName);
             field.setAccessible(true);
@@ -60,7 +62,7 @@ public class Obj {
     }
 
 
-    public static <T> void ensureInterface(Class<T> clazz) {
+    public <T> void ensureInterface(Class<T> clazz) {
         if (clazz.isInterface()) return;
 
         throw new RuntimeException(clazz + " is not an interface");

@@ -1,11 +1,11 @@
 package com.github.bingoohuang.springrestclient.spring;
 
+import lombok.val;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.PropertyResourceConfigurer;
 import org.springframework.beans.factory.config.TypedStringValue;
@@ -18,8 +18,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.util.StringUtils;
-
-import java.util.Map;
 
 import static org.springframework.util.Assert.notNull;
 
@@ -121,23 +119,23 @@ public class SpringRestClientScannerConfigurer implements BeanDefinitionRegistry
      * definition. Then update the values.
      */
     private void processPropertyPlaceHolders() {
-        Map<String, PropertyResourceConfigurer> prcs = applicationContext.getBeansOfType(PropertyResourceConfigurer.class);
+        val prcs = applicationContext.getBeansOfType(PropertyResourceConfigurer.class);
 
         if (!prcs.isEmpty() && applicationContext instanceof GenericApplicationContext) {
-            BeanDefinition mapperScannerBean = ((GenericApplicationContext) applicationContext)
-                    .getBeanFactory().getBeanDefinition(beanName);
+            val mapperScannerBean = ((GenericApplicationContext) applicationContext)
+                .getBeanFactory().getBeanDefinition(beanName);
 
             // PropertyResourceConfigurer does not expose any methods to explicitly perform
             // property placeholder substitution. Instead, create a BeanFactory that just
             // contains this mapper scanner and post process the factory.
-            DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
+            val factory = new DefaultListableBeanFactory();
             factory.registerBeanDefinition(beanName, mapperScannerBean);
 
             for (PropertyResourceConfigurer prc : prcs.values()) {
                 prc.postProcessBeanFactory(factory);
             }
 
-            PropertyValues values = mapperScannerBean.getPropertyValues();
+            val values = mapperScannerBean.getPropertyValues();
 
             this.basePackage = updatePropertyValue("basePackage", values);
         }

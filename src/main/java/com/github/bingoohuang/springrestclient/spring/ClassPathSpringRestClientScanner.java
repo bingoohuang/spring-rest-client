@@ -1,6 +1,7 @@
 package com.github.bingoohuang.springrestclient.spring;
 
 import com.github.bingoohuang.springrestclient.annotations.SpringRestClientEnabled;
+import lombok.val;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -43,13 +44,13 @@ public class ClassPathSpringRestClientScanner extends ClassPathBeanDefinitionSca
      */
     @Override
     public Set<BeanDefinitionHolder> doScan(String... basePackages) {
-        Set<BeanDefinitionHolder> beanDefinitions = super.doScan(basePackages);
+        val beanDefinitions = super.doScan(basePackages);
 
         if (beanDefinitions.isEmpty()) {
             logger.warn("No SpringRestClientEnabled was found in '" + Arrays.toString(basePackages) + "' package. Please check your configuration.");
         } else {
             for (BeanDefinitionHolder holder : beanDefinitions) {
-                GenericBeanDefinition definition = (GenericBeanDefinition) holder.getBeanDefinition();
+                val definition = (GenericBeanDefinition) holder.getBeanDefinition();
 
                 if (logger.isDebugEnabled()) {
                     logger.debug("Creating SpringRestClientFactoryBean with name '" + holder.getBeanName()

@@ -5,6 +5,7 @@ import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
 import com.github.bingoohuang.springrestclient.provider.SignProvider;
 import com.github.bingoohuang.springrestclient.utils.*;
 import com.google.common.primitives.Primitives;
+import lombok.val;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -252,8 +253,8 @@ public class MethodGenerator {
     }
 
     private String getFullRequestMapping() {
-        boolean isEmpty = requestMapping != null && requestMapping.value().length > 0;
-        String methodMappingName = isEmpty ? requestMapping.value()[0] : "";
+        val isEmpty = requestMapping != null && requestMapping.value().length > 0;
+        val methodMappingName = isEmpty ? requestMapping.value()[0] : "";
 
         return classRequestMapping + methodMappingName;
     }
@@ -279,14 +280,14 @@ public class MethodGenerator {
     private boolean isGetMethod() {
         if (requestMapping == null) return false;
 
-        RequestMethod[] method = requestMapping.method();
+        val method = requestMapping.method();
         return method.length == 1 && method[0] == RequestMethod.GET;
     }
 
     private boolean isPostMethodOrNone() {
         if (requestMapping == null) return true;
 
-        RequestMethod[] method = requestMapping.method();
+        val method = requestMapping.method();
         if (method.length == 0) return true;
 
         return method.length == 1 && method[0] == RequestMethod.POST;
@@ -299,7 +300,7 @@ public class MethodGenerator {
         }
 
         if (futureReturnType) {
-            java.lang.reflect.Type futureType = Types.getFutureGenericArgClass(method);
+            val futureType = Types.getFutureGenericArgClass(method);
             if (!(futureType instanceof Class)) {
                 mv.visitInsn(ARETURN);
                 return;
@@ -317,7 +318,7 @@ public class MethodGenerator {
                 mv.visitMethodInsn(INVOKESTATIC, p(Beans.class), "unmarshal",
                         sig(Object.class, String.class, Class.class), false);
             } else {
-                java.lang.reflect.Type genericReturnType = method.getGenericReturnType();
+                val genericReturnType = method.getGenericReturnType();
                 if (genericReturnType instanceof ParameterizedTypeImpl) {
                     buildGenericReturn((ParameterizedTypeImpl) genericReturnType);
 
@@ -337,7 +338,7 @@ public class MethodGenerator {
         // ParameterizedTypeImpl.make(List.class, new Class[]{String.class}, null);
         mv.visitLdcInsn(Type.getType(method.getReturnType()));
 
-        java.lang.reflect.Type[] actualTypeArgs = impl.getActualTypeArguments();
+        val actualTypeArgs = impl.getActualTypeArguments();
 
         if (paramSize <= 5) mv.visitInsn(ICONST_0 + actualTypeArgs.length);
         else mv.visitIntInsn(BIPUSH, actualTypeArgs.length);
@@ -363,7 +364,7 @@ public class MethodGenerator {
 
 
     private void primitiveValueOfAndReturn() {
-        Class<?> wrapped = Primitives.wrap(returnType);
+        val wrapped = Primitives.wrap(returnType);
         mv.visitMethodInsn(INVOKESTATIC, p(wrapped), getParseXxMethodName(returnType),
                 sig(returnType, String.class), false);
 

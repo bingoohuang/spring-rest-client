@@ -1,12 +1,15 @@
 package com.github.bingoohuang.springrestclient.utils;
 
 import com.google.common.base.Charsets;
+import lombok.experimental.UtilityClass;
+import lombok.val;
 
+@UtilityClass
 public class UrlDecodes {
-    public static String decodeQuietly(String s) {
+    public String decodeQuietly(String s) {
         boolean needToChange = false;
         int numChars = s.length();
-        StringBuffer sb = new StringBuffer(numChars > 500 ? numChars / 2 : numChars);
+        val sb = new StringBuffer(numChars > 500 ? numChars / 2 : numChars);
         int i = 0;
 
         char c;
@@ -36,7 +39,7 @@ public class UrlDecodes {
                     int pos = 0;
 
                     while (((i + 2) < numChars) &&
-                            (c == '%')) {
+                        (c == '%')) {
                         int v = parseInt(s.substring(i + 1, i + 3), 16);
                         if (v < 0) {
                             sb.append('%').append(s.substring(i + 1, i + 3));
@@ -68,7 +71,7 @@ public class UrlDecodes {
         return (needToChange ? sb.toString() : s);
     }
 
-    private static int parseInt(String str, int base) {
+    private int parseInt(String str, int base) {
         try {
             return Integer.parseInt(str, base);
         } catch (NumberFormatException e) {

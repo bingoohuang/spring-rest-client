@@ -16,6 +16,7 @@ import com.mashape.unirest.request.HttpRequest;
 import com.mashape.unirest.request.HttpRequestWithBody;
 import com.mashape.unirest.request.ValueUtils;
 import com.mashape.unirest.request.body.MultipartBody;
+import lombok.val;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -128,8 +129,7 @@ public class RestReq {
         setRouteParamsAndCookie(post);
         post.queryString(requestParamsHelper.createQueryParams());
 
-        Map<String, Object> requestParams;
-        requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
+        val requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
         BaseRequest fields = fields(post, requestParams);
 
         return request(requestParams, fields);
@@ -141,8 +141,7 @@ public class RestReq {
         setRouteParamsAndCookie(post);
         post.queryString(requestParamsHelper.createQueryParams());
 
-        Map<String, Object> requestParams;
-        requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
+        val requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
         BaseRequest fields = fields(post, requestParams);
 
         return requestBinary(requestParams, fields);
@@ -196,12 +195,11 @@ public class RestReq {
 
     public Future<HttpResponse<String>> postAsync() throws Throwable {
         String url = createUrl();
-        HttpRequestWithBody post = Unirest.post(url);
+        val post = Unirest.post(url);
         setRouteParamsAndCookie(post);
         post.queryString(requestParamsHelper.createQueryParams());
 
-        Map<String, Object> requestParams;
-        requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
+        val requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
         BaseRequest fields = fields(post, requestParams);
 
         return requestAsync(requestParams, fields);
@@ -209,12 +207,11 @@ public class RestReq {
 
     public Future<HttpResponse<InputStream>> postAsyncBinary() throws Throwable {
         String url = createUrl();
-        HttpRequestWithBody post = Unirest.post(url);
+        val post = Unirest.post(url);
         setRouteParamsAndCookie(post);
         post.queryString(requestParamsHelper.createQueryParams());
 
-        Map<String, Object> requestParams;
-        requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
+        val requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
         BaseRequest fields = fields(post, requestParams);
 
         return requestAsyncBinary(requestParams, fields);
@@ -243,7 +240,7 @@ public class RestReq {
             httpRequest.routeParam(entry.getKey(), value);
         }
 
-        StringBuilder cookieStr = new StringBuilder();
+        val cookieStr = new StringBuilder();
         for (Map.Entry<String, Object> entry : cookies.entrySet()) {
             String value = String.valueOf(entry.getValue());
             cookieStr.append(' ').append(entry.getKey()).append("=").append(value).append(";");
@@ -253,7 +250,7 @@ public class RestReq {
 
     public String postAsJson(Object bean) throws Throwable {
         String url = createUrl();
-        HttpRequestWithBody post = Unirest.post(url);
+        val post = Unirest.post(url);
         setRouteParamsAndCookie(post);
         post.queryString(requestParamsHelper.mergeRequestParams());
 
@@ -269,7 +266,7 @@ public class RestReq {
 
     public InputStream postAsJsonBinary(Object bean) throws Throwable {
         String url = createUrl();
-        HttpRequestWithBody post = Unirest.post(url);
+        val post = Unirest.post(url);
         setRouteParamsAndCookie(post);
         post.queryString(requestParamsHelper.mergeRequestParams());
 
@@ -286,7 +283,7 @@ public class RestReq {
     public Future<HttpResponse<String>> postAsJsonAsync(Object bean)
             throws Throwable {
         String url = createUrl();
-        HttpRequestWithBody post = Unirest.post(url);
+        val post = Unirest.post(url);
         setRouteParamsAndCookie(post);
         post.queryString(requestParamsHelper.mergeRequestParams());
 
@@ -318,14 +315,13 @@ public class RestReq {
     }
 
 
-    private String request(
-            Map<String, Object> requestParams, BaseRequest httpRequest)
+    private String request(Map<String, Object> reqParams, BaseRequest httpReq)
             throws Throwable {
         boolean loggedResponse = false;
         try {
-            restLog.logAndSign(signProvider, requestParams, httpRequest.getHttpRequest());
+            restLog.logAndSign(signProvider, reqParams, httpReq.getHttpRequest());
             lastResponseTL.remove();
-            HttpResponse<String> response = httpRequest.asString();
+            val response = httpReq.asString();
             restLog.log(response);
             loggedResponse = true;
             lastResponseTL.set(response);
@@ -342,14 +338,13 @@ public class RestReq {
         }
     }
 
-    private InputStream requestBinary(
-            Map<String, Object> requestParams, BaseRequest httpRequest)
+    private InputStream requestBinary(Map<String, Object> reqParams, BaseRequest httpReq)
             throws Throwable {
         boolean loggedResponse = false;
         try {
-            restLog.logAndSign(signProvider, requestParams, httpRequest.getHttpRequest());
+            restLog.logAndSign(signProvider, reqParams, httpReq.getHttpRequest());
             lastResponseTL.remove();
-            HttpResponse<InputStream> response = httpRequest.asBinary();
+            val response = httpReq.asBinary();
             restLog.log(response);
             loggedResponse = true;
             lastResponseTL.set(response);
@@ -367,13 +362,12 @@ public class RestReq {
     }
 
     private Future<HttpResponse<String>> requestAsync(
-            Map<String, Object> requestParams, BaseRequest httpRequest)
+        Map<String, Object> reqParams, BaseRequest httpReq)
             throws Throwable {
-        restLog.logAndSign(signProvider, requestParams, httpRequest.getHttpRequest());
+        restLog.logAndSign(signProvider, reqParams, httpReq.getHttpRequest());
         lastResponseTL.remove(); // clear response threadlocal before execution
-        final UniRestCallback<String> callback = new UniRestCallback<String>(apiClass, restLog);
-
-        final Future<HttpResponse<String>> future = httpRequest.asStringAsync(callback);
+        val callback = new UniRestCallback<String>(apiClass, restLog);
+        val future = httpReq.asStringAsync(callback);
 
         return new Future<HttpResponse<String>>() {
             @Override
@@ -410,11 +404,8 @@ public class RestReq {
             throws Throwable {
         restLog.logAndSign(signProvider, requestParams, httpRequest.getHttpRequest());
         lastResponseTL.remove(); // clear response threadlocal before execution
-        final UniRestCallback<InputStream> callback;
-        callback = new UniRestCallback<InputStream>(apiClass, restLog);
-
-        final Future<HttpResponse<InputStream>> future;
-        future = httpRequest.asBinaryAsync(callback);
+        val callback = new UniRestCallback<InputStream>(apiClass, restLog);
+        val future = httpRequest.asBinaryAsync(callback);
 
         return new Future<HttpResponse<InputStream>>() {
             @Override

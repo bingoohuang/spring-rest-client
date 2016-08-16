@@ -84,6 +84,12 @@
         <!--</dependency>-->
 
         <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.10</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>com.github.bingoohuang</groupId>
             <artifactId>blackcat-javaagent</artifactId>
             <version>0.0.1</version>

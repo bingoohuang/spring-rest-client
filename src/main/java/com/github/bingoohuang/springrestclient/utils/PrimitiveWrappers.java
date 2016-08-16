@@ -1,14 +1,18 @@
 package com.github.bingoohuang.springrestclient.utils;
 
+import lombok.experimental.UtilityClass;
+import lombok.val;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+@UtilityClass
 public class PrimitiveWrappers {
-    private static final Map<Class<?>, String> WRAPPER_XX_VALUE;
+    private final Map<Class<?>, String> WRAPPER_XX_VALUE;
 
     static {
-        Map<Class<?>, String> wrapXxValue = new HashMap<Class<?>, String>(8);
+        val wrapXxValue = new HashMap<Class<?>, String>(8);
         wrapXxValue.put(boolean.class, "booleanValue");
         wrapXxValue.put(char.class, "charValue");
         wrapXxValue.put(byte.class, "byteValue");
@@ -22,17 +26,17 @@ public class PrimitiveWrappers {
     }
 
 
-    public static String getXxValueMethodName(Class<?> primitiveType) {
+    public String getXxValueMethodName(Class<?> primitiveType) {
         if (!primitiveType.isPrimitive())
             throw new IllegalArgumentException(primitiveType + " is not primitive");
 
         return WRAPPER_XX_VALUE.get(primitiveType);
     }
 
-    private static final Map<Class<?>, String> WRAPPER_PARSE_XX;
+    private final Map<Class<?>, String> WRAPPER_PARSE_XX;
 
     static {
-        Map<Class<?>, String> parseXX = new HashMap<Class<?>, String>(8);
+        val parseXX = new HashMap<Class<?>, String>(8);
         parseXX.put(boolean.class, "parseBoolean");
 //        parseXX.put(char.class, "charValue");
         parseXX.put(byte.class, "parseByte");
@@ -46,7 +50,7 @@ public class PrimitiveWrappers {
     }
 
 
-    public static String getParseXxMethodName(Class<?> primitiveType) {
+    public String getParseXxMethodName(Class<?> primitiveType) {
         if (!primitiveType.isPrimitive())
             throw new IllegalArgumentException(primitiveType + " is not primitive");
 

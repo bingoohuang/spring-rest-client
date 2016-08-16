@@ -7,6 +7,7 @@ import com.google.common.io.ByteStreams;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.request.HttpRequest;
 import com.mashape.unirest.request.body.Body;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,13 +20,13 @@ import java.util.regex.Pattern;
 
 import static org.apache.commons.lang3.StringUtils.containsIgnoreCase;
 
+@Slf4j
 public class RestLog {
     private final String syncOrAsync;
     private final String uuid = UUID.randomUUID().toString();
     private final Logger logger;
     private final Class<?> apiClass;
     private long start;
-    Logger log = LoggerFactory.getLogger(RestLog.class);
 
     public RestLog(Class<?> apiClass, boolean async) {
         this.apiClass = apiClass;

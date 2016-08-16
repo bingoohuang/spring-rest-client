@@ -5,6 +5,7 @@ import com.github.bingoohuang.springrestclient.annotations.SuccInResponseJSONPro
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
 import com.github.bingoohuang.springrestclient.provider.SignProvider;
 import com.google.common.io.Files;
+import lombok.val;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -44,7 +45,7 @@ public class ClassGenerator<T> {
     }
 
     public String getClassRequestMapping() {
-        RequestMapping re = restClientClass.getAnnotation(RequestMapping.class);
+        val re = restClientClass.getAnnotation(RequestMapping.class);
         return re != null && re.value().length > 0 ? re.value()[0] : "";
     }
 
@@ -62,8 +63,8 @@ public class ClassGenerator<T> {
     }
 
     private Class<? extends T> defineClass(byte[] bytes) {
-        ClassLoader parentClassLoader = restClientClass.getClassLoader();
-        RestClientClassLoader classLoader = new RestClientClassLoader(parentClassLoader);
+        val parentClassLoader = restClientClass.getClassLoader();
+        val classLoader = new RestClientClassLoader(parentClassLoader);
         return (Class<? extends T>) classLoader.defineClass(implName, bytes);
     }
 
@@ -85,7 +86,7 @@ public class ClassGenerator<T> {
     }
 
     private ClassWriter createClassWriter() {
-        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        val cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         String[] interfaces = {Type.getInternalName(restClientClass)};
         cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, implName.replace('.', '/'), null, p(Object.class), interfaces);
 

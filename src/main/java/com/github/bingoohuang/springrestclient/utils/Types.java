@@ -1,32 +1,36 @@
 package com.github.bingoohuang.springrestclient.utils;
 
+import lombok.experimental.UtilityClass;
+import lombok.val;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.concurrent.Future;
 
+@UtilityClass
 public class Types {
-    public static java.lang.reflect.Type getFutureGenericArgClass(Method method) {
-        Class<?> returnTypeClass = method.getReturnType();
+    public java.lang.reflect.Type getFutureGenericArgClass(Method method) {
+        val returnTypeClass = method.getReturnType();
         if (Future.class != returnTypeClass) return returnTypeClass;
 
         return getGenericTypeArgument(method);
     }
 
-    public static boolean isFutureReturnType(Method method) {
-        Class<?> returnTypeClass = method.getReturnType();
+    public boolean isFutureReturnType(Method method) {
+        val returnTypeClass = method.getReturnType();
         return Future.class == returnTypeClass;
     }
 
-    public static Type getGenericTypeArgument(Method method) {
-        Type genericReturnType = method.getGenericReturnType();
+    public Type getGenericTypeArgument(Method method) {
+        val genericReturnType = method.getGenericReturnType();
         return getGenericTypeArgument(genericReturnType);
     }
 
-    public static Type getGenericTypeArgument(Type genericReturnType) {
+    public Type getGenericTypeArgument(Type genericReturnType) {
         if (!(genericReturnType instanceof ParameterizedType)) return null;
 
-        ParameterizedType parameterizedType = (ParameterizedType) genericReturnType;
+        val parameterizedType = (ParameterizedType) genericReturnType;
         return parameterizedType.getActualTypeArguments()[0];
     }
 }

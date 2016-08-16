@@ -1,6 +1,7 @@
 package com.github.bingoohuang.springrestclient.spring;
 
 
+import lombok.val;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
@@ -13,8 +14,6 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 
 public class SpringRestClientScannerRegistrar implements ImportBeanDefinitionRegistrar, ResourceLoaderAware {
@@ -25,21 +24,21 @@ public class SpringRestClientScannerRegistrar implements ImportBeanDefinitionReg
      * {@inheritDoc}
      */
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-        String name = SpringRestClientEnabledScan.class.getName();
-        Map<String, Object> annotationAttributes = importingClassMetadata.getAnnotationAttributes(name);
-        ClassPathSpringRestClientScanner scanner = new ClassPathSpringRestClientScanner(registry);
+        val name = SpringRestClientEnabledScan.class.getName();
+        val annotationAttributes = importingClassMetadata.getAnnotationAttributes(name);
+        val scanner = new ClassPathSpringRestClientScanner(registry);
 
         if (resourceLoader != null) { // this check is needed in Spring 3.1
             scanner.setResourceLoader(resourceLoader);
         }
 
-        AnnotationAttributes annoAttrs = AnnotationAttributes.fromMap(annotationAttributes);
+        val annoAttrs = AnnotationAttributes.fromMap(annotationAttributes);
         Class<? extends BeanNameGenerator> generatorClass = annoAttrs.getClass("nameGenerator");
         if (!BeanNameGenerator.class.equals(generatorClass)) {
             scanner.setBeanNameGenerator(BeanUtils.instantiateClass(generatorClass));
         }
 
-        List<String> basePackages = new ArrayList<String>();
+        val basePackages = new ArrayList<String>();
         for (String pkg : annoAttrs.getStringArray("value")) {
             if (StringUtils.hasText(pkg)) basePackages.add(pkg);
         }
