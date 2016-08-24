@@ -1,18 +1,21 @@
 package com.github.bingoohuang.springrestclient.boot.controller;
 
-import com.github.bingoohuang.springrest.boot.annotations.RestfulSign;
 import com.github.bingoohuang.springrestclient.boot.domain.EmployeeListVO;
 import com.github.bingoohuang.springrestclient.boot.domain.EmployeeVO;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
 @RestController
-@RestfulSign
+@RequestMapping("/employees")
 public class EmployeeXmlController {
-    @RequestMapping(value = "/employees", produces = {"application/xml"})
+    @RequestMapping(produces = {"application/xml"})
     public EmployeeListVO getAllEmployees() {
         EmployeeListVO employees = new EmployeeListVO();
 
@@ -28,13 +31,20 @@ public class EmployeeXmlController {
         return employees;
     }
 
-    @RequestMapping(value = "/employees/{id}", produces = {"application/xml"})
-    public ResponseEntity<EmployeeVO> getEmployeeById(@PathVariable("id") int id) {
+    @RequestMapping(value = "/{id}", produces = {"application/xml"})
+    public ResponseEntity<EmployeeVO> getEmployeeById(
+        @PathVariable("id") int id) {
         if (id <= 3) {
             EmployeeVO employee = new EmployeeVO(1, "Lokesh", "Gupta", "howtodoinjava@gmail.com");
             return new ResponseEntity<EmployeeVO>(employee, HttpStatus.OK);
         }
 
         return new ResponseEntity(HttpStatus.NOT_FOUND);
+    }
+
+    @RequestMapping(value = "/echo/", method = POST, consumes = MediaType.APPLICATION_XML_VALUE)
+    public EmployeeVO echoEmployeeVO(@RequestBody EmployeeVO employeeVO) {
+        employeeVO.setFirstName("BingooHuang");
+        return employeeVO;
     }
 }

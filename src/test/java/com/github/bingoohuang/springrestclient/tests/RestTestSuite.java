@@ -12,26 +12,27 @@ import org.n3r.diamond.client.impl.MockDiamondServer;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        AnotherApiTest.class,
-        PayPartyApiTest.class,
-        ExApiTest.class,
-        NullApiTest.class,
-        YunpianTest.class,
-        YunpianAsyncTest.class,
-        GetApiTest.class,
-        UploadApiTest.class,
-        NotRequiredApiTest.class,
-        EnumApiTest.class,
-        DownloadApiTest.class,
-        JsonRequestParamApiTest.class,
-        TidApiTest.class,
-        EmployeeXmlApiTest.class,
-        MixQueryAndFieldsApiTest.class,
-        XmlsTest.class,
-        GetCodeByMobileApiTest.class,
-        MapReturnApiTest.class,
-        GenericApiTest.class,
-        CookieApiTest.class
+    AnotherApiTest.class,
+    PayPartyApiTest.class,
+    ExApiTest.class,
+    NullApiTest.class,
+    YunpianTest.class,
+    YunpianAsyncTest.class,
+    GetApiTest.class,
+    UploadApiTest.class,
+    NotRequiredApiTest.class,
+    EnumApiTest.class,
+    DownloadApiTest.class,
+    JsonRequestParamApiTest.class,
+    TidApiTest.class,
+    EmployeeXmlApiTest.class,
+    MixQueryAndFieldsApiTest.class,
+    XmlsTest.class,
+    GetCodeByMobileApiTest.class,
+    MapReturnApiTest.class,
+    GenericApiTest.class,
+    CookieApiTest.class,
+    UserXmlApiTest.class
 })
 public class RestTestSuite {
     @ClassRule

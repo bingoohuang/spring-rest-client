@@ -150,7 +150,7 @@
         <dependency>
             <groupId>com.github.bingoohuang</groupId>
             <artifactId>spring-rest-boot</artifactId>
-            <version>0.0.11-SNAPSHOT</version>
+            <version>0.0.10</version>
             <scope>test</scope>
         </dependency>
         <dependency>
