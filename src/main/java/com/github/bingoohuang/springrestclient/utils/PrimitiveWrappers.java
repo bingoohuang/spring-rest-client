@@ -1,15 +1,13 @@
 package com.github.bingoohuang.springrestclient.utils;
 
-import lombok.experimental.UtilityClass;
 import lombok.val;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-@UtilityClass
 public class PrimitiveWrappers {
-    private final Map<Class<?>, String> WRAPPER_XX_VALUE;
+    private static final Map<Class<?>, String> WRAPPER_XX_VALUE;
 
     static {
         val wrapXxValue = new HashMap<Class<?>, String>(8);
@@ -26,14 +24,14 @@ public class PrimitiveWrappers {
     }
 
 
-    public String getXxValueMethodName(Class<?> primitiveType) {
+    public static String getXxValueMethodName(Class<?> primitiveType) {
         if (!primitiveType.isPrimitive())
             throw new IllegalArgumentException(primitiveType + " is not primitive");
 
         return WRAPPER_XX_VALUE.get(primitiveType);
     }
 
-    private final Map<Class<?>, String> WRAPPER_PARSE_XX;
+    private static final Map<Class<?>, String> WRAPPER_PARSE_XX;
 
     static {
         val parseXX = new HashMap<Class<?>, String>(8);
@@ -50,7 +48,7 @@ public class PrimitiveWrappers {
     }
 
 
-    public String getParseXxMethodName(Class<?> primitiveType) {
+    public static String getParseXxMethodName(Class<?> primitiveType) {
         if (!primitiveType.isPrimitive())
             throw new IllegalArgumentException(primitiveType + " is not primitive");
 

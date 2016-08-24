@@ -1,10 +1,10 @@
 package com.github.bingoohuang.springrestclient.utils;
 
-import com.alibaba.fastjson.JSON;
 import com.github.bingoohuang.springrestclient.annotations.SuccInResponseJSONProperty;
 import com.github.bingoohuang.springrestclient.exception.RestException;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
 import com.github.bingoohuang.springrestclient.provider.SignProvider;
+import com.github.bingoohuang.springrestclient.xml.Xmls;
 import com.github.bingoohuang.utils.codec.Json;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
@@ -43,19 +43,24 @@ public class RestReq {
     final SignProvider signProvider;
     final ApplicationContext appContext;
     final RequestParamsHelper requestParamsHelper;
+    final String firstConsume;
 
-    RestReq(SuccInResponseJSONProperty succInResponseJSONProperty,
-            Map<String, Object> fixedRequestParams,
-            Map<Integer, Class<? extends Throwable>> sendStatusExceptionMappings,
-            Class<?> apiClass,
-            BaseUrlProvider baseUrlProvider,
-            String prefix,
-            Map<String, Object> routeParams,
-            Map<String, Object> requestParams,
-            Map<String, Object> cookies,
-            boolean async,
-            SignProvider signProvider,
-            ApplicationContext appContext) {
+    RestReq(
+        String firstConsume,
+        SuccInResponseJSONProperty succInResponseJSONProperty,
+        Map<String, Object> fixedRequestParams,
+        Map<Integer, Class<? extends Throwable>> sendStatusExceptionMappings,
+        Class<?> apiClass,
+        BaseUrlProvider baseUrlProvider,
+        String prefix,
+        Map<String, Object> routeParams,
+        Map<String, Object> requestParams,
+        Map<String, Object> cookies,
+        boolean async,
+        SignProvider signProvider,
+        ApplicationContext appContext) {
+
+        this.firstConsume = firstConsume;
         this.succInResponseJSONProperty = succInResponseJSONProperty;
         this.fixedRequestParams = fixedRequestParams;
         this.sendStatusExceptionMappings = sendStatusExceptionMappings;
@@ -70,7 +75,7 @@ public class RestReq {
         this.appContext = appContext;
 
         this.requestParamsHelper = new RequestParamsHelper(
-                fixedRequestParams, requestParams, appContext);
+            fixedRequestParams, requestParams, appContext);
     }
 
     static ThreadLocal<HttpResponse<?>> lastResponseTL;
@@ -149,7 +154,7 @@ public class RestReq {
 
 
     private BaseRequest fields(
-            HttpRequestWithBody post, Map<String, Object> requestParams) {
+        HttpRequestWithBody post, Map<String, Object> requestParams) {
         MultipartBody field = null;
 
         for (Map.Entry<String, Object> entry : requestParams.entrySet()) {
@@ -183,7 +188,8 @@ public class RestReq {
             if (field != null) field.field(entry.getKey(), (File) value);
             else field = post.field(entry.getKey(), (File) value);
         } else if (value instanceof MultipartFile) {
-            if (field != null) field.field(entry.getKey(), (MultipartFile) value);
+            if (field != null)
+                field.field(entry.getKey(), (MultipartFile) value);
             else field = post.field(entry.getKey(), (MultipartFile) value);
         } else {
             if (field != null) field.field(entry.getKey(), value);
@@ -218,13 +224,13 @@ public class RestReq {
     }
 
     static boolean callBlackcat = classExists(
-            "com.github.bingoohuang.blackcat.javaagent.callback.Blackcat");
+        "com.github.bingoohuang.blackcat.javaagent.callback.Blackcat");
 
     public static boolean classExists(String className) {
         try {
             Class.forName(className);
             return true;
-        } catch(Throwable e ) { // including ClassNotFoundException
+        } catch (Throwable e) { // including ClassNotFoundException
             return false;
         }
     }
@@ -232,7 +238,7 @@ public class RestReq {
     private void setRouteParamsAndCookie(HttpRequest httpRequest) {
         if (callBlackcat) {
             com.github.bingoohuang.blackcat.javaagent.callback
-                    .Blackcat.prepareRPC(httpRequest);
+                .Blackcat.prepareRPC(httpRequest);
         }
 
         for (Map.Entry<String, Object> entry : routeParams.entrySet()) {
@@ -245,78 +251,82 @@ public class RestReq {
             String value = String.valueOf(entry.getValue());
             cookieStr.append(' ').append(entry.getKey()).append("=").append(value).append(";");
         }
-        if (cookieStr.length() > 0) httpRequest.header("Cookie", "foo=something");
+        if (cookieStr.length() > 0)
+            httpRequest.header("Cookie", cookieStr.toString());
     }
 
-    public String postAsJson(Object bean) throws Throwable {
-        String url = createUrl();
-        val post = Unirest.post(url);
-        setRouteParamsAndCookie(post);
-        post.queryString(requestParamsHelper.mergeRequestParams());
+    public String postBody(Object bean) throws Throwable {
+        val post = createPost();
 
-        post.header("Content-Type", "application/json;charset=UTF-8");
-        String body = ValueUtils.processValue(bean);
+        val body = createBody(post, bean);
         post.body(body);
 
-        Map<String, Object> requestParams = Maps.newHashMap();
-        requestParams.put("_json", body);
+        val requestParams = createJsonBody(body);
 
         return request(requestParams, post);
     }
 
-    public InputStream postAsJsonBinary(Object bean) throws Throwable {
-        String url = createUrl();
-        val post = Unirest.post(url);
-        setRouteParamsAndCookie(post);
-        post.queryString(requestParamsHelper.mergeRequestParams());
+    public InputStream postBodyBinary(Object bean) throws Throwable {
+        val post = createPost();
 
-        post.header("Content-Type", "application/json;charset=UTF-8");
-        String body = ValueUtils.processValue(bean);
+        val body = createBody(post, bean);
         post.body(body);
 
-        Map<String, Object> requestParams = Maps.newHashMap();
-        requestParams.put("_json", body);
+        val requestParams = createJsonBody(body);
 
         return requestBinary(requestParams, post);
     }
 
-    public Future<HttpResponse<String>> postAsJsonAsync(Object bean)
-            throws Throwable {
-        String url = createUrl();
-        val post = Unirest.post(url);
-        setRouteParamsAndCookie(post);
-        post.queryString(requestParamsHelper.mergeRequestParams());
+    public Future<HttpResponse<String>> postBodyAsync(Object bean) throws Throwable {
+        val post = createPost();
 
-        post.header("Content-Type", "application/json;charset=UTF-8");
-        String body = JSON.toJSONString(bean);
+        val body = createBody(post, bean);
         post.body(body);
 
-        Map<String, Object> requestParams = Maps.newHashMap();
-        requestParams.put("_json", body);
+        Map<String, Object> requestParams = createJsonBody(body);
 
         return requestAsync(requestParams, post);
     }
 
-    public Future<HttpResponse<InputStream>> postAsJsonAsyncBinary(Object bean)
-            throws Throwable {
-        String url = createUrl();
-        HttpRequestWithBody post = Unirest.post(url);
-        setRouteParamsAndCookie(post);
-        post.queryString(requestParamsHelper.mergeRequestParams());
+    public Future<HttpResponse<InputStream>> postBodyAsyncBinary(Object bean) throws Throwable {
+        val post = createPost();
 
-        post.header("Content-Type", "application/json;charset=UTF-8");
-        String body = JSON.toJSONString(bean);
+        val body = createBody(post, bean);
         post.body(body);
 
-        Map<String, Object> requestParams = Maps.newHashMap();
-        requestParams.put("_json", body);
+        val requestParams = createJsonBody(body);
 
         return requestAsyncBinary(requestParams, post);
     }
 
 
+    private Map<String, Object> createJsonBody(String body) {
+        Map<String, Object> requestParams = Maps.newHashMap();
+        requestParams.put("_json", body);
+        return requestParams;
+    }
+
+
+    private HttpRequestWithBody createPost() {
+        String url = createUrl();
+        val post = Unirest.post(url);
+        setRouteParamsAndCookie(post);
+        post.queryString(requestParamsHelper.mergeRequestParams());
+        return post;
+    }
+
+    private String createBody(HttpRequestWithBody post, Object bean) {
+        if (firstConsume != null && firstConsume.indexOf("/xml") >= 0) {
+            post.header("Content-Type", "application/xml;charset=UTF-8");
+            return Xmls.marshal(bean);
+        } else {
+            post.header("Content-Type", "application/json;charset=UTF-8");
+            return ValueUtils.processValue(bean);
+        }
+    }
+
     private String request(Map<String, Object> reqParams, BaseRequest httpReq)
-            throws Throwable {
+        throws Throwable {
         boolean loggedResponse = false;
         try {
             restLog.logAndSign(signProvider, reqParams, httpReq.getHttpRequest());
@@ -326,7 +336,8 @@ public class RestReq {
             loggedResponse = true;
             lastResponseTL.set(response);
 
-            if (isSuccessful(response)) return RestClientUtils.nullOrBody(response);
+            if (isSuccessful(response))
+                return RestClientUtils.nullOrBody(response);
 
             throw processStatusExceptionMappings(response);
         } catch (UnirestException e) {
@@ -339,7 +350,7 @@ public class RestReq {
     }
 
     private InputStream requestBinary(Map<String, Object> reqParams, BaseRequest httpReq)
-            throws Throwable {
+        throws Throwable {
         boolean loggedResponse = false;
         try {
             restLog.logAndSign(signProvider, reqParams, httpReq.getHttpRequest());
@@ -349,7 +360,8 @@ public class RestReq {
             loggedResponse = true;
             lastResponseTL.set(response);
 
-            if (isSuccessful(response)) return RestClientUtils.nullOrBody(response);
+            if (isSuccessful(response))
+                return RestClientUtils.nullOrBody(response);
 
             throw processStatusExceptionMappings(response);
         } catch (UnirestException e) {
@@ -363,7 +375,7 @@ public class RestReq {
 
     private Future<HttpResponse<String>> requestAsync(
         Map<String, Object> reqParams, BaseRequest httpReq)
-            throws Throwable {
+        throws Throwable {
         restLog.logAndSign(signProvider, reqParams, httpReq.getHttpRequest());
         lastResponseTL.remove(); // clear response threadlocal before execution
         val callback = new UniRestCallback<String>(apiClass, restLog);
@@ -387,21 +399,21 @@ public class RestReq {
 
             @Override
             public HttpResponse<String> get()
-                    throws InterruptedException, ExecutionException {
+                throws InterruptedException, ExecutionException {
                 return callback.get();
             }
 
             @Override
             public HttpResponse<String> get(long timeout, TimeUnit unit)
-                    throws InterruptedException, ExecutionException, TimeoutException {
+                throws InterruptedException, ExecutionException, TimeoutException {
                 return callback.get(unit.toMillis(timeout));
             }
         };
     }
 
     private Future<HttpResponse<InputStream>> requestAsyncBinary(
-            Map<String, Object> requestParams, BaseRequest httpRequest)
-            throws Throwable {
+        Map<String, Object> requestParams, BaseRequest httpRequest)
+        throws Throwable {
         restLog.logAndSign(signProvider, requestParams, httpRequest.getHttpRequest());
         lastResponseTL.remove(); // clear response threadlocal before execution
         val callback = new UniRestCallback<InputStream>(apiClass, restLog);
@@ -425,20 +437,20 @@ public class RestReq {
 
             @Override
             public HttpResponse<InputStream> get()
-                    throws InterruptedException, ExecutionException {
+                throws InterruptedException, ExecutionException {
                 return callback.get();
             }
 
             @Override
             public HttpResponse<InputStream> get(long timeout, TimeUnit unit)
-                    throws InterruptedException, ExecutionException, TimeoutException {
+                throws InterruptedException, ExecutionException, TimeoutException {
                 return callback.get(unit.toMillis(timeout));
             }
         };
     }
 
     public Throwable processStatusExceptionMappings(HttpResponse<?> response)
-            throws Throwable {
+        throws Throwable {
         Class<? extends Throwable> exceptionClass;
         exceptionClass = sendStatusExceptionMappings.get(response.getStatus());
         String msg = response.header("error-msg");
@@ -447,7 +459,8 @@ public class RestReq {
             msg = body instanceof InputStream ? "" : ("" + body);
         }
 
-        if (exceptionClass == null) throw new RestException(response.getStatus(), msg);
+        if (exceptionClass == null)
+            throw new RestException(response.getStatus(), msg);
 
         throw Obj.createObject(exceptionClass, msg);
     }
@@ -456,8 +469,8 @@ public class RestReq {
         String baseUrl = baseUrlProvider.getBaseUrl(apiClass);
         if (Strings.isNullOrEmpty(baseUrl)) {
             throw new RuntimeException(
-                    "base url cannot be null generated by provider "
-                            + baseUrlProvider.getClass());
+                "base url cannot be null generated by provider "
+                    + baseUrlProvider.getClass());
         }
         return baseUrl + prefix;
     }

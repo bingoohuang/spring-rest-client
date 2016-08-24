@@ -46,7 +46,6 @@ public class MethodGenerator {
     private final int offsetSize;
     private final String classRequestMapping;
     private final RequestMapping requestMapping;
-    private final String implName;
     private final boolean futureReturnType;
     private final boolean isBinaryReturnType;
     private final boolean isFutureBinaryReturnType;
@@ -58,7 +57,6 @@ public class MethodGenerator {
 
 
     public MethodGenerator(ClassWriter classWriter, String implName, Method method, String classRequestMapping) {
-        this.implName = implName;
         this.implp = p(implName);
         this.method = method;
         this.mv = visitMethod(method, classWriter);
@@ -162,10 +160,10 @@ public class MethodGenerator {
             if (requestBodyOffset > -1) {
                 mv.visitVarInsn(ALOAD, requestBodyOffset + 1);
                 getOrPost(futureReturnType,
-                        "postAsJsonAsync", sig(Future.class, Object.class),
-                        "postAsJsonAsyncBinary", sig(Future.class, Object.class),
-                        "postAsJson", sig(String.class, Object.class),
-                        "postAsJsonBinary", sig(InputStream.class, Object.class));
+                        "postBodyAsync", sig(Future.class, Object.class),
+                        "postBodyAsyncBinary", sig(Future.class, Object.class),
+                        "postBody", sig(String.class, Object.class),
+                        "postBodyBinary", sig(InputStream.class, Object.class));
             } else {
                 getOrPost(futureReturnType,
                         "postAsync", sig(Future.class),
@@ -203,6 +201,8 @@ public class MethodGenerator {
 
         mv.visitLdcInsn(getFullRequestMapping());
         mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "prefix", sigRest(String.class), false);
+        mv.visitLdcInsn(getFirstConsume());
+        mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "firstConsume", sigRest(String.class), false);
         mv.visitInsn(futureReturnType ? ICONST_1 : ICONST_0);
         mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "async", sigRest(boolean.class), false);
         mv.visitLdcInsn(Type.getType(method.getDeclaringClass()));
@@ -252,9 +252,17 @@ public class MethodGenerator {
         return sig(RestReqBuilder.class, clazz);
     }
 
+
+    private String getFirstConsume() {
+        val isEmpty = requestMapping == null || requestMapping.consumes().length == 0;
+        if (isEmpty) return "";
+
+        return requestMapping.consumes()[0];
+    }
+
     private String getFullRequestMapping() {
-        val isEmpty = requestMapping != null && requestMapping.value().length > 0;
-        val methodMappingName = isEmpty ? requestMapping.value()[0] : "";
+        val isNotEmpty = requestMapping != null && requestMapping.value().length > 0;
+        val methodMappingName = isNotEmpty ? requestMapping.value()[0] : "";
 
         return classRequestMapping + methodMappingName;
     }

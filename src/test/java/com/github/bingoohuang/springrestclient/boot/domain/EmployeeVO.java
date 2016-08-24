@@ -1,41 +1,19 @@
 package com.github.bingoohuang.springrestclient.boot.domain;
 
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.xml.bind.annotation.*;
 
 @XmlRootElement(name = "employee")
 @XmlAccessorType(XmlAccessType.NONE)
+@Data @NoArgsConstructor @AllArgsConstructor
 public class EmployeeVO {
+    @XmlAttribute Integer id;
 
-    @XmlAttribute
-    private Integer id;
-
-    @XmlElement
-    private String firstName;
-
-    @XmlElement
-    private String lastName;
-
-    @XmlElement
-    private String email;
-
-    public EmployeeVO(Integer id, String firstName, String lastName, String email) {
-        super();
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-    }
-
-    public EmployeeVO() {
-
-    }
-
-    //Setters and Getters
-
-    @Override
-    public String toString() {
-        return "EmployeeVO [id=" + id + ", firstName=" + firstName
-                + ", lastName=" + lastName + ", email=" + email + "]";
-    }
+    @XmlElement String firstName;
+    @XmlElement String lastName;
+    @XmlElement String email;
 }

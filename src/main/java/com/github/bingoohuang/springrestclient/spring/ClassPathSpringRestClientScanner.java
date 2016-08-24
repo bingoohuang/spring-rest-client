@@ -1,6 +1,7 @@
 package com.github.bingoohuang.springrestclient.spring;
 
 import com.github.bingoohuang.springrestclient.annotations.SpringRestClientEnabled;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
 
+@Slf4j
 public class ClassPathSpringRestClientScanner extends ClassPathBeanDefinitionScanner {
     public ClassPathSpringRestClientScanner(BeanDefinitionRegistry registry) {
         super(registry, false);
@@ -47,13 +49,13 @@ public class ClassPathSpringRestClientScanner extends ClassPathBeanDefinitionSca
         val beanDefinitions = super.doScan(basePackages);
 
         if (beanDefinitions.isEmpty()) {
-            logger.warn("No SpringRestClientEnabled was found in '" + Arrays.toString(basePackages) + "' package. Please check your configuration.");
+            log.warn("No SpringRestClientEnabled was found in '" + Arrays.toString(basePackages) + "' package. Please check your configuration.");
         } else {
             for (BeanDefinitionHolder holder : beanDefinitions) {
                 val definition = (GenericBeanDefinition) holder.getBeanDefinition();
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Creating SpringRestClientFactoryBean with name '" + holder.getBeanName()
+                if (log.isDebugEnabled()) {
+                    log.debug("Creating SpringRestClientFactoryBean with name '" + holder.getBeanName()
                             + "' and '" + definition.getBeanClassName() + "' interfaceClazz");
                 }
 
@@ -83,7 +85,7 @@ public class ClassPathSpringRestClientScanner extends ClassPathBeanDefinitionSca
         if (super.checkCandidate(beanName, beanDefinition)) {
             return true;
         } else {
-            logger.warn("Skipping SpringRestClientFactoryBean with name '" + beanName
+            log.warn("Skipping SpringRestClientFactoryBean with name '" + beanName
                     + "' and '" + beanDefinition.getBeanClassName() + "' interfaceClazz"
                     + ". Bean already defined with the same name!");
             return false;

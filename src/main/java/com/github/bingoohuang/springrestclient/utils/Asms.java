@@ -23,51 +23,30 @@ public class Asms {
         if (n.isArray()) {
             n = n.getComponentType();
             if (n.isPrimitive()) {
-                if (n == Byte.TYPE) {
-                    return "[B";
-                } else if (n == Boolean.TYPE) {
-                    return "[Z";
-                } else if (n == Short.TYPE) {
-                    return "[S";
-                } else if (n == Character.TYPE) {
-                    return "[C";
-                } else if (n == Integer.TYPE) {
-                    return "[I";
-                } else if (n == Float.TYPE) {
-                    return "[F";
-                } else if (n == Double.TYPE) {
-                    return "[D";
-                } else if (n == Long.TYPE) {
-                    return "[J";
-                } else {
-                    throw new RuntimeException("Unrecognized type in compiler: " + n.getName());
-                }
+                if (n == Byte.TYPE) return "[B";
+                if (n == Boolean.TYPE) return "[Z";
+                if (n == Short.TYPE) return "[S";
+                if (n == Character.TYPE) return "[C";
+                if (n == Integer.TYPE) return "[I";
+                if (n == Float.TYPE) return "[F";
+                if (n == Double.TYPE) return "[D";
+                if (n == Long.TYPE) return "[J";
+                throw new RuntimeException("Unrecognized type in compiler: " + n.getName());
             } else {
                 return "[" + ci(n);
             }
         } else {
             if (n.isPrimitive()) {
-                if (n == Byte.TYPE) {
-                    return "B";
-                } else if (n == Boolean.TYPE) {
-                    return "Z";
-                } else if (n == Short.TYPE) {
-                    return "S";
-                } else if (n == Character.TYPE) {
-                    return "C";
-                } else if (n == Integer.TYPE) {
-                    return "I";
-                } else if (n == Float.TYPE) {
-                    return "F";
-                } else if (n == Double.TYPE) {
-                    return "D";
-                } else if (n == Long.TYPE) {
-                    return "J";
-                } else if (n == Void.TYPE) {
-                    return "V";
-                } else {
-                    throw new RuntimeException("Unrecognized type in compiler: " + n.getName());
-                }
+                if (n == Byte.TYPE) return "B";
+                if (n == Boolean.TYPE) return "Z";
+                if (n == Short.TYPE) return "S";
+                if (n == Character.TYPE) return "C";
+                if (n == Integer.TYPE) return "I";
+                if (n == Float.TYPE) return "F";
+                if (n == Double.TYPE) return "D";
+                if (n == Long.TYPE) return "J";
+                if (n == Void.TYPE) return "V";
+                throw new RuntimeException("Unrecognized type in compiler: " + n.getName());
             } else {
                 return "L" + p(n) + ";";
             }

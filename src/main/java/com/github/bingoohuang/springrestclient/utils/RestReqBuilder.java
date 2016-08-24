@@ -20,6 +20,13 @@ public class RestReqBuilder {
     boolean async;
     SignProvider signProvider;
     ApplicationContext appContext;
+    String firstConsume; // consumes = {"application/xml"}
+
+    public RestReqBuilder firstConsume(String firstConsume) {
+        this.firstConsume = firstConsume;
+        return this;
+    }
+
 
     public RestReqBuilder appContext(ApplicationContext appContext) {
         this.appContext = appContext;
@@ -82,7 +89,9 @@ public class RestReqBuilder {
     }
 
     public RestReq build() {
-        return new RestReq(succInResponseJSONProperty,
+        return new RestReq(
+                firstConsume,
+                succInResponseJSONProperty,
                 fixedRequestParams,
                 statusExceptionMapping,
                 apiClass,
