@@ -1,6 +1,7 @@
 package com.github.bingoohuang.springrestclient.boot;
 
 import com.github.bingoohuang.springrest.boot.RestConfiguration;
+import lombok.val;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -27,7 +28,7 @@ public class Application {
 
     @Bean
     public DefaultAdvisorAutoProxyCreator defaultAdvisorAutoProxyCreator() {
-        DefaultAdvisorAutoProxyCreator creator = new DefaultAdvisorAutoProxyCreator();
+        val creator = new DefaultAdvisorAutoProxyCreator();
         creator.setProxyTargetClass(true);
         return creator;
     }

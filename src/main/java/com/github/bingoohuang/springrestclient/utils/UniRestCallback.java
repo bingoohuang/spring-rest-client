@@ -50,7 +50,8 @@ class UniRestCallback<T> implements Callback<T> {
 
     public HttpResponse<T> get(long timeout) throws InterruptedException {
         long start = System.currentTimeMillis();
-        while (!isDone() && System.currentTimeMillis() - start < timeout) Thread.sleep(1);
+        while (!isDone() && System.currentTimeMillis() - start < timeout)
+            Thread.sleep(1);
 
         return response;
     }

@@ -2,6 +2,7 @@ package com.github.bingoohuang.springrestclient.boot.controller;
 
 import com.github.bingoohuang.springrest.boot.annotations.RestfulSign;
 import com.github.bingoohuang.springrestclient.boot.domain.Account;
+import lombok.val;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,7 +18,7 @@ public class NullController {
 
     @RequestMapping("/empty-string")
     public String emptyString(@RequestBody Account account) {
-        Account a = new Account(100, "java");
+        val a = new Account(100, "java");
         if (a.equals(account)) return "";
         return "error";
     }

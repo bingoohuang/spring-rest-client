@@ -8,7 +8,6 @@ import com.google.common.io.Files;
 import lombok.val;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,22 +17,22 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import static com.github.bingoohuang.springrestclient.generators.MethodGenerator.*;
 import static com.github.bingoohuang.springrestclient.utils.Asms.ci;
 import static com.github.bingoohuang.springrestclient.utils.Asms.p;
 import static org.objectweb.asm.Opcodes.*;
 
 public class ClassGenerator<T> {
-
     private final Class<T> restClientClass;
     private final String implName;
-    private final ClassWriter classWriter;
-    private final SpringRestClientEnabled restClientEnabled;
+    private final ClassWriter cw;
+    private final SpringRestClientEnabled clientEnabled;
 
     public ClassGenerator(Class<T> restClientClass) {
         this.restClientClass = restClientClass;
         this.implName = restClientClass.getName() + "$$BINGOOASM$$Impl";
-        this.classWriter = createClassWriter();
-        this.restClientEnabled = restClientClass.getAnnotation(SpringRestClientEnabled.class);
+        this.cw = createClassWriter();
+        this.clientEnabled = restClientClass.getAnnotation(SpringRestClientEnabled.class);
     }
 
     public Class<? extends T> generate() {
@@ -50,7 +49,7 @@ public class ClassGenerator<T> {
     }
 
     private void createClassFileForDiagnose(byte[] bytes) {
-        if (restClientEnabled.createClassFileForDiagnose())
+        if (clientEnabled.createClassFileForDiagnose())
             writeClassFile4Diagnose(bytes, implName + ".class");
     }
 
@@ -74,42 +73,47 @@ public class ClassGenerator<T> {
         constructor();
 
         for (Method method : restClientClass.getMethods()) {
-            new MethodGenerator(classWriter, implName, method, classRequestMapping).generate();
+            new MethodGenerator(cw, implName, method,
+                classRequestMapping).generate();
         }
 
         return createBytes();
     }
 
     private byte[] createBytes() {
-        classWriter.visitEnd();
-        return classWriter.toByteArray();
+        cw.visitEnd();
+        return cw.toByteArray();
     }
 
     private ClassWriter createClassWriter() {
         val cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         String[] interfaces = {Type.getInternalName(restClientClass)};
-        cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, implName.replace('.', '/'), null, p(Object.class), interfaces);
+        cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, implName.replace('.', '/'),
+            null, p(Object.class), interfaces);
 
-        FieldVisitor fv = cw.visitField(0, MethodGenerator.baseUrlProvider, ci(BaseUrlProvider.class), null, null);
+        FieldVisitor fv = cw.visitField(0, baseUrlProvider,
+            ci(BaseUrlProvider.class), null, null);
         fv.visitEnd();
 
-        fv = cw.visitField(0, MethodGenerator.signProvider, ci(SignProvider.class), null, null);
+        fv = cw.visitField(0, signProvider,
+            ci(SignProvider.class), null, null);
         fv.visitEnd();
 
-        fv = cw.visitField(0, MethodGenerator.appContext, ci(ApplicationContext.class), null, null);
+        fv = cw.visitField(0, appContext,
+            ci(ApplicationContext.class), null, null);
         fv.visitEnd();
 
         for (Method method : restClientClass.getDeclaredMethods()) {
-            fv = cw.visitField(0, method.getName() + MethodGenerator.StatusExceptionMappings,
-                    ci(Map.class), null, null);
+            fv = cw.visitField(0, method.getName() + StatusExceptionMappings,
+                ci(Map.class), null, null);
             fv.visitEnd();
 
-            fv = cw.visitField(0, method.getName() + MethodGenerator.FixedRequestParams,
-                    ci(Map.class), null, null);
+            fv = cw.visitField(0, method.getName() + FixedRequestParams,
+                ci(Map.class), null, null);
             fv.visitEnd();
 
-            fv = cw.visitField(0, method.getName() + MethodGenerator.SuccInResponseJSONProperty,
-                    ci(SuccInResponseJSONProperty.class), null, null);
+            fv = cw.visitField(0, method.getName() + SuccInResponseJSONProperty,
+                ci(SuccInResponseJSONProperty.class), null, null);
             fv.visitEnd();
         }
 
@@ -117,7 +121,7 @@ public class ClassGenerator<T> {
     }
 
     private void constructor() {
-        MethodVisitor mv = classWriter.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+        val mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
         mv.visitCode();
         mv.visitVarInsn(ALOAD, 0);
         mv.visitMethodInsn(INVOKESPECIAL, p(Object.class), "<init>", "()V", false);

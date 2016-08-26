@@ -2,14 +2,8 @@ package com.github.bingoohuang.springrestclient.spring.demo;
 
 import com.github.bingoohuang.springrestclient.annotations.SuccInResponseJSONProperty;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
-import com.github.bingoohuang.springrestclient.spring.api.YunpianApi;
-import com.github.bingoohuang.springrestclient.utils.Futures;
-import com.github.bingoohuang.springrestclient.utils.RestReq;
-import com.github.bingoohuang.springrestclient.utils.RestReqBuilder;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.Future;
 
 public class YunpianApiDemo {
     BaseUrlProvider baseUrlProvider;

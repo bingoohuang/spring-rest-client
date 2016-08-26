@@ -23,10 +23,12 @@ public interface JsonRequestParamApi {
 
 
     @RequestMapping("/case2")
-    Car case2(@RequestParam("person") Person person, @RequestParam("car") Car car);
+    Car case2(
+        @RequestParam("person") Person person, @RequestParam("car") Car car);
 
     @RequestMapping(value = "/case2", method = GET)
-    Car case2Get(@RequestParam("person") Person person, @RequestParam("car") Car car);
+    Car case2Get(
+        @RequestParam("person") Person person, @RequestParam("car") Car car);
 
     @RequestMapping("/case3")
     List<Person> case3(@RequestParam("persons") List<Person> persons);
@@ -35,10 +37,14 @@ public interface JsonRequestParamApi {
     List<Person> case3Get(@RequestParam("persons") List<Person> persons);
 
     @RequestMapping("/case4")
-    List<Person> case4(@RequestParam("car") Car car, @RequestParam("persons") List<Person> persons);
+    List<Person> case4(
+        @RequestParam("car") Car car,
+        @RequestParam("persons") List<Person> persons);
 
     @RequestMapping(value = "/case4", method = GET)
-    List<Person> case4Get(@RequestParam("car") Car car, @RequestParam("persons") List<Person> persons);
+    List<Person> case4Get(
+        @RequestParam("car") Car car,
+        @RequestParam("persons") List<Person> persons);
 
     @RequestMapping("/case5")
     List<Person> case5(@RequestParam("car") Car car,

@@ -70,7 +70,7 @@ public class MethodGenerator {
         this.futureReturnType = Types.isFutureReturnType(method);
         this.isBinaryReturnType = returnType == InputStream.class;
         this.isFutureBinaryReturnType = futureReturnType
-                && Types.getGenericTypeArgument(method) == InputStream.class;
+            && Types.getGenericTypeArgument(method) == InputStream.class;
     }
 
     private MethodVisitor visitMethod(Method method, ClassWriter classWriter) {
@@ -133,8 +133,8 @@ public class MethodGenerator {
         }
 
         mv.visitMethodInsn(INVOKESTATIC,
-                p(AsmValidatorLog.class), "validate",
-                sig(void.class, Class.class, String.class, Object[].class), false);
+            p(AsmValidatorLog.class), "validate",
+            sig(void.class, Class.class, String.class, Object[].class), false);
     }
 
     private void dealResult() {
@@ -160,23 +160,23 @@ public class MethodGenerator {
             if (requestBodyOffset > -1) {
                 mv.visitVarInsn(ALOAD, requestBodyOffset + 1);
                 getOrPost(futureReturnType,
-                        "postBodyAsync", sig(Future.class, Object.class),
-                        "postBodyAsyncBinary", sig(Future.class, Object.class),
-                        "postBody", sig(String.class, Object.class),
-                        "postBodyBinary", sig(InputStream.class, Object.class));
+                    "postBodyAsync", sig(Future.class, Object.class),
+                    "postBodyAsyncBinary", sig(Future.class, Object.class),
+                    "postBody", sig(String.class, Object.class),
+                    "postBodyBinary", sig(InputStream.class, Object.class));
             } else {
                 getOrPost(futureReturnType,
-                        "postAsync", sig(Future.class),
-                        "postAsyncBinary", sig(Future.class),
-                        "post", sig(String.class),
-                        "postBinary", sig(InputStream.class));
+                    "postAsync", sig(Future.class),
+                    "postAsyncBinary", sig(Future.class),
+                    "post", sig(String.class),
+                    "postBinary", sig(InputStream.class));
             }
         } else if (isGetMethod()) {
             getOrPost(futureReturnType,
-                    "getAsync", sig(Future.class),
-                    "getAsyncBinary", sig(Future.class),
-                    "get", sig(String.class),
-                    "getBinary", sig(InputStream.class));
+                "getAsync", sig(Future.class),
+                "getAsyncBinary", sig(Future.class),
+                "get", sig(String.class),
+                "getBinary", sig(InputStream.class));
         }
     }
 
@@ -236,16 +236,16 @@ public class MethodGenerator {
     private void setFieldPerMethod(String namePostFix, Class propertyClass) {
         mv.visitVarInsn(ALOAD, 0);
         mv.visitFieldInsn(GETFIELD, implp,
-                method.getName() + namePostFix, ci(propertyClass));
+            method.getName() + namePostFix, ci(propertyClass));
         mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder,
-                uncapitalize(namePostFix), sigRest(propertyClass), false);
+            uncapitalize(namePostFix), sigRest(propertyClass), false);
     }
 
     private void setField(String buildMethodName, Class propertyClass) {
         mv.visitVarInsn(ALOAD, 0);
         mv.visitFieldInsn(GETFIELD, implp, buildMethodName, ci(propertyClass));
         mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder,
-                buildMethodName, sigRest(propertyClass), false);
+            buildMethodName, sigRest(propertyClass), false);
     }
 
     private String sigRest(Class<?> clazz) {
@@ -317,14 +317,14 @@ public class MethodGenerator {
             mv.visitLdcInsn(Type.getType((Class) futureType));
             mv.visitVarInsn(ALOAD, offsetSize + 4);
             mv.visitMethodInsn(INVOKESTATIC, p(Futures.class),
-                    futureType == Void.class ? "convertFutureVoid" : "convertFuture",
-                    sig(Future.class, Future.class, Class.class, RestReq.class), false);
+                futureType == Void.class ? "convertFutureVoid" : "convertFuture",
+                sig(Future.class, Future.class, Class.class, RestReq.class), false);
         } else {
             java.lang.reflect.Type typeArgument = Types.getGenericTypeArgument(method);
             if (typeArgument == null) {
                 mv.visitLdcInsn(Type.getType(returnType));
                 mv.visitMethodInsn(INVOKESTATIC, p(Beans.class), "unmarshal",
-                        sig(Object.class, String.class, Class.class), false);
+                    sig(Object.class, String.class, Class.class), false);
             } else {
                 val genericReturnType = method.getGenericReturnType();
                 if (genericReturnType instanceof ParameterizedTypeImpl) {
@@ -335,7 +335,7 @@ public class MethodGenerator {
                 }
 
                 mv.visitMethodInsn(INVOKESTATIC, p(Beans.class), "unmarshal",
-                        sig(Object.class, String.class, java.lang.reflect.Type.class), false);
+                    sig(Object.class, String.class, java.lang.reflect.Type.class), false);
             }
         }
         mv.visitTypeInsn(CHECKCAST, p(returnType));
@@ -365,16 +365,16 @@ public class MethodGenerator {
 
         mv.visitInsn(ACONST_NULL);
         mv.visitMethodInsn(INVOKESTATIC, p(ParameterizedTypeImpl.class),
-                "make", sig(ParameterizedTypeImpl.class, Class.class,
-                        java.lang.reflect.Type[].class,
-                        java.lang.reflect.Type.class), false);
+            "make", sig(ParameterizedTypeImpl.class, Class.class,
+                java.lang.reflect.Type[].class,
+                java.lang.reflect.Type.class), false);
     }
 
 
     private void primitiveValueOfAndReturn() {
         val wrapped = Primitives.wrap(returnType);
         mv.visitMethodInsn(INVOKESTATIC, p(wrapped), getParseXxMethodName(returnType),
-                sig(returnType, String.class), false);
+            sig(returnType, String.class), false);
 
         mv.visitInsn(Type.getType(returnType).getOpcode(IRETURN));
     }
@@ -394,7 +394,7 @@ public class MethodGenerator {
                 if (isWideType(parameterTypes[i])) ++incr;
 
                 mv.visitMethodInsn(INVOKEVIRTUAL, p(LinkedHashMap.class), "put",
-                        sig(Object.class, Object.class, Object.class), false);
+                    sig(Object.class, Object.class, Object.class), false);
                 mv.visitInsn(POP);
             }
         }

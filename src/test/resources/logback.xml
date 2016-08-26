@@ -3,18 +3,20 @@
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
     <!-- -->
     <!--<appender name="Console" class="ch.qos.logback.core.ConsoleAppender">-->
-        <!--&lt;!&ndash; encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder by default &ndash;&gt;-->
-        <!--<encoder>-->
-            <!--<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %X{threadName} %-5level %logger{36} - %m%n</pattern>-->
-        <!--</encoder>-->
+    <!--&lt;!&ndash; encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder by default &ndash;&gt;-->
+    <!--<encoder>-->
+    <!--<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %X{threadName} %-5level %logger{36} - %m%n</pattern>-->
+    <!--</encoder>-->
     <!--</appender>-->
 
     <!-- -->
     <!--<root level="WARN">-->
-        <!--<appender-ref ref="Console"/>-->
+    <!--<appender-ref ref="Console"/>-->
     <!--</root>-->
 
-    <logger name="com.github.bingoohuang.springrestclient.spring.api" level="DEBUG"/>
-    <logger name="com.github.bingoohuang.springrestclient.boot.controller" level="DEBUG"/>
+    <logger name="com.github.bingoohuang.springrestclient.spring.api"
+            level="DEBUG"/>
+    <logger name="com.github.bingoohuang.springrestclient.boot.controller"
+            level="DEBUG"/>
 
 </configuration>

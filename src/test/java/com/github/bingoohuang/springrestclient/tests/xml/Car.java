@@ -51,8 +51,10 @@ public class Car {
 
         Car car = (Car) o;
 
-        if (registration != null ? !registration.equals(car.registration) : car.registration != null) return false;
-        if (brand != null ? !brand.equals(car.brand) : car.brand != null) return false;
+        if (registration != null ? !registration.equals(car.registration) : car.registration != null)
+            return false;
+        if (brand != null ? !brand.equals(car.brand) : car.brand != null)
+            return false;
         return !(description != null ? !description.equals(car.description) : car.description != null);
 
     }

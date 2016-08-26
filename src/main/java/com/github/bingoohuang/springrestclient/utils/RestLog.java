@@ -48,7 +48,7 @@ public class RestLog {
         String body = getBodyAsString(requestParams, httpRequest);
 
         logger.info("spring rest client {} {} request: {} {} headers:{} body: {}",
-                syncOrAsync, uuid, methodName, url, headers, singleLine(contentType, body));
+            syncOrAsync, uuid, methodName, url, headers, singleLine(contentType, body));
     }
 
     private void signReq(SignProvider signProvider, Map<String, Object> requestParams, HttpRequest httpRequest) {
@@ -91,10 +91,10 @@ public class RestLog {
         long costTimeMillis = System.currentTimeMillis() - start;
         if (status >= 200 & status < 300)
             logger.info("spring rest client {} {} response: cost {} millis, {} headers:{} body: {}",
-                    syncOrAsync, uuid, costTimeMillis, status, headers, singleLine(contentType, body));
+                syncOrAsync, uuid, costTimeMillis, status, headers, singleLine(contentType, body));
         else
             logger.error("spring rest client {} {} response: cost {} millis, {} headers:{} body: {}",
-                    syncOrAsync, uuid, costTimeMillis, status, headers, singleLine(contentType, body));
+                syncOrAsync, uuid, costTimeMillis, status, headers, singleLine(contentType, body));
     }
 
     public void log(String status) {

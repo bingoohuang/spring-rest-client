@@ -37,7 +37,8 @@ public class YunpianResult {
         YunpianResult that = (YunpianResult) o;
 
         if (code != that.code) return false;
-        if (msg != null ? !msg.equals(that.msg) : that.msg != null) return false;
+        if (msg != null ? !msg.equals(that.msg) : that.msg != null)
+            return false;
         return !(detail != null ? !detail.equals(that.detail) : that.detail != null);
 
     }
@@ -53,9 +54,9 @@ public class YunpianResult {
     @Override
     public String toString() {
         return "YunpianResult{" +
-                "code=" + code +
-                ", msg='" + msg + '\'' +
-                ", detail='" + detail + '\'' +
-                '}';
+            "code=" + code +
+            ", msg='" + msg + '\'' +
+            ", detail='" + detail + '\'' +
+            '}';
     }
 }

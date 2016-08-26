@@ -8,6 +8,7 @@ import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.mashape.unirest.request.HttpRequest;
 import com.mashape.unirest.request.ValueUtils;
+import lombok.val;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,7 @@ public class DefaultSignProvider implements SignProvider {
     }
 
     public DefaultSignProvider(Class<?> apiClass) {
-        ClientSign clientSign = apiClass.getAnnotation(ClientSign.class);
+        val clientSign = apiClass.getAnnotation(ClientSign.class);
         if (clientSign != null) {
             this.clientKey = clientSign.clientKey();
             this.clientSecurity = clientSign.security();
@@ -46,7 +47,11 @@ public class DefaultSignProvider implements SignProvider {
     }
 
     @Override
-    public void sign(Class<?> apiClass, String uuid, Map<String, Object> requestParams, HttpRequest httpRequest) {
+    public void sign(
+        Class<?> apiClass, String uuid,
+        Map<String, Object> requestParams,
+        HttpRequest httpRequest) {
+
         httpRequest.header("hict", Now.now());
         httpRequest.header("hici", uuid);
         httpRequest.header("hick", clientKey);
@@ -54,15 +59,21 @@ public class DefaultSignProvider implements SignProvider {
         httpRequest.header("hisv", hmac(apiClass, requestParams, httpRequest));
     }
 
-    private String hmac(Class<?> apiClass, Map<String, Object> requestParams, HttpRequest httpRequest) {
+    private String hmac(
+        Class<?> apiClass,
+        Map<String, Object> requestParams,
+        HttpRequest httpRequest) {
         String originalStr = createOriginalStringForSign(apiClass, requestParams, httpRequest);
         return hmacSHA256(originalStr, clientSecurity);
     }
 
-    private String createOriginalStringForSign(Class<?> apiClass, Map<String, Object> requestParams, HttpRequest httpRequest) {
-        final StringBuilder signStr = new StringBuilder();
-        final StringBuilder logStr = new StringBuilder();
-        Appendable proxy = new AbbreviateAppendable(logStr, signStr);
+    private String createOriginalStringForSign(
+        Class<?> apiClass,
+        Map<String, Object> requestParams,
+        HttpRequest httpRequest) {
+        val signStr = new StringBuilder();
+        val logStr = new StringBuilder();
+        val proxy = new AbbreviateAppendable(logStr, signStr);
 
         appendMethodAndUrl(httpRequest, proxy);
         appendHeaders(httpRequest, proxy);
@@ -74,12 +85,14 @@ public class DefaultSignProvider implements SignProvider {
         return signStr.toString();
     }
 
-    private void appendMethodAndUrl(HttpRequest httpRequest, Appendable signStr) {
+    private void appendMethodAndUrl(
+        HttpRequest httpRequest, Appendable signStr) {
         signStr.append(httpRequest.getHttpMethod().name()).append('$');
         signStr.append(httpRequest.getUrl()).append('$');
     }
 
-    private void appendRequestParams(Map<String, Object> requestParams, Appendable signStr) {
+    private void appendRequestParams(
+        Map<String, Object> requestParams, Appendable signStr) {
         Map<String, Object> params = Maps.newTreeMap();
         if (requestParams != null) params.putAll(requestParams);
         for (Map.Entry<String, Object> entry : params.entrySet()) {
@@ -104,7 +117,7 @@ public class DefaultSignProvider implements SignProvider {
     }
 
     private static String[] filtered = new String[]{
-            "Content-Type"
+        "Content-Type"
     };
 
     private void appendHeaders(HttpRequest httpRequest, Appendable signStr) {
@@ -117,7 +130,7 @@ public class DefaultSignProvider implements SignProvider {
             if (ArrayUtils.contains(filtered, key)) continue;
 
             signStr.append(key).append('$')
-                    .append(joiner.join(entry.getValue())).append('$');
+                .append(joiner.join(entry.getValue())).append('$');
         }
     }
 
@@ -153,7 +166,7 @@ public class DefaultSignProvider implements SignProvider {
 
     public static String md5(byte[] bytes) {
         try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
+            val md = MessageDigest.getInstance("MD5");
             byte[] digest = md.digest(bytes);
             return Base64.base64(digest, Base64.Format.Standard);
         } catch (Exception e) {
@@ -163,12 +176,12 @@ public class DefaultSignProvider implements SignProvider {
 
     public static String hmacSHA256(String data, String key) {
         try {
-            SecretKeySpec secretKey = new SecretKeySpec(key.getBytes("UTF-8"), "HmacSHA256");
-            Mac mac = Mac.getInstance("HmacSHA256");
+            val secretKey = new SecretKeySpec(key.getBytes("UTF-8"), "HmacSHA256");
+            val mac = Mac.getInstance("HmacSHA256");
             mac.init(secretKey);
-            byte[] hmacData = mac.doFinal(data.getBytes("UTF-8"));
+            val hmacData = mac.doFinal(data.getBytes("UTF-8"));
             return Base64.base64(hmacData, Base64.Format.Standard);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw Throwables.propagate(e);
         }
     }

@@ -22,8 +22,10 @@ public class GetCodeByMobileController {
     }
 
     @RequestMapping(value = "/update-user-mobile", method = POST)
-    boolean updateUserMobile(@RequestParam("userId") @AsmMinSize(18) @AsmMaxSize(19) @AsmDigits String userId,
-                             @RequestParam("mobile") @AsmMobile String mobile) {
+    boolean updateUserMobile(
+        @RequestParam("userId") @AsmMinSize(18) @AsmMaxSize(19) @AsmDigits
+            String userId,
+        @RequestParam("mobile") @AsmMobile String mobile) {
         return true;
     }
 }

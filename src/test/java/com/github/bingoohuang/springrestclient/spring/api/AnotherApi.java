@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @RequestMapping("/another")
 @SpringRestClientEnabled(baseUrlProvider = DiamondBaseUrlProvider.class,
-        signProvider = DefaultSignProvider.class)
+    signProvider = DefaultSignProvider.class)
 public interface AnotherApi {
     @RequestMapping("/add")
     int add(@RequestParam("offset") int offset);

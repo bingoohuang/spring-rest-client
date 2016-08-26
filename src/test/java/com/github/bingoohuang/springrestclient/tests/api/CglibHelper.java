@@ -46,7 +46,7 @@ public class CglibHelper {
             }
         }
         throw new IllegalStateException(
-                "Could not find target source method on proxied object ["
-                        + proxied.getClass() + "]");
+            "Could not find target source method on proxied object ["
+                + proxied.getClass() + "]");
     }
 }

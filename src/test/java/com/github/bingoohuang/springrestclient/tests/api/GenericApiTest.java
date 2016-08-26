@@ -1,9 +1,7 @@
 package com.github.bingoohuang.springrestclient.tests.api;
 
-import com.alibaba.fastjson.JSONException;
 import com.github.bingoohuang.springrestclient.spring.SpringRestClientConfig;
 import com.github.bingoohuang.springrestclient.spring.api.GenericApi;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;

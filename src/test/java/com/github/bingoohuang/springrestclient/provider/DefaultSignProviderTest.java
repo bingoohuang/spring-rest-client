@@ -1,24 +1,24 @@
 package com.github.bingoohuang.springrestclient.provider;
 
 
+import lombok.val;
 import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static com.google.common.truth.Truth.assertThat;
+
 
 public class DefaultSignProviderTest {
     @Test
     public void testCreateProxy() throws Exception {
-        final StringBuilder signStr = new StringBuilder();
-        final StringBuilder logStr = new StringBuilder();
-        Appendable proxy = new AbbreviateAppendable(logStr, signStr);
+        val signStr = new StringBuilder();
+        val logStr = new StringBuilder();
+        val proxy = new AbbreviateAppendable(logStr, signStr);
 
         proxy.append('$');
         proxy.append("1234567890abcdefg");
         proxy.append("hello");
 
-        assertThat(logStr.toString(), is(equalTo("$1234567...hello")));
-        assertThat(signStr.toString(), is(equalTo("$1234567890abcdefghello")));
+        assertThat(logStr.toString()).isEqualTo("$1234567...hello");
+        assertThat(signStr.toString()).isEqualTo("$1234567890abcdefghello");
     }
 }

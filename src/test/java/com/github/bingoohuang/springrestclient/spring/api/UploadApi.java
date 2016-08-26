@@ -15,14 +15,21 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 @SpringRestClientEnabled(baseUrl = "http://localhost:4849", signProvider = DefaultSignProvider.class)
 public interface UploadApi {
     @RequestMapping(value = "/image", method = POST)
-    void image(@RequestParam("name") String name, @RequestParam("file") File file);
+    void image(
+        @RequestParam("name") String name, @RequestParam("file") File file);
 
     @RequestMapping(value = "/images", method = POST)
-    void images(@RequestParam("name") String name, @RequestParam("files") List<File> files);
+    void images(
+        @RequestParam("name") String name,
+        @RequestParam("files") List<File> files);
 
     @RequestMapping(value = "/image", method = POST)
-    void image2(@RequestParam("name") String name, @RequestParam("file") MultipartFile file);
+    void image2(
+        @RequestParam("name") String name,
+        @RequestParam("file") MultipartFile file);
 
     @RequestMapping(value = "/images", method = POST)
-    void images2(@RequestParam("name") String name, @RequestParam("files") List<MultipartFile> files);
+    void images2(
+        @RequestParam("name") String name,
+        @RequestParam("files") List<MultipartFile> files);
 }

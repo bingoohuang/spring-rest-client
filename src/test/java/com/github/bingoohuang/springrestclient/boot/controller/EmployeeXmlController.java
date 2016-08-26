@@ -2,6 +2,7 @@ package com.github.bingoohuang.springrestclient.boot.controller;
 
 import com.github.bingoohuang.springrestclient.boot.domain.EmployeeListVO;
 import com.github.bingoohuang.springrestclient.boot.domain.EmployeeVO;
+import lombok.val;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,11 +18,11 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 public class EmployeeXmlController {
     @RequestMapping(produces = {"application/xml"})
     public EmployeeListVO getAllEmployees() {
-        EmployeeListVO employees = new EmployeeListVO();
+        val employees = new EmployeeListVO();
 
-        EmployeeVO empOne = new EmployeeVO(1, "Lokesh", "Gupta", "howtodoinjava@gmail.com");
-        EmployeeVO empTwo = new EmployeeVO(2, "Amit", "Singhal", "asinghal@yahoo.com");
-        EmployeeVO empThree = new EmployeeVO(3, "Kirti", "Mishra", "kmishra@gmail.com");
+        val empOne = new EmployeeVO(1, "Lokesh", "Gupta", "howtodoinjava@gmail.com");
+        val empTwo = new EmployeeVO(2, "Amit", "Singhal", "asinghal@yahoo.com");
+        val empThree = new EmployeeVO(3, "Kirti", "Mishra", "kmishra@gmail.com");
 
 
         employees.getEmployees().add(empOne);
@@ -35,7 +36,7 @@ public class EmployeeXmlController {
     public ResponseEntity<EmployeeVO> getEmployeeById(
         @PathVariable("id") int id) {
         if (id <= 3) {
-            EmployeeVO employee = new EmployeeVO(1, "Lokesh", "Gupta", "howtodoinjava@gmail.com");
+            val employee = new EmployeeVO(1, "Lokesh", "Gupta", "howtodoinjava@gmail.com");
             return new ResponseEntity<EmployeeVO>(employee, HttpStatus.OK);
         }
 

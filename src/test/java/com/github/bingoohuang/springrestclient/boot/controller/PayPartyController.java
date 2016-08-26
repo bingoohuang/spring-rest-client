@@ -3,6 +3,7 @@ package com.github.bingoohuang.springrestclient.boot.controller;
 import com.github.bingoohuang.springrest.boot.annotations.RestfulSign;
 import com.github.bingoohuang.springrestclient.boot.domain.Account;
 import com.github.bingoohuang.springrestclient.boot.domain.PayParty;
+import lombok.val;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -11,14 +12,13 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
 @RequestMapping("pay-party")
-@RestfulSign
-class PayPartyController {
+@RestfulSign class PayPartyController {
     @RequestMapping("/party/{sellerId}/{buyerId}")
     public PayParty party(@PathVariable("sellerId") String sellerId,
                           @PathVariable("buyerId") String buyerId,
                           @RequestParam("partyId") String partyId,
                           @RequestParam("name") String name) {
-        PayParty payParty = new PayParty();
+        val payParty = new PayParty();
         payParty.setPartyId(partyId);
         payParty.setSellerId(sellerId);
         payParty.setBuyerId(buyerId);
@@ -48,7 +48,8 @@ class PayPartyController {
 
     @RequestMapping(value = "/transfer", method = POST)
     public Account transfer(@RequestBody Account fromAccount,
-                            @RequestParam("sendConfirmationSms") boolean sendConfirmationSms) {
+                            @RequestParam("sendConfirmationSms")
+                                boolean sendConfirmationSms) {
         return new Account(1234, "bingoo");
     }
 
@@ -58,7 +59,8 @@ class PayPartyController {
     }
 
     @RequestMapping(value = "/return-void")
-    public void returnVoid(@RequestParam("sellerId") String sellerId, HttpServletResponse resp) {
+    public void returnVoid(
+        @RequestParam("sellerId") String sellerId, HttpServletResponse resp) {
         resp.addHeader("sellerId", sellerId + "abc");
     }
 

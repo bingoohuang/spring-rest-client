@@ -14,7 +14,7 @@ import java.util.Map;
 public class GenericController {
 
     @RequestMapping("/map")
-    public Map<String, String> map(){
+    public Map<String, String> map() {
         return ImmutableMap.of("fuck", "generic");
     }
 }

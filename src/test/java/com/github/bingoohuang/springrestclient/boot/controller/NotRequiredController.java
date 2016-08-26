@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/not-required")
 public class NotRequiredController {
     @RequestMapping("/test1")
-    public String test1(@RequestParam(value = "name", required = false) String name) {
+    public String test1(
+        @RequestParam(value = "name", required = false) String name) {
         return name + System.currentTimeMillis();
     }
 }

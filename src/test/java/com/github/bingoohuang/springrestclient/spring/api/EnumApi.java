@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @RequestMapping("/enum")
 @SpringRestClientEnabled(baseUrl = "http://localhost:4849",
-        signProvider = DefaultSignProvider.class)
+    signProvider = DefaultSignProvider.class)
 public interface EnumApi {
     @RequestMapping("/test1")
     String test1(@RequestParam("sex") Sex sex);

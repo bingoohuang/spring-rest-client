@@ -3,9 +3,7 @@ package com.github.bingoohuang.springrestclient.tests.xml;
 import com.github.bingoohuang.springrestclient.xml.Xmls;
 import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 public class XmlsTest {
     @Test
@@ -16,7 +14,6 @@ public class XmlsTest {
 
         Car car = new Car(registration, brand, description);
         String xml = Xmls.marshal(car);
-        assertThat(xml, is(equalTo("<car registration=\"abc123\"><brand>Volvo</brand><description><![CDATA[Sedan<xx.yy@gmail.com>]]></description></car>")));
-        System.out.println(xml);
+        assertThat(xml).isEqualTo("<car registration=\"abc123\"><brand>Volvo</brand><description><![CDATA[Sedan<xx.yy@gmail.com>]]></description></car>");
     }
 }

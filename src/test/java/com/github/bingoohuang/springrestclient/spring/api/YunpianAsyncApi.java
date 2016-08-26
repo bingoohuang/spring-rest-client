@@ -20,8 +20,10 @@ public interface YunpianAsyncApi {
 
 
     Future<YunpianResult> sendAsyncResult(@RequestParam("text") String text,
-                                          @RequestParam("mobile") String mobile);
+                                          @RequestParam("mobile")
+                                              String mobile);
 
-    Future<HttpResponse<String>> sendAsyncResponse(@RequestParam("text") String text,
-                                                   @RequestParam("mobile") String mobile);
+    Future<HttpResponse<String>> sendAsyncResponse(
+        @RequestParam("text") String text,
+        @RequestParam("mobile") String mobile);
 }

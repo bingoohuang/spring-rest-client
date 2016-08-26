@@ -64,7 +64,8 @@ public class RestFuture<T> implements Future<T>, ResponseAware {
         if (restReq.isSuccessful(response)) {
             Object body = RestClientUtils.nullOrBody(response);
             if (body == null) return null;
-            if (beanClass == InputStream.class) return (T) response.getRawBody();
+            if (beanClass == InputStream.class)
+                return (T) response.getRawBody();
 
             T bean = (T) Beans.unmarshal(body.toString(), beanClass);
             return bean;
