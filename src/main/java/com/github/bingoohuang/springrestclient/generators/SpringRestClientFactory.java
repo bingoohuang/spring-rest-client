@@ -102,9 +102,9 @@ public class SpringRestClientFactory {
     }
 
     private void putRequestParams(
-        Map<String, Object> map, AnnotatedElement accessibleObject) {
+        Map<String, Object> map, AnnotatedElement annotatedElement) {
         // 按声明顺序来添加固定请求参数
-        for (Annotation annotation : accessibleObject.getAnnotations()) {
+        for (Annotation annotation : annotatedElement.getAnnotations()) {
             if (annotation instanceof FixedRequestParam) {
                 putFixedRequestParam(map, (FixedRequestParam) annotation);
             } else if (annotation instanceof FixedRequestParams) {

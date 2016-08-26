@@ -1,6 +1,8 @@
 package com.github.bingoohuang.springrestclient.utils;
 
+import com.github.bingoohuang.springrestclient.ext.ParameterDelayable;
 import com.google.common.collect.Maps;
+import lombok.val;
 import org.springframework.context.ApplicationContext;
 
 import java.util.Map;
@@ -10,7 +12,10 @@ public class RequestParamsHelper {
     final Map<String, Object> requestParams;
     final ApplicationContext appContext;
 
-    public RequestParamsHelper(Map<String, Object> fixedRequestParams, Map<String, Object> requestParams, ApplicationContext appContext) {
+    public RequestParamsHelper(
+        Map<String, Object> fixedRequestParams,
+        Map<String, Object> requestParams,
+        ApplicationContext appContext) {
         this.fixedRequestParams = fixedRequestParams;
         this.requestParams = requestParams;
         this.appContext = appContext;
@@ -24,33 +29,52 @@ public class RequestParamsHelper {
         return name.substring(2);
     }
 
-    Map<String, Object> createQueryParams() {
+    Map<String, Object> createQueryParamsForPost() {
         Map<String, Object> queryParams = Maps.newHashMap();
+        Map<String, ParameterDelayable> delayedParameters = Maps.newLinkedHashMap();
+
         for (Map.Entry<String, Object> entry : fixedRequestParams.entrySet()) {
-            String name = entry.getKey();
-            if (isQueryParam(name)) {
-                Object value = createFixedRequestParamValue(entry);
-                queryParams.put(parseQueryRealName(name), value);
+            val name = entry.getKey();
+            if (!isQueryParam(name)) continue;
+
+            Object beanValue = createFixedRequestParamValue(entry);
+            val realName = parseQueryRealName(name);
+
+            if (beanValue instanceof ParameterDelayable) {
+                delayedParameters.put(realName, (ParameterDelayable) beanValue);
+            } else {
+                queryParams.put(realName, beanValue);
             }
         }
 
         for (Map.Entry<String, Object> entry : requestParams.entrySet()) {
             String name = entry.getKey();
-            if (isQueryParam(name)) {
-                queryParams.put(parseQueryRealName(name), entry.getValue());
-            }
+            if (!isQueryParam(name)) continue;
+
+            Object beanValue = entry.getValue();
+            String realName = parseQueryRealName(name);
+            queryParams.put(realName, beanValue);
         }
+
+        computeDelayedParameters(queryParams, delayedParameters);
 
         return queryParams;
     }
 
-    Map<String, Object> mergeRequestParams() {
+    Map<String, Object> mergeRequestParamsForGet() {
         Map<String, Object> mergedRequestParams = Maps.newHashMap();
+        Map<String, ParameterDelayable> delayedParameters = Maps.newLinkedHashMap();
+
         for (Map.Entry<String, Object> entry : fixedRequestParams.entrySet()) {
             String name = entry.getKey();
-            Object value = createFixedRequestParamValue(entry);
+            Object beanValue = createFixedRequestParamValue(entry);
             if (isQueryParam(name)) name = parseQueryRealName(name);
-            mergedRequestParams.put(name, value);
+
+            if (beanValue instanceof ParameterDelayable) {
+                delayedParameters.put(name, (ParameterDelayable) beanValue);
+            } else {
+                mergedRequestParams.put(name, beanValue);
+            }
         }
 
         for (Map.Entry<String, Object> entry : requestParams.entrySet()) {
@@ -58,6 +82,8 @@ public class RequestParamsHelper {
             if (isQueryParam(name)) name = parseQueryRealName(name);
             mergedRequestParams.put(name, entry.getValue());
         }
+
+        computeDelayedParameters(mergedRequestParams, delayedParameters);
 
         return mergedRequestParams;
     }
@@ -65,12 +91,18 @@ public class RequestParamsHelper {
 
     Map<String, Object> mergeRequestParamsWithoutQueryParams() {
         Map<String, Object> mergedRequestParams = Maps.newHashMap();
+        Map<String, ParameterDelayable> delayedParameters = Maps.newLinkedHashMap();
+
         for (Map.Entry<String, Object> entry : fixedRequestParams.entrySet()) {
             String name = entry.getKey();
-            Object value = createFixedRequestParamValue(entry);
+            Object beanValue = createFixedRequestParamValue(entry);
             if (isQueryParam(name)) continue;
 
-            mergedRequestParams.put(name, value);
+            if (beanValue instanceof ParameterDelayable) {
+                delayedParameters.put(name, (ParameterDelayable) beanValue);
+            } else {
+                mergedRequestParams.put(name, beanValue);
+            }
         }
 
         for (Map.Entry<String, Object> entry : requestParams.entrySet()) {
@@ -80,16 +112,30 @@ public class RequestParamsHelper {
             mergedRequestParams.put(name, entry.getValue());
         }
 
+        computeDelayedParameters(mergedRequestParams, delayedParameters);
+
         return mergedRequestParams;
     }
+
+    private void computeDelayedParameters(
+        Map<String, Object> mergedRequestParams,
+        Map<String, ParameterDelayable> delayedParams) {
+        for (Map.Entry<String, ParameterDelayable> entry : delayedParams.entrySet()) {
+            String value = entry.getValue().computeDelayedParam(mergedRequestParams);
+            mergedRequestParams.put(entry.getKey(), value);
+        }
+    }
+
 
     private Object createFixedRequestParamValue(Map.Entry<String, Object> entry) {
         Object value = entry.getValue();
         if (value instanceof Class && value != void.class) {
             Class requiredType = (Class) value;
             Object bean = Obj.getOrCreateBean(appContext, requiredType);
-            value = bean.toString();
+
+            return bean instanceof ParameterDelayable ? bean : bean.toString();
         }
+
         return value;
     }
 

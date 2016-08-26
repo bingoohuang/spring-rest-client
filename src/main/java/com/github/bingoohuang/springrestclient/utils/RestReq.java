@@ -93,7 +93,7 @@ public class RestReq {
         HttpRequest get = Unirest.get(url);
         setRouteParamsAndCookie(get);
 
-        get.queryString(requestParamsHelper.mergeRequestParams());
+        get.queryString(requestParamsHelper.mergeRequestParamsForGet());
 
         return request(null, get);
     }
@@ -103,7 +103,7 @@ public class RestReq {
         HttpRequest get = Unirest.get(url);
         setRouteParamsAndCookie(get);
 
-        get.queryString(requestParamsHelper.mergeRequestParams());
+        get.queryString(requestParamsHelper.mergeRequestParamsForGet());
 
         return requestBinary(null, get);
     }
@@ -113,7 +113,7 @@ public class RestReq {
         HttpRequest get = Unirest.get(url);
         setRouteParamsAndCookie(get);
 
-        get.queryString(requestParamsHelper.mergeRequestParams());
+        get.queryString(requestParamsHelper.mergeRequestParamsForGet());
 
         return requestAsync(null, get);
     }
@@ -123,7 +123,7 @@ public class RestReq {
         HttpRequest get = Unirest.get(url);
         setRouteParamsAndCookie(get);
 
-        get.queryString(requestParamsHelper.mergeRequestParams());
+        get.queryString(requestParamsHelper.mergeRequestParamsForGet());
 
         return requestAsyncBinary(null, get);
     }
@@ -132,7 +132,7 @@ public class RestReq {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
         setRouteParamsAndCookie(post);
-        post.queryString(requestParamsHelper.createQueryParams());
+        post.queryString(requestParamsHelper.createQueryParamsForPost());
 
         val requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
         BaseRequest fields = fields(post, requestParams);
@@ -144,7 +144,7 @@ public class RestReq {
         String url = createUrl();
         HttpRequestWithBody post = Unirest.post(url);
         setRouteParamsAndCookie(post);
-        post.queryString(requestParamsHelper.createQueryParams());
+        post.queryString(requestParamsHelper.createQueryParamsForPost());
 
         val requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
         BaseRequest fields = fields(post, requestParams);
@@ -203,7 +203,7 @@ public class RestReq {
         String url = createUrl();
         val post = Unirest.post(url);
         setRouteParamsAndCookie(post);
-        post.queryString(requestParamsHelper.createQueryParams());
+        post.queryString(requestParamsHelper.createQueryParamsForPost());
 
         val requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
         BaseRequest fields = fields(post, requestParams);
@@ -215,7 +215,7 @@ public class RestReq {
         String url = createUrl();
         val post = Unirest.post(url);
         setRouteParamsAndCookie(post);
-        post.queryString(requestParamsHelper.createQueryParams());
+        post.queryString(requestParamsHelper.createQueryParamsForPost());
 
         val requestParams = requestParamsHelper.mergeRequestParamsWithoutQueryParams();
         BaseRequest fields = fields(post, requestParams);
@@ -311,7 +311,7 @@ public class RestReq {
         String url = createUrl();
         val post = Unirest.post(url);
         setRouteParamsAndCookie(post);
-        post.queryString(requestParamsHelper.mergeRequestParams());
+        post.queryString(requestParamsHelper.mergeRequestParamsForGet());
         return post;
     }
 

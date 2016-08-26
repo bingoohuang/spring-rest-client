@@ -14,7 +14,7 @@ public class Obj {
         try {
             return appContext.getBean(requiredType);
         } catch (NoSuchBeanDefinitionException e) {
-            return createObject(requiredType).toString();
+            return createObject(requiredType);
         }
     }
 
