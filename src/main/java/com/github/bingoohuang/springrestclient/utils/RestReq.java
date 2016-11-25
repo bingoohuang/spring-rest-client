@@ -3,6 +3,7 @@ package com.github.bingoohuang.springrestclient.utils;
 import com.github.bingoohuang.springrestclient.annotations.SuccInResponseJSONProperty;
 import com.github.bingoohuang.springrestclient.exception.RestException;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
+import com.github.bingoohuang.springrestclient.provider.BasicAuthProvider;
 import com.github.bingoohuang.springrestclient.provider.SignProvider;
 import com.github.bingoohuang.springrestclient.xml.Xmls;
 import com.github.bingoohuang.utils.codec.Json;
@@ -44,8 +45,10 @@ public class RestReq {
     final ApplicationContext appContext;
     final RequestParamsHelper requestParamsHelper;
     final String firstConsume;
+    final BasicAuthProvider basicAuthProvider;
 
     RestReq(
+        BasicAuthProvider basicAuthProvider,
         String firstConsume,
         SuccInResponseJSONProperty succInResponseJSONProperty,
         Map<String, Object> fixedRequestParams,
@@ -59,7 +62,7 @@ public class RestReq {
         boolean async,
         SignProvider signProvider,
         ApplicationContext appContext) {
-
+        this.basicAuthProvider = basicAuthProvider;
         this.firstConsume = firstConsume;
         this.succInResponseJSONProperty = succInResponseJSONProperty;
         this.fixedRequestParams = fixedRequestParams;
@@ -253,6 +256,11 @@ public class RestReq {
         }
         if (cookieStr.length() > 0)
             httpRequest.header("Cookie", cookieStr.toString());
+
+
+        if (basicAuthProvider != null) {
+            httpRequest.basicAuth(basicAuthProvider.username(), basicAuthProvider.password());
+        }
     }
 
     public String postBody(Object bean) throws Throwable {

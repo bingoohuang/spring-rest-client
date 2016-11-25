@@ -1,7 +1,9 @@
 package com.github.bingoohuang.springrestclient.generators;
 
+import com.github.bingoohuang.springrestclient.annotations.BasicAuth;
 import com.github.bingoohuang.springrestclient.annotations.SuccInResponseJSONProperty;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
+import com.github.bingoohuang.springrestclient.provider.BasicAuthProvider;
 import com.github.bingoohuang.springrestclient.provider.SignProvider;
 import com.github.bingoohuang.springrestclient.utils.*;
 import com.google.common.primitives.Primitives;
@@ -34,6 +36,7 @@ public class MethodGenerator {
     public static final String FixedRequestParams = "FixedRequestParams";
     public static final String SuccInResponseJSONProperty = "SuccInResponseJSONProperty";
     public static final String baseUrlProvider = "baseUrlProvider";
+    public static final String basicAuthProvider = "basicAuthProvider";
     public static final String signProvider = "signProvider";
     public static final String appContext = "appContext";
 
@@ -210,6 +213,9 @@ public class MethodGenerator {
 
         setField(appContext, ApplicationContext.class);
         setField(baseUrlProvider, BaseUrlProvider.class);
+        if (method.getDeclaringClass().isAnnotationPresent(BasicAuth.class)) {
+            setField(basicAuthProvider, BasicAuthProvider.class);
+        }
         setField(signProvider, SignProvider.class);
         setFieldPerMethod(SuccInResponseJSONProperty, SuccInResponseJSONProperty.class);
         setFieldPerMethod(StatusExceptionMappings, Map.class);
@@ -217,10 +223,8 @@ public class MethodGenerator {
 
         mv.visitVarInsn(ALOAD, offsetSize + 1);
         mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "routeParams", sigRest(Map.class), false);
-
         mv.visitVarInsn(ALOAD, offsetSize + 2);
         mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "requestParams", sigRest(Map.class), false);
-
         mv.visitVarInsn(ALOAD, offsetSize + 3);
         mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder, "cookies", sigRest(Map.class), false);
 
@@ -378,6 +382,7 @@ public class MethodGenerator {
 
         mv.visitInsn(Type.getType(returnType).getOpcode(IRETURN));
     }
+
 
     private <T extends Annotation> void createMap(int index, Class<T> annotationClass) {
         newObject(p(LinkedHashMap.class));

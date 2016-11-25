@@ -3,11 +3,11 @@ package com.github.bingoohuang.springrestclient.generators;
 import com.github.bingoohuang.springrestclient.annotations.SpringRestClientEnabled;
 import com.github.bingoohuang.springrestclient.annotations.SuccInResponseJSONProperty;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
+import com.github.bingoohuang.springrestclient.provider.BasicAuthProvider;
 import com.github.bingoohuang.springrestclient.provider.SignProvider;
 import com.google.common.io.Files;
 import lombok.val;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Type;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -72,9 +72,8 @@ public class ClassGenerator<T> {
 
         constructor();
 
-        for (Method method : restClientClass.getMethods()) {
-            new MethodGenerator(cw, implName, method,
-                classRequestMapping).generate();
+        for (val method : restClientClass.getMethods()) {
+            new MethodGenerator(cw, implName, method, classRequestMapping).generate();
         }
 
         return createBytes();
@@ -91,30 +90,27 @@ public class ClassGenerator<T> {
         cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, implName.replace('.', '/'),
             null, p(Object.class), interfaces);
 
-        FieldVisitor fv = cw.visitField(0, baseUrlProvider,
-            ci(BaseUrlProvider.class), null, null);
-        fv.visitEnd();
+        val fv1 = cw.visitField(0, baseUrlProvider, ci(BaseUrlProvider.class), null, null);
+        fv1.visitEnd();
 
-        fv = cw.visitField(0, signProvider,
-            ci(SignProvider.class), null, null);
-        fv.visitEnd();
+        val fv7 = cw.visitField(0, basicAuthProvider, ci(BasicAuthProvider.class), null, null);
+        fv7.visitEnd();
 
-        fv = cw.visitField(0, appContext,
-            ci(ApplicationContext.class), null, null);
-        fv.visitEnd();
+        val fv2 = cw.visitField(0, signProvider, ci(SignProvider.class), null, null);
+        fv2.visitEnd();
+
+        val fv3 = cw.visitField(0, appContext, ci(ApplicationContext.class), null, null);
+        fv3.visitEnd();
 
         for (Method method : restClientClass.getDeclaredMethods()) {
-            fv = cw.visitField(0, method.getName() + StatusExceptionMappings,
-                ci(Map.class), null, null);
-            fv.visitEnd();
+            val fv4 = cw.visitField(0, method.getName() + StatusExceptionMappings, ci(Map.class), null, null);
+            fv4.visitEnd();
 
-            fv = cw.visitField(0, method.getName() + FixedRequestParams,
-                ci(Map.class), null, null);
-            fv.visitEnd();
+            val fv5 = cw.visitField(0, method.getName() + FixedRequestParams, ci(Map.class), null, null);
+            fv5.visitEnd();
 
-            fv = cw.visitField(0, method.getName() + SuccInResponseJSONProperty,
-                ci(SuccInResponseJSONProperty.class), null, null);
-            fv.visitEnd();
+            val fv6 = cw.visitField(0, method.getName() + SuccInResponseJSONProperty, ci(SuccInResponseJSONProperty.class), null, null);
+            fv6.visitEnd();
         }
 
         return cw;

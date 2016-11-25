@@ -32,7 +32,7 @@ public class YunpianAsyncTest {
         YunpianResult result = JSON.parseObject(s, YunpianResult.class);
         assertThat(result.getCode(), is(equalTo(-1)));
         assertThat(result.getMsg(), is(equalTo("非法的apikey")));
-        assertThat(result.getDetail(), is(equalTo("请检查的apikey是否正确，或者账户已经失效")));
+        assertThat(result.getDetail(), is(equalTo("请检查您的apikey是否正确，或者账户已经失效")));
     }
 
     @Test
@@ -48,7 +48,7 @@ public class YunpianAsyncTest {
         YunpianResult result = future.get();
         assertThat(result.getCode(), is(equalTo(-1)));
         assertThat(result.getMsg(), is(equalTo("非法的apikey")));
-        assertThat(result.getDetail(), is(equalTo("请检查的apikey是否正确，或者账户已经失效")));
+        assertThat(result.getDetail(), is(equalTo("请检查您的apikey是否正确，或者账户已经失效")));
     }
 
     @Test
@@ -60,7 +60,7 @@ public class YunpianAsyncTest {
         YunpianResult result = JSON.parseObject(response.getBody(), YunpianResult.class);
         assertThat(result.getCode(), is(equalTo(-1)));
         assertThat(result.getMsg(), is(equalTo("非法的apikey")));
-        assertThat(result.getDetail(), is(equalTo("请检查的apikey是否正确，或者账户已经失效")));
+        assertThat(result.getDetail(), is(equalTo("请检查您的apikey是否正确，或者账户已经失效")));
     }
 
 }

@@ -2,6 +2,7 @@ package com.github.bingoohuang.springrestclient.utils;
 
 import com.github.bingoohuang.springrestclient.annotations.SuccInResponseJSONProperty;
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
+import com.github.bingoohuang.springrestclient.provider.BasicAuthProvider;
 import com.github.bingoohuang.springrestclient.provider.SignProvider;
 import org.springframework.context.ApplicationContext;
 
@@ -21,6 +22,12 @@ public class RestReqBuilder {
     SignProvider signProvider;
     ApplicationContext appContext;
     String firstConsume; // consumes = {"application/xml"}
+    BasicAuthProvider basicAuthProvider;
+
+    public RestReqBuilder basicAuthProvider(BasicAuthProvider basicAuthProvider) {
+        this.basicAuthProvider = basicAuthProvider;
+        return this;
+    }
 
     public RestReqBuilder firstConsume(String firstConsume) {
         this.firstConsume = firstConsume;
@@ -90,6 +97,7 @@ public class RestReqBuilder {
 
     public RestReq build() {
         return new RestReq(
+            basicAuthProvider,
             firstConsume,
             succInResponseJSONProperty,
             fixedRequestParams,

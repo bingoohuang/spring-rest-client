@@ -18,8 +18,7 @@ import static org.junit.Assert.fail;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = SpringRestClientConfig.class)
 public class YunpianTest {
-    @Autowired
-    YunpianApi yunpianApi;
+    @Autowired YunpianApi yunpianApi;
 
     @Test
     public void test1() {
@@ -28,7 +27,7 @@ public class YunpianTest {
                 "18551855099");
             fail();
         } catch (RestException e) {
-            assertThat(e.getMessage(), is(equalTo("{\"code\":-1,\"msg\":\"非法的apikey\",\"detail\":\"请检查的apikey是否正确，或者账户已经失效\"}")));
+            assertThat(e.getMessage(), is(equalTo("{\"code\":-1,\"msg\":\"非法的apikey\",\"detail\":\"请检查您的apikey是否正确，或者账户已经失效\"}")));
         }
     }
 
@@ -39,7 +38,7 @@ public class YunpianTest {
                 "15951770693");
             fail();
         } catch (RestException e) {
-            assertThat(e.getMessage(), is(equalTo("{\"code\":-1,\"msg\":\"非法的apikey\",\"detail\":\"请检查的apikey是否正确，或者账户已经失效\"}")));
+            assertThat(e.getMessage(), is(equalTo("{\"code\":-1,\"msg\":\"非法的apikey\",\"detail\":\"请检查您的apikey是否正确，或者账户已经失效\"}")));
         }
     }
 
