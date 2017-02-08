@@ -48,20 +48,20 @@ public class RestReq {
     final BasicAuthProvider basicAuthProvider;
 
     RestReq(
-        BasicAuthProvider basicAuthProvider,
-        String firstConsume,
-        SuccInResponseJSONProperty succInResponseJSONProperty,
-        Map<String, Object> fixedRequestParams,
-        Map<Integer, Class<? extends Throwable>> sendStatusExceptionMappings,
-        Class<?> apiClass,
-        BaseUrlProvider baseUrlProvider,
-        String prefix,
-        Map<String, Object> routeParams,
-        Map<String, Object> requestParams,
-        Map<String, Object> cookies,
-        boolean async,
-        SignProvider signProvider,
-        ApplicationContext appContext) {
+            BasicAuthProvider basicAuthProvider,
+            String firstConsume,
+            SuccInResponseJSONProperty succInResponseJSONProperty,
+            Map<String, Object> fixedRequestParams,
+            Map<Integer, Class<? extends Throwable>> sendStatusExceptionMappings,
+            Class<?> apiClass,
+            BaseUrlProvider baseUrlProvider,
+            String prefix,
+            Map<String, Object> routeParams,
+            Map<String, Object> requestParams,
+            Map<String, Object> cookies,
+            boolean async,
+            SignProvider signProvider,
+            ApplicationContext appContext) {
         this.basicAuthProvider = basicAuthProvider;
         this.firstConsume = firstConsume;
         this.succInResponseJSONProperty = succInResponseJSONProperty;
@@ -78,7 +78,7 @@ public class RestReq {
         this.appContext = appContext;
 
         this.requestParamsHelper = new RequestParamsHelper(
-            fixedRequestParams, requestParams, appContext);
+                fixedRequestParams, requestParams, appContext);
     }
 
     static ThreadLocal<HttpResponse<?>> lastResponseTL;
@@ -157,7 +157,7 @@ public class RestReq {
 
 
     private BaseRequest fields(
-        HttpRequestWithBody post, Map<String, Object> requestParams) {
+            HttpRequestWithBody post, Map<String, Object> requestParams) {
         MultipartBody field = null;
 
         for (Map.Entry<String, Object> entry : requestParams.entrySet()) {
@@ -226,23 +226,9 @@ public class RestReq {
         return requestAsyncBinary(requestParams, fields);
     }
 
-    static boolean callBlackcat = classExists(
-        "com.github.bingoohuang.blackcat.javaagent.callback.Blackcat");
-
-    public static boolean classExists(String className) {
-        try {
-            Class.forName(className);
-            return true;
-        } catch (Throwable e) { // including ClassNotFoundException
-            return false;
-        }
-    }
 
     private void setRouteParamsAndCookie(HttpRequest httpRequest) {
-        if (callBlackcat) {
-            com.github.bingoohuang.blackcat.javaagent.callback
-                .Blackcat.prepareRPC(httpRequest);
-        }
+        Blackcats.prepareRPC(httpRequest);
 
         for (Map.Entry<String, Object> entry : routeParams.entrySet()) {
             String value = String.valueOf(entry.getValue());
@@ -334,7 +320,7 @@ public class RestReq {
     }
 
     private String request(Map<String, Object> reqParams, BaseRequest httpReq)
-        throws Throwable {
+            throws Throwable {
         boolean loggedResponse = false;
         try {
             restLog.logAndSign(signProvider, reqParams, httpReq.getHttpRequest());
@@ -358,7 +344,7 @@ public class RestReq {
     }
 
     private InputStream requestBinary(Map<String, Object> reqParams, BaseRequest httpReq)
-        throws Throwable {
+            throws Throwable {
         boolean loggedResponse = false;
         try {
             restLog.logAndSign(signProvider, reqParams, httpReq.getHttpRequest());
@@ -382,8 +368,8 @@ public class RestReq {
     }
 
     private Future<HttpResponse<String>> requestAsync(
-        Map<String, Object> reqParams, BaseRequest httpReq)
-        throws Throwable {
+            Map<String, Object> reqParams, BaseRequest httpReq)
+            throws Throwable {
         restLog.logAndSign(signProvider, reqParams, httpReq.getHttpRequest());
         lastResponseTL.remove(); // clear response threadlocal before execution
         val callback = new UniRestCallback<String>(apiClass, restLog);
@@ -407,21 +393,21 @@ public class RestReq {
 
             @Override
             public HttpResponse<String> get()
-                throws InterruptedException, ExecutionException {
+                    throws InterruptedException, ExecutionException {
                 return callback.get();
             }
 
             @Override
             public HttpResponse<String> get(long timeout, TimeUnit unit)
-                throws InterruptedException, ExecutionException, TimeoutException {
+                    throws InterruptedException, ExecutionException, TimeoutException {
                 return callback.get(unit.toMillis(timeout));
             }
         };
     }
 
     private Future<HttpResponse<InputStream>> requestAsyncBinary(
-        Map<String, Object> requestParams, BaseRequest httpRequest)
-        throws Throwable {
+            Map<String, Object> requestParams, BaseRequest httpRequest)
+            throws Throwable {
         restLog.logAndSign(signProvider, requestParams, httpRequest.getHttpRequest());
         lastResponseTL.remove(); // clear response threadlocal before execution
         val callback = new UniRestCallback<InputStream>(apiClass, restLog);
@@ -445,20 +431,20 @@ public class RestReq {
 
             @Override
             public HttpResponse<InputStream> get()
-                throws InterruptedException, ExecutionException {
+                    throws InterruptedException, ExecutionException {
                 return callback.get();
             }
 
             @Override
             public HttpResponse<InputStream> get(long timeout, TimeUnit unit)
-                throws InterruptedException, ExecutionException, TimeoutException {
+                    throws InterruptedException, ExecutionException, TimeoutException {
                 return callback.get(unit.toMillis(timeout));
             }
         };
     }
 
     public Throwable processStatusExceptionMappings(HttpResponse<?> response)
-        throws Throwable {
+            throws Throwable {
         Class<? extends Throwable> exceptionClass;
         exceptionClass = sendStatusExceptionMappings.get(response.getStatus());
         String msg = response.header("error-msg");
@@ -477,8 +463,8 @@ public class RestReq {
         String baseUrl = baseUrlProvider.getBaseUrl(apiClass);
         if (Strings.isNullOrEmpty(baseUrl)) {
             throw new RuntimeException(
-                "base url cannot be null generated by provider "
-                    + baseUrlProvider.getClass());
+                    "base url cannot be null generated by provider "
+                            + baseUrlProvider.getClass());
         }
         return baseUrl + prefix;
     }

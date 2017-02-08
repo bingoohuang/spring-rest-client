@@ -91,8 +91,8 @@
         </dependency>
         <dependency>
             <groupId>com.github.bingoohuang</groupId>
-            <artifactId>blackcat-javaagent</artifactId>
-            <version>0.0.1</version>
+            <artifactId>blackcat-instrument</artifactId>
+            <version>0.0.6</version>
             <optional>true</optional>
         </dependency>
         <dependency>
