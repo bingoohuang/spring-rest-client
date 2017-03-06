@@ -40,13 +40,13 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.16.10</version>
+            <version>1.16.14</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.github.bingoohuang</groupId>
             <artifactId>blackcat-instrument</artifactId>
-            <version>0.0.8-SNAPSHOT</version>
+            <version>0.0.13</version>
             <optional>true</optional>
         </dependency>
         <dependency>
