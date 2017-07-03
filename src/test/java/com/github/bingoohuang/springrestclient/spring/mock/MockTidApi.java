@@ -12,6 +12,10 @@ public class MockTidApi implements TidApi {
         return null;
     }
 
+    @Override public String getMobile(String tid) {
+        return null;
+    }
+
     @Override
     public String getMobile2() {
         return mockedValue;

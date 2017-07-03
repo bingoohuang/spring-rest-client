@@ -1,12 +1,15 @@
 package com.github.bingoohuang.springrestclient.utils;
 
+import com.google.common.primitives.UnsignedInts;
 import lombok.experimental.UtilityClass;
+import org.objectweb.asm.Type;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 @UtilityClass
 public class Obj {
@@ -59,6 +62,11 @@ public class Obj {
         } catch (IllegalAccessException e) {
             throw new RuntimeException("unable to set field " + fieldName, e);
         }
+    }
+
+    public String getMethodNamePrefixWithHashCode(Method method) {
+        String methodDescriptor = Type.getMethodDescriptor(method);
+        return method.getName() + "$" + UnsignedInts.toString(methodDescriptor.hashCode()) + "$";
     }
 
 

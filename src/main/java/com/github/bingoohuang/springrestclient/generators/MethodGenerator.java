@@ -240,7 +240,7 @@ public class MethodGenerator {
     private void setFieldPerMethod(String namePostFix, Class propertyClass) {
         mv.visitVarInsn(ALOAD, 0);
         mv.visitFieldInsn(GETFIELD, implp,
-            method.getName() + namePostFix, ci(propertyClass));
+                Obj.getMethodNamePrefixWithHashCode(method) + namePostFix, ci(propertyClass));
         mv.visitMethodInsn(INVOKEVIRTUAL, restReqBuilder,
             uncapitalize(namePostFix), sigRest(propertyClass), false);
     }

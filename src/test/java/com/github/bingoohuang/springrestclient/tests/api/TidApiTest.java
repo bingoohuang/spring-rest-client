@@ -30,6 +30,9 @@ public class TidApiTest {
 
         String mobile = tidApi.getMobile();
         assertThat(mobile, is(equalTo("bingoo:1000")));
+
+        mobile = tidApi.getMobile("1000");
+        assertThat(mobile, is(equalTo("bingoo:1000")));
     }
 
     @Test

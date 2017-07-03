@@ -71,7 +71,7 @@ import java.util.concurrent.ExecutionException;
             if (property == null)
                 property = restClientClass.getAnnotation(SuccInResponseJSONProperty.class);
 
-            val fieldName = method.getName() + MethodGenerator.SuccInResponseJSONProperty;
+            val fieldName = Obj.getMethodNamePrefixWithHashCode(method) + MethodGenerator.SuccInResponseJSONProperty;
             Obj.setField(restClientImplClass, object, fieldName, property);
         }
     }
@@ -79,7 +79,7 @@ import java.util.concurrent.ExecutionException;
     private void setFixedRequestParams(Class<?> restClientImplClass, Object object, Class restClientClass) {
         for (Method method : restClientClass.getDeclaredMethods()) {
             val mappings = createFixedRequestParams(method, restClientClass);
-            val fieldName = method.getName() + MethodGenerator.FixedRequestParams;
+            val fieldName = Obj.getMethodNamePrefixWithHashCode(method) + MethodGenerator.FixedRequestParams;
             Obj.setField(restClientImplClass, object, fieldName, mappings);
         }
     }
@@ -118,9 +118,9 @@ import java.util.concurrent.ExecutionException;
     }
 
     private void setStatusMappings(Class<?> restClientImplClass, Object object, Class restClientClass) {
-        for (Method method : restClientClass.getDeclaredMethods()) {
+        for (val method : restClientClass.getDeclaredMethods()) {
             val mappings = createStatusExceptionMappings(method, restClientClass);
-            val fieldName = method.getName() + MethodGenerator.StatusExceptionMappings;
+            val fieldName = Obj.getMethodNamePrefixWithHashCode(method) + MethodGenerator.StatusExceptionMappings;
             Obj.setField(restClientImplClass, object, fieldName, mappings);
         }
     }

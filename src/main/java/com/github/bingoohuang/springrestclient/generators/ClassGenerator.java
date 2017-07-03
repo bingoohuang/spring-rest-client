@@ -5,6 +5,7 @@ import com.github.bingoohuang.springrestclient.annotations.SuccInResponseJSONPro
 import com.github.bingoohuang.springrestclient.provider.BaseUrlProvider;
 import com.github.bingoohuang.springrestclient.provider.BasicAuthProvider;
 import com.github.bingoohuang.springrestclient.provider.SignProvider;
+import com.github.bingoohuang.springrestclient.utils.Obj;
 import com.google.common.io.Files;
 import lombok.val;
 import org.objectweb.asm.ClassWriter;
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Map;
 
 import static com.github.bingoohuang.springrestclient.generators.MethodGenerator.*;
@@ -88,7 +88,7 @@ public class ClassGenerator<T> {
         val cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         String[] interfaces = {Type.getInternalName(restClientClass)};
         cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, implName.replace('.', '/'),
-            null, p(Object.class), interfaces);
+                null, p(Object.class), interfaces);
 
         val fv1 = cw.visitField(0, baseUrlProvider, ci(BaseUrlProvider.class), null, null);
         fv1.visitEnd();
@@ -102,14 +102,16 @@ public class ClassGenerator<T> {
         val fv3 = cw.visitField(0, appContext, ci(ApplicationContext.class), null, null);
         fv3.visitEnd();
 
-        for (Method method : restClientClass.getDeclaredMethods()) {
-            val fv4 = cw.visitField(0, method.getName() + StatusExceptionMappings, ci(Map.class), null, null);
+        for (val method : restClientClass.getDeclaredMethods()) {
+            val methodNamePrefix = Obj.getMethodNamePrefixWithHashCode(method);
+
+            val fv4 = cw.visitField(0, methodNamePrefix + StatusExceptionMappings, ci(Map.class), null, null);
             fv4.visitEnd();
 
-            val fv5 = cw.visitField(0, method.getName() + FixedRequestParams, ci(Map.class), null, null);
+            val fv5 = cw.visitField(0, methodNamePrefix + FixedRequestParams, ci(Map.class), null, null);
             fv5.visitEnd();
 
-            val fv6 = cw.visitField(0, method.getName() + SuccInResponseJSONProperty, ci(SuccInResponseJSONProperty.class), null, null);
+            val fv6 = cw.visitField(0, methodNamePrefix + SuccInResponseJSONProperty, ci(SuccInResponseJSONProperty.class), null, null);
             fv6.visitEnd();
         }
 
