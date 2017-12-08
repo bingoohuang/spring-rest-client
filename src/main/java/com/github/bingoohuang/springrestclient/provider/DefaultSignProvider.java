@@ -10,7 +10,6 @@ import com.mashape.unirest.request.HttpRequest;
 import com.mashape.unirest.request.ValueUtils;
 import lombok.val;
 import org.apache.commons.lang3.ArrayUtils;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -76,8 +75,8 @@ public class DefaultSignProvider implements SignProvider {
         appendHeaders(httpRequest, proxy);
         appendReqParams(requestParams, proxy);
 
-        Logger logger = LoggerFactory.getLogger(apiClass);
-        logger.debug("string to be signed : {}", logStr);
+        val log = LoggerFactory.getLogger(apiClass);
+        log.debug("string to be signed : {}", logStr);
 
         return signStr.toString();
     }

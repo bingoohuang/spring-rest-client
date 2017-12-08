@@ -1,12 +1,12 @@
 package com.github.bingoohuang.springrestclient.utils;
 
 import com.github.bingoohuang.springrestclient.provider.SignProvider;
+import com.github.bingoohuang.utils.time.Now;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.io.ByteStreams;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.request.HttpRequest;
-import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,22 +19,21 @@ import java.util.regex.Pattern;
 
 import static org.apache.commons.lang3.StringUtils.containsIgnoreCase;
 
-@Slf4j
 public class RestLog {
     private final String syncOrAsync;
     private final String uuid = UUID.randomUUID().toString();
-    private final Logger logger;
+    private final Logger log;
     private final Class<?> apiClass;
     private long start;
 
     public RestLog(Class<?> apiClass, boolean async) {
         this.apiClass = apiClass;
         this.syncOrAsync = async ? "asyn" : "sync";
-        this.logger = LoggerFactory.getLogger(apiClass);
+        this.log = LoggerFactory.getLogger(apiClass);
     }
 
     public void logAndSign(SignProvider signProvider, Map<String, Object> requestParams, HttpRequest httpRequest) {
-        if (!logger.isInfoEnabled()) return;
+        if (!log.isInfoEnabled()) return;
 
         signReq(signProvider, requestParams, httpRequest);
         this.start = System.currentTimeMillis();
@@ -42,18 +41,21 @@ public class RestLog {
         val url = UrlDecodes.decodeQuietly(httpRequest.getUrl());
         val headers = buildHeaders(httpRequest.getHeaders());
         val contentTypes = httpRequest.getHeaders().get("Content-Type");
-        val contentType = contentTypes != null && contentTypes.size() > 0 ? contentTypes.get(0) : null;
+        val contentType = contentTypes != null && !contentTypes.isEmpty() ? contentTypes.get(0) : null;
 
         val body = getBodyAsString(requestParams, httpRequest);
 
-        logger.info("spring rest client {} {} request: {} {} headers:{} body: {}",
-            syncOrAsync, uuid, methodName, url, headers, singleLine(contentType, body));
+        log.info("spring rest client {} {} request: {} {} headers:{} body: {}",
+                syncOrAsync, uuid, methodName, url, headers, singleLine(contentType, body));
     }
 
     private void signReq(SignProvider signProvider, Map<String, Object> requestParams, HttpRequest httpRequest) {
-        if (signProvider == null) return;
-
-        signProvider.sign(apiClass, uuid, requestParams, httpRequest);
+        if (signProvider == null) {
+            httpRequest.header("hict", Now.now());
+            httpRequest.header("hici", uuid);
+        } else {
+            signProvider.sign(apiClass, uuid, requestParams, httpRequest);
+        }
     }
 
     private String getBodyAsString(Map<String, Object> requestParams, HttpRequest httpRequest) {
@@ -74,14 +76,14 @@ public class RestLog {
     }
 
     public void log(Throwable e) {
-        if (!logger.isWarnEnabled()) return;
+        if (!log.isWarnEnabled()) return;
 
         val costTimeMillis = System.currentTimeMillis() - start;
-        logger.warn("spring rest client {} {} exception: cost {} millis", syncOrAsync, uuid, costTimeMillis, e);
+        log.warn("spring rest client {} {} exception: cost {} millis", syncOrAsync, uuid, costTimeMillis, e);
     }
 
     public void log(HttpResponse<?> response) {
-        if (!logger.isInfoEnabled()) return;
+        if (!log.isInfoEnabled()) return;
 
         val status = response.getStatus();
         val headers = buildHeaders(response.getHeaders());
@@ -89,18 +91,18 @@ public class RestLog {
         val body = response.getBody();
         val costTimeMillis = System.currentTimeMillis() - start;
         if (status >= 200 & status < 300)
-            logger.info("spring rest client {} {} response: cost {} millis, {} headers:{} body: {}",
-                syncOrAsync, uuid, costTimeMillis, status, headers, singleLine(contentType, body));
+            log.info("spring rest client {} {} response: cost {} millis, {} headers:{} body: {}",
+                    syncOrAsync, uuid, costTimeMillis, status, headers, singleLine(contentType, body));
         else
-            logger.error("spring rest client {} {} response: cost {} millis, {} headers:{} body: {}",
-                syncOrAsync, uuid, costTimeMillis, status, headers, singleLine(contentType, body));
+            log.error("spring rest client {} {} response: cost {} millis, {} headers:{} body: {}",
+                    syncOrAsync, uuid, costTimeMillis, status, headers, singleLine(contentType, body));
     }
 
     public void log(String status) {
-        if (!logger.isInfoEnabled()) return;
+        if (!log.isInfoEnabled()) return;
 
         val costTimeMillis = System.currentTimeMillis() - start;
-        logger.info("spring rest client {} {} {}: cost {} millis", syncOrAsync, uuid, status, costTimeMillis);
+        log.info("spring rest client {} {} {}: cost {} millis", syncOrAsync, uuid, status, costTimeMillis);
     }
 
     private String buildHeaders(Map<String, List<String>> headers) {
