@@ -61,7 +61,7 @@ public class DefaultSignProvider implements SignProvider {
     private String hmac(Class<?> apiClass,
                         Map<String, Object> requestParams,
                         HttpRequest httpRequest) {
-        String originalStr = createOriginalStringForSign(apiClass, requestParams, httpRequest);
+        val originalStr = createOriginalStringForSign(apiClass, requestParams, httpRequest);
         return hmacSHA256(originalStr, clientSecurity);
     }
 
@@ -90,7 +90,7 @@ public class DefaultSignProvider implements SignProvider {
     private void appendReqParams(Map<String, Object> reqParams, Appendable signStr) {
         Map<String, Object> params = Maps.newTreeMap();
         if (reqParams != null) params.putAll(reqParams);
-        for (Map.Entry<String, Object> entry : params.entrySet()) {
+        for (val entry : params.entrySet()) {
             signStr.append(entry.getKey()).append('$');
 
             val value = entry.getValue();
