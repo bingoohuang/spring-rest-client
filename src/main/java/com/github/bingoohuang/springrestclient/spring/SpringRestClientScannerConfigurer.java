@@ -131,7 +131,7 @@ public class SpringRestClientScannerConfigurer implements BeanDefinitionRegistry
             val factory = new DefaultListableBeanFactory();
             factory.registerBeanDefinition(beanName, mapperScannerBean);
 
-            for (PropertyResourceConfigurer prc : prcs.values()) {
+            for (val prc : prcs.values()) {
                 prc.postProcessBeanFactory(factory);
             }
 

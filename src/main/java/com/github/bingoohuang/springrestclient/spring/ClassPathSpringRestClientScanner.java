@@ -51,12 +51,12 @@ public class ClassPathSpringRestClientScanner extends ClassPathBeanDefinitionSca
         if (beanDefinitions.isEmpty()) {
             log.warn("No SpringRestClientEnabled was found in '" + Arrays.toString(basePackages) + "' package. Please check your configuration.");
         } else {
-            for (BeanDefinitionHolder holder : beanDefinitions) {
+            for (val holder : beanDefinitions) {
                 val definition = (GenericBeanDefinition) holder.getBeanDefinition();
 
                 if (log.isDebugEnabled()) {
                     log.debug("Creating SpringRestClientFactoryBean with name '" + holder.getBeanName()
-                        + "' and '" + definition.getBeanClassName() + "' interfaceClazz");
+                            + "' and '" + definition.getBeanClassName() + "' interfaceClazz");
                 }
 
                 // the mapper interface is the original class of the bean
@@ -86,8 +86,8 @@ public class ClassPathSpringRestClientScanner extends ClassPathBeanDefinitionSca
             return true;
         } else {
             log.warn("Skipping SpringRestClientFactoryBean with name '" + beanName
-                + "' and '" + beanDefinition.getBeanClassName() + "' interfaceClazz"
-                + ". Bean already defined with the same name!");
+                    + "' and '" + beanDefinition.getBeanClassName() + "' interfaceClazz"
+                    + ". Bean already defined with the same name!");
             return false;
         }
     }

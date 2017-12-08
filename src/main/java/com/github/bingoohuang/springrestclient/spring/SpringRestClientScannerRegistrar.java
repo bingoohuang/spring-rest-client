@@ -39,15 +39,15 @@ public class SpringRestClientScannerRegistrar implements ImportBeanDefinitionReg
         }
 
         val basePackages = new ArrayList<String>();
-        for (String pkg : annoAttrs.getStringArray("value")) {
+        for (val pkg : annoAttrs.getStringArray("value")) {
             if (StringUtils.hasText(pkg)) basePackages.add(pkg);
         }
 
-        for (String pkg : annoAttrs.getStringArray("basePackages")) {
+        for (val pkg : annoAttrs.getStringArray("basePackages")) {
             if (StringUtils.hasText(pkg)) basePackages.add(pkg);
         }
 
-        for (Class<?> clazz : annoAttrs.getClassArray("basePackageClasses")) {
+        for (val clazz : annoAttrs.getClassArray("basePackageClasses")) {
             basePackages.add(ClassUtils.getPackageName(clazz));
         }
 

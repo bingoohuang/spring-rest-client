@@ -73,7 +73,7 @@ public class MethodGenerator {
         this.futureReturnType = Types.isFutureReturnType(method);
         this.isBinaryReturnType = returnType == InputStream.class;
         this.isFutureBinaryReturnType = futureReturnType
-            && Types.getGenericTypeArgument(method) == InputStream.class;
+            && Types.getGenericTypeArg(method) == InputStream.class;
     }
 
     private MethodVisitor visitMethod(Method method, ClassWriter classWriter) {
@@ -275,7 +275,7 @@ public class MethodGenerator {
         for (int i = 0, incr = 0; i < paramSize; i++) {
             if (isWideType(parameterTypes[i])) ++incr;
 
-            for (Annotation annotation : annotations[i]) {
+            for (val annotation : annotations[i]) {
                 if (annotation.annotationType() == RequestBody.class) {
                     return i + incr;
                 }
@@ -312,7 +312,7 @@ public class MethodGenerator {
         }
 
         if (futureReturnType) {
-            val futureType = Types.getFutureGenericArgClass(method);
+            val futureType = Types.getActualTypeArg0(method);
             if (!(futureType instanceof Class)) {
                 mv.visitInsn(ARETURN);
                 return;
@@ -324,7 +324,7 @@ public class MethodGenerator {
                 futureType == Void.class ? "convertFutureVoid" : "convertFuture",
                 sig(Future.class, Future.class, Class.class, RestReq.class), false);
         } else {
-            java.lang.reflect.Type typeArgument = Types.getGenericTypeArgument(method);
+            val typeArgument = Types.getGenericTypeArg(method);
             if (typeArgument == null) {
                 mv.visitLdcInsn(Type.getType(returnType));
                 mv.visitMethodInsn(INVOKESTATIC, p(Beans.class), "unmarshal",
@@ -406,13 +406,13 @@ public class MethodGenerator {
     }
 
     private void wrapPrimitive(Class<?> type, int paramIndex, int incr) {
-        Type parameterAsmType = Type.getType(type);
-        int opcode = parameterAsmType.getOpcode(Opcodes.ILOAD);
+        val parameterAsmType = Type.getType(type);
+        val opcode = parameterAsmType.getOpcode(Opcodes.ILOAD);
         mv.visitVarInsn(opcode, paramIndex + 1 + incr);
 
         if (!type.isPrimitive()) return;
 
-        Class<?> wrapped = Primitives.wrap(type);
+        val wrapped = Primitives.wrap(type);
         mv.visitMethodInsn(INVOKESTATIC, p(wrapped), "valueOf", sig(wrapped, type), false);
     }
 

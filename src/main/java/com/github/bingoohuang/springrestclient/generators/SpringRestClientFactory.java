@@ -11,11 +11,11 @@ import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
+import lombok.experimental.var;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -26,21 +26,22 @@ import java.util.concurrent.ExecutionException;
 @UtilityClass public class SpringRestClientFactory {
     private Cache<Class, Object> restClientCache = CacheBuilder.newBuilder().build();
 
-
     public <T> T getRestClient(final Class<T> restClientClass, final ApplicationContext appContext) {
         Obj.ensureInterface(restClientClass);
         try {
             return (T) restClientCache.get(restClientClass, new Callable<Object>() {
-                @Override public Object call() throws Exception {
+                @Override public Object call() {
                     return load(restClientClass, appContext);
                 }
             });
         } catch (ExecutionException e) {
             Throwable cause = e.getCause();
-            throw Throwables.propagate(cause);
+            Throwables.throwIfUnchecked(cause);
+            throw new RuntimeException(cause);
         } catch (UncheckedExecutionException e) {
             Throwable cause = e.getCause();
-            throw Throwables.propagate(cause);
+            Throwables.throwIfUnchecked(cause);
+            throw new RuntimeException(cause);
         }
     }
 
@@ -56,18 +57,18 @@ import java.util.concurrent.ExecutionException;
         setStatusMappings(restClientImplClass, object, restClientClass);
         setFixedRequestParams(restClientImplClass, object, restClientClass);
         setSuccInResponseJSONProperty(restClientImplClass, object, restClientClass);
-        setAppContext(restClientImplClass, object, restClientClass, appContext);
+        setAppContext(restClientImplClass, object, appContext);
 
         return object;
     }
 
-    private void setAppContext(Class<?> restClientImplClass, Object object, Class restClientClass, ApplicationContext appContext) {
+    private void setAppContext(Class<?> restClientImplClass, Object object, ApplicationContext appContext) {
         Obj.setField(restClientImplClass, object, MethodGenerator.appContext, appContext);
     }
 
     private void setSuccInResponseJSONProperty(Class<?> restClientImplClass, Object object, Class<?> restClientClass) {
-        for (Method method : restClientClass.getDeclaredMethods()) {
-            SuccInResponseJSONProperty property = method.getAnnotation(SuccInResponseJSONProperty.class);
+        for (val method : restClientClass.getDeclaredMethods()) {
+            var property = method.getAnnotation(SuccInResponseJSONProperty.class);
             if (property == null)
                 property = restClientClass.getAnnotation(SuccInResponseJSONProperty.class);
 
@@ -77,7 +78,7 @@ import java.util.concurrent.ExecutionException;
     }
 
     private void setFixedRequestParams(Class<?> restClientImplClass, Object object, Class restClientClass) {
-        for (Method method : restClientClass.getDeclaredMethods()) {
+        for (val method : restClientClass.getDeclaredMethods()) {
             val mappings = createFixedRequestParams(method, restClientClass);
             val fieldName = Obj.getMethodNamePrefixWithHashCode(method) + MethodGenerator.FixedRequestParams;
             Obj.setField(restClientImplClass, object, fieldName, mappings);
@@ -95,12 +96,12 @@ import java.util.concurrent.ExecutionException;
 
     private void putRequestParams(Map<String, Object> map, AnnotatedElement annotatedElement) {
         // 按声明顺序来添加固定请求参数
-        for (Annotation annotation : annotatedElement.getAnnotations()) {
+        for (val annotation : annotatedElement.getAnnotations()) {
             if (annotation instanceof FixedRequestParam) {
                 putFixedRequestParam(map, (FixedRequestParam) annotation);
             } else if (annotation instanceof FixedRequestParams) {
                 val params = (FixedRequestParams) annotation;
-                for (FixedRequestParam paramValue : params.value()) {
+                for (val paramValue : params.value()) {
                     putFixedRequestParam(map, paramValue);
                 }
             }
@@ -113,7 +114,8 @@ import java.util.concurrent.ExecutionException;
         } else if (StringUtils.isNotEmpty(fixedRequestParam.value())) {
             map.put(fixedRequestParam.name(), fixedRequestParam.value());
         } else {
-            throw new RuntimeException("bad config for @FixedRequestParam" + fixedRequestParam + " value or clazz should be assigned");
+            throw new RuntimeException("bad config for @FixedRequestParam"
+                    + fixedRequestParam + " value or clazz should be assigned");
         }
     }
 
@@ -134,11 +136,12 @@ import java.util.concurrent.ExecutionException;
         return Collections.unmodifiableMap(statusExceptionMappings);
     }
 
-    private void addStatusExceptionMapppings(Method method, Map<Integer, Class<? extends Throwable>> statusExceptionMappings, RespStatusMappings respStatusMappings) {
+    private void addStatusExceptionMapppings(Method method, Map<Integer,
+            Class<? extends Throwable>> statusExceptionMappings, RespStatusMappings respStatusMappings) {
         if (respStatusMappings == null) return;
 
-        for (RespStatusMapping respStatusMapping : respStatusMappings.value()) {
-            Class<? extends Throwable> exceptionClass = respStatusMapping.exception();
+        for (val respStatusMapping : respStatusMappings.value()) {
+            val exceptionClass = respStatusMapping.exception();
             checkMethodException(method, exceptionClass);
             statusExceptionMappings.put(respStatusMapping.status(), exceptionClass);
         }
@@ -148,7 +151,7 @@ import java.util.concurrent.ExecutionException;
         if (RuntimeException.class.isAssignableFrom(exceptionClass)) return;
 
         // checked exception should be declared
-        for (Class<?> declaredExceptionType : method.getExceptionTypes()) {
+        for (val declaredExceptionType : method.getExceptionTypes()) {
             if (declaredExceptionType == exceptionClass) return;
         }
 
@@ -173,7 +176,7 @@ import java.util.concurrent.ExecutionException;
     private SignProvider createSignProvider(Class<?> restClientClass, ApplicationContext appContext) {
         val restClientEnabled = restClientClass.getAnnotation(SpringRestClientEnabled.class);
         val signProviderClass = restClientEnabled.signProvider();
-        SignProvider bean = Obj.getBean(appContext, signProviderClass);
+        val bean = Obj.getBean(appContext, signProviderClass);
         if (bean != null) return bean;
 
         if (signProviderClass.isInterface()) return null;
@@ -187,12 +190,12 @@ import java.util.concurrent.ExecutionException;
 
     private BaseUrlProvider createBaseUrlProvider(Class<?> restClientClass, ApplicationContext appContext) {
         val restClientEnabled = restClientClass.getAnnotation(SpringRestClientEnabled.class);
-        String baseUrl = restClientEnabled.baseUrl();
+        val baseUrl = restClientEnabled.baseUrl();
         if (!Strings.isNullOrEmpty(baseUrl))
             return new FixedBaseUrlProvider(baseUrl);
 
         val providerClass = restClientEnabled.baseUrlProvider();
-        BaseUrlProvider bean = Obj.getBean(appContext, providerClass);
+        val bean = Obj.getBean(appContext, providerClass);
         if (bean != null) return bean;
 
         if (providerClass.isInterface()) {
@@ -207,19 +210,23 @@ import java.util.concurrent.ExecutionException;
         if (basicAuth == null) return null;
 
         val providerClass = basicAuth.basicAuthProvider();
-        BasicAuthProvider bean;
-        if (providerClass == BasicAuthProvider.class) {
-            bean = new DefaultBasicAuthProvider(basicAuth.username(), basicAuth.password());
-        } else {
-            bean = Obj.getBean(appContext, providerClass);
-        }
+        val bean = createAuthProvider(appContext, basicAuth, providerClass);
 
         if (bean != null) return bean;
-
         if (providerClass.isInterface()) {
             throw new RuntimeException("basicAuthProvider should be properly configured for api " + restClientClass);
         }
 
         return Obj.createObject(providerClass, restClientClass);
+    }
+
+    private static BasicAuthProvider createAuthProvider(ApplicationContext appContext,
+                                                        BasicAuth basicAuth,
+                                                        Class<? extends BasicAuthProvider> providerClass) {
+        if (providerClass == BasicAuthProvider.class) {
+            return new DefaultBasicAuthProvider(basicAuth.username(), basicAuth.password());
+        } else {
+            return Obj.getBean(appContext, providerClass);
+        }
     }
 }

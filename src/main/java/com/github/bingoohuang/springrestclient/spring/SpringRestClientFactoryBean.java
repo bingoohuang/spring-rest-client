@@ -1,7 +1,6 @@
 package com.github.bingoohuang.springrestclient.spring;
 
 import com.github.bingoohuang.springrestclient.generators.SpringRestClientFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -15,7 +14,7 @@ public class SpringRestClientFactoryBean<T> implements FactoryBean<T>, Applicati
     }
 
     @Override
-    public T getObject() throws Exception {
+    public T getObject() {
         return SpringRestClientFactory.getRestClient(interfaceClazz, appContext);
     }
 
@@ -30,7 +29,7 @@ public class SpringRestClientFactoryBean<T> implements FactoryBean<T>, Applicati
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(ApplicationContext applicationContext)  {
         this.appContext = applicationContext;
     }
 }

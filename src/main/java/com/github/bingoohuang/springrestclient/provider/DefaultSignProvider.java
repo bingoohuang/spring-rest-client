@@ -47,10 +47,9 @@ public class DefaultSignProvider implements SignProvider {
     }
 
     @Override
-    public void sign(
-        Class<?> apiClass, String uuid,
-        Map<String, Object> requestParams,
-        HttpRequest httpRequest) {
+    public void sign(Class<?> apiClass, String uuid,
+                     Map<String, Object> requestParams,
+                     HttpRequest httpRequest) {
 
         httpRequest.header("hict", Now.now());
         httpRequest.header("hici", uuid);
@@ -59,25 +58,23 @@ public class DefaultSignProvider implements SignProvider {
         httpRequest.header("hisv", hmac(apiClass, requestParams, httpRequest));
     }
 
-    private String hmac(
-        Class<?> apiClass,
-        Map<String, Object> requestParams,
-        HttpRequest httpRequest) {
+    private String hmac(Class<?> apiClass,
+                        Map<String, Object> requestParams,
+                        HttpRequest httpRequest) {
         String originalStr = createOriginalStringForSign(apiClass, requestParams, httpRequest);
         return hmacSHA256(originalStr, clientSecurity);
     }
 
-    private String createOriginalStringForSign(
-        Class<?> apiClass,
-        Map<String, Object> requestParams,
-        HttpRequest httpRequest) {
+    private String createOriginalStringForSign(Class<?> apiClass,
+                                               Map<String, Object> requestParams,
+                                               HttpRequest httpRequest) {
         val signStr = new StringBuilder();
         val logStr = new StringBuilder();
         val proxy = new AbbreviateAppendable(logStr, signStr);
 
         appendMethodAndUrl(httpRequest, proxy);
         appendHeaders(httpRequest, proxy);
-        appendRequestParams(requestParams, proxy);
+        appendReqParams(requestParams, proxy);
 
         Logger logger = LoggerFactory.getLogger(apiClass);
         logger.debug("string to be signed : {}", logStr);
@@ -85,24 +82,22 @@ public class DefaultSignProvider implements SignProvider {
         return signStr.toString();
     }
 
-    private void appendMethodAndUrl(
-        HttpRequest httpRequest, Appendable signStr) {
+    private void appendMethodAndUrl(HttpRequest httpRequest, Appendable signStr) {
         signStr.append(httpRequest.getHttpMethod().name()).append('$');
         signStr.append(httpRequest.getUrl()).append('$');
     }
 
-    private void appendRequestParams(
-        Map<String, Object> requestParams, Appendable signStr) {
+    private void appendReqParams(Map<String, Object> reqParams, Appendable signStr) {
         Map<String, Object> params = Maps.newTreeMap();
-        if (requestParams != null) params.putAll(requestParams);
+        if (reqParams != null) params.putAll(reqParams);
         for (Map.Entry<String, Object> entry : params.entrySet()) {
             signStr.append(entry.getKey()).append('$');
 
-            Object value = entry.getValue();
+            val value = entry.getValue();
             boolean isFile = false;
             if (value instanceof Collection) {
                 isFile = true;
-                for (Object s : (Collection) value) {
+                for (val s : (Collection) value) {
                     if (s instanceof File || s instanceof MultipartFile)
                         append(signStr, s);
                     else {
@@ -116,21 +111,19 @@ public class DefaultSignProvider implements SignProvider {
         }
     }
 
-    private static String[] filtered = new String[]{
-        "Content-Type"
-    };
+    private static String[] filtered = new String[]{"Content-Type"};
 
     private void appendHeaders(HttpRequest httpRequest, Appendable signStr) {
         Map<String, List<String>> headers = Maps.newTreeMap();
         headers.putAll(httpRequest.getHeaders());
 
-        Joiner joiner = Joiner.on('$');
-        for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
-            String key = entry.getKey();
+        val joiner = Joiner.on('$');
+        for (val entry : headers.entrySet()) {
+            val key = entry.getKey();
             if (ArrayUtils.contains(filtered, key)) continue;
 
             signStr.append(key).append('$')
-                .append(joiner.join(entry.getValue())).append('$');
+                    .append(joiner.join(entry.getValue())).append('$');
         }
     }
 
@@ -167,7 +160,7 @@ public class DefaultSignProvider implements SignProvider {
     public static String md5(byte[] bytes) {
         try {
             val md = MessageDigest.getInstance("MD5");
-            byte[] digest = md.digest(bytes);
+            val digest = md.digest(bytes);
             return Base64.base64(digest, Base64.Format.Standard);
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -10,11 +10,11 @@ import java.util.concurrent.Future;
 
 @UtilityClass
 public class Types {
-    public java.lang.reflect.Type getFutureGenericArgClass(Method method) {
+    public Type getActualTypeArg0(Method method) {
         val returnTypeClass = method.getReturnType();
         if (Future.class != returnTypeClass) return returnTypeClass;
 
-        return getGenericTypeArgument(method);
+        return getGenericTypeArg(method);
     }
 
     public boolean isFutureReturnType(Method method) {
@@ -22,12 +22,12 @@ public class Types {
         return Future.class == returnTypeClass;
     }
 
-    public Type getGenericTypeArgument(Method method) {
+    public Type getGenericTypeArg(Method method) {
         val genericReturnType = method.getGenericReturnType();
-        return getGenericTypeArgument(genericReturnType);
+        return getGenericTypeArg(genericReturnType);
     }
 
-    public Type getGenericTypeArgument(Type genericReturnType) {
+    public Type getGenericTypeArg(Type genericReturnType) {
         if (!(genericReturnType instanceof ParameterizedType)) return null;
 
         val parameterizedType = (ParameterizedType) genericReturnType;

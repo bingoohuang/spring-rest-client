@@ -36,7 +36,7 @@ public class ClassGenerator<T> {
     }
 
     public Class<? extends T> generate() {
-        byte[] bytes = createImplClassBytes();
+        val bytes = createImplClassBytes();
 
         createClassFileForDiagnose(bytes);
 
@@ -68,7 +68,7 @@ public class ClassGenerator<T> {
     }
 
     private byte[] createImplClassBytes() {
-        String classRequestMapping = getClassRequestMapping();
+        val classRequestMapping = getClassRequestMapping();
 
         constructor();
 
@@ -86,33 +86,20 @@ public class ClassGenerator<T> {
 
     private ClassWriter createClassWriter() {
         val cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        String[] interfaces = {Type.getInternalName(restClientClass)};
         cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, implName.replace('.', '/'),
-                null, p(Object.class), interfaces);
+                null, p(Object.class), new String[]{Type.getInternalName(restClientClass)});
 
-        val fv1 = cw.visitField(0, baseUrlProvider, ci(BaseUrlProvider.class), null, null);
-        fv1.visitEnd();
-
-        val fv7 = cw.visitField(0, basicAuthProvider, ci(BasicAuthProvider.class), null, null);
-        fv7.visitEnd();
-
-        val fv2 = cw.visitField(0, signProvider, ci(SignProvider.class), null, null);
-        fv2.visitEnd();
-
-        val fv3 = cw.visitField(0, appContext, ci(ApplicationContext.class), null, null);
-        fv3.visitEnd();
+        cw.visitField(0, baseUrlProvider, ci(BaseUrlProvider.class), null, null).visitEnd();
+        cw.visitField(0, basicAuthProvider, ci(BasicAuthProvider.class), null, null).visitEnd();
+        cw.visitField(0, signProvider, ci(SignProvider.class), null, null).visitEnd();
+        cw.visitField(0, appContext, ci(ApplicationContext.class), null, null).visitEnd();
 
         for (val method : restClientClass.getDeclaredMethods()) {
-            val methodNamePrefix = Obj.getMethodNamePrefixWithHashCode(method);
+            val prefix = Obj.getMethodNamePrefixWithHashCode(method);
 
-            val fv4 = cw.visitField(0, methodNamePrefix + StatusExceptionMappings, ci(Map.class), null, null);
-            fv4.visitEnd();
-
-            val fv5 = cw.visitField(0, methodNamePrefix + FixedRequestParams, ci(Map.class), null, null);
-            fv5.visitEnd();
-
-            val fv6 = cw.visitField(0, methodNamePrefix + SuccInResponseJSONProperty, ci(SuccInResponseJSONProperty.class), null, null);
-            fv6.visitEnd();
+            cw.visitField(0, prefix + StatusExceptionMappings, ci(Map.class), null, null).visitEnd();
+            cw.visitField(0, prefix + FixedRequestParams, ci(Map.class), null, null).visitEnd();
+            cw.visitField(0, prefix + SuccInResponseJSONProperty, ci(SuccInResponseJSONProperty.class), null, null).visitEnd();
         }
 
         return cw;
