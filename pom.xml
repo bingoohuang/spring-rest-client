@@ -44,7 +44,8 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.16.18</version>
+            <version>1.16.20</version>
+            <optional>true</optional>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -97,12 +98,12 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.35</version>
+            <version>1.2.45</version>
         </dependency>
         <dependency>
             <groupId>com.github.bingoohuang</groupId>
             <artifactId>asmvalidator</artifactId>
-            <version>0.0.13</version>
+            <version>0.0.15</version>
         </dependency>
 
         <dependency>
