@@ -109,7 +109,7 @@
         <dependency>
             <groupId>com.github.bingoohuang</groupId>
             <artifactId>spring-rest-boot</artifactId>
-            <version>0.0.11</version>
+            <version>0.0.12-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
         <dependency>
