@@ -5,7 +5,7 @@
 
     <groupId>com.github.bingoohuang</groupId>
     <artifactId>spring-rest-client</artifactId>
-    <version>0.0.22-SNAPSHOT</version>
+    <version>0.0.23-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>spring rest client</name>
@@ -83,7 +83,7 @@
         <dependency>
             <groupId>com.github.bingoohuang</groupId>
             <artifactId>java-utils</artifactId>
-            <version>0.0.4</version>
+            <version>0.0.11</version>
         </dependency>
         <dependency>
             <groupId>com.github.bingoohuang</groupId>
@@ -105,11 +105,10 @@
             <artifactId>asmvalidator</artifactId>
             <version>0.0.15</version>
         </dependency>
-
         <dependency>
             <groupId>com.github.bingoohuang</groupId>
             <artifactId>spring-rest-boot</artifactId>
-            <version>0.0.12-SNAPSHOT</version>
+            <version>0.0.12</version>
             <scope>test</scope>
         </dependency>
         <dependency>
