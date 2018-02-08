@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
-@RequestMapping("pay-party")
+@RequestMapping("/pay-party")
 @RestfulSign class PayPartyController {
     @RequestMapping("/party/{sellerId}/{buyerId}")
     public PayParty party(@PathVariable("sellerId") String sellerId,

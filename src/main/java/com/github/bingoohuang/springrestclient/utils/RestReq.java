@@ -18,6 +18,7 @@ import com.mashape.unirest.request.HttpRequestWithBody;
 import com.mashape.unirest.request.ValueUtils;
 import com.mashape.unirest.request.body.MultipartBody;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -246,7 +247,7 @@ public class RestReq {
         }
     }
 
-    public String postBody(Object bean) throws Throwable {
+    public String postBody(Object[] bean) throws Throwable {
         val post = createPost();
 
         val body = createBody(post, bean);
@@ -257,7 +258,7 @@ public class RestReq {
         return request(requestParams, post);
     }
 
-    public InputStream postBodyBinary(Object bean) throws Throwable {
+    public InputStream postBodyBinary(Object[] bean) throws Throwable {
         val post = createPost();
 
         val body = createBody(post, bean);
@@ -268,7 +269,7 @@ public class RestReq {
         return requestBinary(requestParams, post);
     }
 
-    public Future<HttpResponse<String>> postBodyAsync(Object bean) {
+    public Future<HttpResponse<String>> postBodyAsync(Object[] bean) {
         val post = createPost();
 
         val body = createBody(post, bean);
@@ -279,7 +280,7 @@ public class RestReq {
         return requestAsync(requestParams, post);
     }
 
-    public Future<HttpResponse<InputStream>> postBodyAsyncBinary(Object bean) {
+    public Future<HttpResponse<InputStream>> postBodyAsyncBinary(Object[] bean) {
         val post = createPost();
 
         val body = createBody(post, bean);
@@ -306,15 +307,30 @@ public class RestReq {
         return post;
     }
 
-    private String createBody(HttpRequestWithBody post, Object bean) {
+    private String createBody(HttpRequestWithBody post, Object... beans) {
         if (firstConsume != null && firstConsume.indexOf("/xml") >= 0) {
             post.header("Content-Type", "application/xml;charset=UTF-8");
-            return Xmls.marshal(bean);
+            return Xmls.marshal(beans[0]);
         } else {
             post.header("Content-Type", "application/json;charset=UTF-8");
-            return ValueUtils.processValue(bean);
+            return tryBeansJson(beans);
         }
     }
+
+    public static String tryBeansJson(Object... beans) {
+        val jsons = new StringBuilder();
+        for (val bean : beans) {
+            String json = ValueUtils.processValue(bean);
+            if (StringUtils.isNotBlank(json) && !json.equals("{}") && json.indexOf('{') == 0) {
+                jsons.append(jsons.length() > 0 ? "," : "{");
+                jsons.append(json.substring(1, json.length() - 1));
+            }
+        }
+        jsons.append("}");
+
+        return jsons.toString();
+    }
+
 
     private String request(Map<String, Object> reqParams, BaseRequest httpReq)
             throws Throwable {
@@ -439,7 +455,7 @@ public class RestReq {
     }
 
     public Throwable processStatusExceptionMappings(HttpResponse<?> response) {
-        val exceptionClass  = sendStatusExceptionMappings.get(response.getStatus());
+        val exceptionClass = sendStatusExceptionMappings.get(response.getStatus());
         String msg = response.header("error-msg");
         if (Strings.isNullOrEmpty(msg)) {
             Object body = response.getBody();

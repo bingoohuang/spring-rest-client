@@ -21,8 +21,7 @@ public class Xmls {
     public String marshal(Object bean, Class... types) {
         val sw = new StringWriter();
 
-        val carContext = JAXBContext.newInstance(types);
-        val marshaller = carContext.createMarshaller();
+        val marshaller = JAXBContext.newInstance(types).createMarshaller();
 
         val xof = XMLOutputFactory.newInstance();
         val streamWriter = xof.createXMLStreamWriter(sw);

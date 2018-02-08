@@ -1,0 +1,16 @@
+package com.github.bingoohuang.springrestclient.spring.api;
+
+import com.github.bingoohuang.springrestclient.annotations.SpringRestClientEnabled;
+import com.github.bingoohuang.springrestclient.boot.domain.Account;
+import com.github.bingoohuang.springrestclient.boot.domain.Car;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
+@SpringRestClientEnabled(baseUrl = "http://localhost:4849")
+@RequestMapping("/RequestBody")
+public interface RequestBodyApi {
+    @RequestMapping(value = "/transfer", method = POST)
+    String transfer(@RequestBody Account fromAccount, @RequestBody Car car);
+}

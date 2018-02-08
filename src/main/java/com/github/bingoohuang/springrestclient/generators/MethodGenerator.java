@@ -20,7 +20,9 @@ import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
@@ -123,6 +125,7 @@ public class MethodGenerator {
 
         mv.visitLdcInsn(Type.getType(method.getDeclaringClass()));
         mv.visitLdcInsn(methodValidatorSignature);
+
         if (paramSize <= 5) mv.visitInsn(ICONST_0 + paramSize);
         else mv.visitIntInsn(BIPUSH, paramSize);
         mv.visitTypeInsn(ANEWARRAY, p(Object.class));
@@ -159,14 +162,26 @@ public class MethodGenerator {
         mv.visitVarInsn(ALOAD, offsetSize + 4);
 
         if (isPostMethodOrNone()) {
-            int requestBodyOffset = findRequestBodyParameterOffset();
-            if (requestBodyOffset > -1) {
-                mv.visitVarInsn(ALOAD, requestBodyOffset + 1);
+            val requestBodyOffsets = findRequestBodyParameterOffset();
+            int offsets = requestBodyOffsets.size();
+            if (offsets > 0 ) {
+                if (offsets <= 5) mv.visitInsn(ICONST_0 + offsets);
+                else mv.visitIntInsn(BIPUSH, offsets);
+                mv.visitTypeInsn(ANEWARRAY, p(Object.class));
+
+                for (int i = 0; i < offsets; ++i) {
+                    mv.visitInsn(DUP);
+                    if (i <= 5) mv.visitInsn(ICONST_0 + i);
+                    else mv.visitIntInsn(BIPUSH, i);
+                    mv.visitVarInsn(ALOAD, requestBodyOffsets.get(i) + 1);
+                    mv.visitInsn(AASTORE);
+                }
+
                 getOrPost(futureReturnType,
-                    "postBodyAsync", sig(Future.class, Object.class),
-                    "postBodyAsyncBinary", sig(Future.class, Object.class),
-                    "postBody", sig(String.class, Object.class),
-                    "postBodyBinary", sig(InputStream.class, Object.class));
+                    "postBodyAsync", sig(Future.class, Object[].class),
+                    "postBodyAsyncBinary", sig(Future.class, Object[].class),
+                    "postBody", sig(String.class, Object[].class),
+                    "postBodyBinary", sig(InputStream.class, Object[].class));
             } else {
                 getOrPost(futureReturnType,
                     "postAsync", sig(Future.class),
@@ -271,18 +286,19 @@ public class MethodGenerator {
         return classRequestMapping + methodMappingName;
     }
 
-    private int findRequestBodyParameterOffset() {
+    private List<Integer> findRequestBodyParameterOffset() {
+        List<Integer> offsets = new ArrayList<Integer>();
         for (int i = 0, incr = 0; i < paramSize; i++) {
             if (isWideType(parameterTypes[i])) ++incr;
 
             for (val annotation : annotations[i]) {
                 if (annotation.annotationType() == RequestBody.class) {
-                    return i + incr;
+                    offsets.add(i + incr);
                 }
             }
         }
 
-        return -1;
+        return offsets;
     }
 
     private boolean isWideType(Class<?> parameterType) {
