@@ -275,7 +275,7 @@ public class MethodGenerator {
     }
 
     private List<Integer> findRequestBodyParameterOffset() {
-        List<Integer> offsets = new ArrayList<Integer>();
+        val offsets = new ArrayList<Integer>();
         for (int i = 0, incr = 0; i < paramSize; i++) {
             if (isWideType(parameterTypes[i])) ++incr;
 
@@ -334,12 +334,12 @@ public class MethodGenerator {
                 mv.visitMethodInsn(INVOKESTATIC, p(Beans.class), "unmarshal",
                     sig(Object.class, String.class, Class.class), false);
             } else {
-                val genericReturnType = method.getGenericReturnType();
-                if (genericReturnType instanceof ParameterizedTypeImpl) {
-                    buildGenericReturn((ParameterizedTypeImpl) genericReturnType);
+                val returnType = method.getGenericReturnType();
+                if (returnType instanceof ParameterizedTypeImpl) {
+                    buildGenericReturn((ParameterizedTypeImpl) returnType);
 
                 } else {
-                    mv.visitLdcInsn(Type.getType(returnType));
+                    mv.visitLdcInsn(Type.getType(this.returnType));
                 }
 
                 mv.visitMethodInsn(INVOKESTATIC, p(Beans.class), "unmarshal",
@@ -384,7 +384,7 @@ public class MethodGenerator {
         mv.visitVarInsn(ASTORE, offsetSize + index);
 
         for (int i = 0, incr = 0; i < paramSize; i++) {
-            for (Annotation annotation : annotations[i]) {
+            for (val annotation : annotations[i]) {
                 if (annotation.annotationType() != annotationClass) continue;
 
                 mv.visitVarInsn(ALOAD, offsetSize + index);

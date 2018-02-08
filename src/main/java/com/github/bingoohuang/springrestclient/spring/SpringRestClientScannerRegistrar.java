@@ -33,7 +33,8 @@ public class SpringRestClientScannerRegistrar implements ImportBeanDefinitionReg
         }
 
         val annoAttrs = AnnotationAttributes.fromMap(annotationAttributes);
-        Class<? extends BeanNameGenerator> generatorClass = annoAttrs.getClass("nameGenerator");
+        Class<? extends BeanNameGenerator> generatorClass;
+        generatorClass = annoAttrs.getClass("nameGenerator");
         if (!BeanNameGenerator.class.equals(generatorClass)) {
             scanner.setBeanNameGenerator(BeanUtils.instantiateClass(generatorClass));
         }
