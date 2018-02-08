@@ -126,16 +126,10 @@ public class MethodGenerator {
         mv.visitLdcInsn(Type.getType(method.getDeclaringClass()));
         mv.visitLdcInsn(methodValidatorSignature);
 
-        if (paramSize <= 5) mv.visitInsn(ICONST_0 + paramSize);
-        else mv.visitIntInsn(BIPUSH, paramSize);
-        mv.visitTypeInsn(ANEWARRAY, p(Object.class));
+        startNewArray(mv, paramSize, Object.class);
 
         for (int i = 0; i < paramSize; ++i) {
-            mv.visitInsn(DUP);
-            if (i <= 5) mv.visitInsn(ICONST_0 + i);
-            else mv.visitIntInsn(BIPUSH, i);
-            mv.visitVarInsn(ALOAD, i + 1);
-            mv.visitInsn(AASTORE);
+            addItemToArray(mv, i, i + 1);
         }
 
         mv.visitMethodInsn(INVOKESTATIC,
@@ -165,16 +159,10 @@ public class MethodGenerator {
             val requestBodyOffsets = findRequestBodyParameterOffset();
             int offsets = requestBodyOffsets.size();
             if (offsets > 0 ) {
-                if (offsets <= 5) mv.visitInsn(ICONST_0 + offsets);
-                else mv.visitIntInsn(BIPUSH, offsets);
-                mv.visitTypeInsn(ANEWARRAY, p(Object.class));
+                startNewArray(mv, offsets, Object.class);
 
                 for (int i = 0; i < offsets; ++i) {
-                    mv.visitInsn(DUP);
-                    if (i <= 5) mv.visitInsn(ICONST_0 + i);
-                    else mv.visitIntInsn(BIPUSH, i);
-                    mv.visitVarInsn(ALOAD, requestBodyOffsets.get(i) + 1);
-                    mv.visitInsn(AASTORE);
+                    addItemToArray(mv, i, requestBodyOffsets.get(i) + 1);
                 }
 
                 getOrPost(futureReturnType,
@@ -368,19 +356,10 @@ public class MethodGenerator {
 
         val actualTypeArgs = impl.getActualTypeArguments();
 
-        if (paramSize <= 5) mv.visitInsn(ICONST_0 + actualTypeArgs.length);
-        else mv.visitIntInsn(BIPUSH, actualTypeArgs.length);
-
-        mv.visitTypeInsn(ANEWARRAY, p(Class.class));
+        Asms.startNewArray(mv, actualTypeArgs.length, Class.class);
 
         for (int i = 0; i < actualTypeArgs.length; ++i) {
-            mv.visitInsn(DUP);
-
-            if (i <= 5) mv.visitInsn(ICONST_0 + i);
-            else mv.visitIntInsn(BIPUSH, i);
-
-            mv.visitLdcInsn(Type.getType((Class) actualTypeArgs[i]));
-            mv.visitInsn(AASTORE);
+            Asms.addItemToArray(mv, i, (Class) actualTypeArgs[i]);
         }
 
         mv.visitInsn(ACONST_NULL);

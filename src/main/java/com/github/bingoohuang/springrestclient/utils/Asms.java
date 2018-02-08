@@ -1,6 +1,10 @@
 package com.github.bingoohuang.springrestclient.utils;
 
 import lombok.val;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
+
+import static org.objectweb.asm.Opcodes.*;
 
 public class Asms {
     // Creates a dotted class name from a path/package name
@@ -90,5 +94,31 @@ public class Asms {
 
         signature.append(")");
         return signature.toString();
+    }
+
+    public static void startNewArray(MethodVisitor mv, int paramSize, Class<?> objectClass) {
+        if (paramSize <= 5) mv.visitInsn(ICONST_0 + paramSize);
+        else mv.visitIntInsn(BIPUSH, paramSize);
+        mv.visitTypeInsn(ANEWARRAY, p(objectClass));
+    }
+
+    public static void addItemToArray(MethodVisitor mv, int i, int ind) {
+        mv.visitInsn(DUP);
+
+        if (i <= 5) mv.visitInsn(ICONST_0 + i);
+        else mv.visitIntInsn(BIPUSH, i);
+
+        mv.visitVarInsn(ALOAD, ind);
+        mv.visitInsn(AASTORE);
+    }
+
+    public static void addItemToArray(MethodVisitor mv, int i, Class<?> clazz) {
+        mv.visitInsn(DUP);
+
+        if (i <= 5) mv.visitInsn(ICONST_0 + i);
+        else mv.visitIntInsn(BIPUSH, i);
+
+        mv.visitLdcInsn(Type.getType(clazz));
+        mv.visitInsn(AASTORE);
     }
 }
