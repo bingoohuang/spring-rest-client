@@ -310,18 +310,34 @@ public class RestReq {
     private String createBody(HttpRequestWithBody post, Object... beans) {
         if (firstConsume != null && firstConsume.indexOf("/xml") >= 0) {
             post.header("Content-Type", "application/xml;charset=UTF-8");
-            return Xmls.marshal(beans[0]);
+            return marshalBeans(beans);
         } else {
             post.header("Content-Type", "application/json;charset=UTF-8");
             return tryBeansJson(beans);
         }
     }
 
+    public static String marshalBeans(Object... beans) {
+        val jsons = new StringBuilder();
+        for (val bean : beans) {
+            val xml = Xmls.marshal(bean);
+            if (jsons.length() == 0) {
+                jsons.append(xml);
+            } else {
+                jsons.delete(jsons.lastIndexOf("</"), jsons.length());
+                int start = xml.indexOf(">") + 1;
+                jsons.append(xml.substring(start));
+            }
+        }
+
+        return jsons.toString();
+    }
+
     public static String tryBeansJson(Object... beans) {
         val jsons = new StringBuilder();
         for (val bean : beans) {
             String json = ValueUtils.processValue(bean);
-            if (StringUtils.isNotBlank(json) && !json.equals("{}") && json.indexOf('{') == 0) {
+            if (StringUtils.isNotBlank(json) && json.indexOf('{') == 0) {
                 jsons.append(jsons.length() > 0 ? "," : "{");
                 jsons.append(json.substring(1, json.length() - 1));
             }

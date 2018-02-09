@@ -14,6 +14,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
 @RestController
 @RequestMapping("/users")
 public class UserXmlController {
@@ -30,18 +32,14 @@ public class UserXmlController {
         return new ArrayList<User>(userMap.values());
     }
 
-    @RequestMapping(value = "register",
-        method = RequestMethod.POST,
-        consumes = MediaType.APPLICATION_XML_VALUE)
+    @RequestMapping(value = "/register", method = POST, consumes = MediaType.APPLICATION_XML_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public void handleXMLPostRequest(@RequestBody User user) {
         System.out.println("saving user: " + user);
         saveUser(user);
     }
 
-    @RequestMapping(
-        method = RequestMethod.GET,
-        produces = MediaType.APPLICATION_XML_VALUE)
+    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_XML_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public UserList handleAllUserRequest() {
         val list = new UserList();

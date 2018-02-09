@@ -24,4 +24,10 @@ public class RequestBodyApiTest {
 
         assertThat(resp, is(equalTo("account:Account(money=123, name=bjh), car:Car(brand=BMW, age=456)")));
     }
+
+    @Test public void transferXml() {
+        String resp = api.transferXml(new Account(123, "bjh"), new Car("BMW", 456));
+
+        assertThat(resp, is(equalTo("account:Account(money=123, name=bjh), car:Car(brand=BMW, age=456)")));
+    }
 }
