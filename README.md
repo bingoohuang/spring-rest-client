@@ -46,3 +46,74 @@ And then you can call the api like this:
 int a = 123;
 int account = anotherApi.add(a);
 ```
+
+
+## Bypass spring boot request mapping
+```java
+// for spring boot 2.0
+import com.github.bingoohuang.springrestclient.annotations.SpringRestClientEnabled;
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcRegistrations;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+
+import java.lang.reflect.Method;
+
+@Configuration
+public class SpringFrontConfig {
+    @Bean
+    public WebMvcRegistrations webMvcRegistrationsAdapter() {
+        return new WebMvcRegistrations() {
+            @Override
+            public RequestMappingHandlerMapping getRequestMappingHandlerMapping() {
+                return new RequestMappingHandlerMapping() {
+                    @Override protected void registerHandlerMethod(Object handler, Method method, RequestMappingInfo mapping) {
+                        // by pass SpringRestClientEnabled interface
+                        if (method.getDeclaringClass().isAnnotationPresent(SpringRestClientEnabled.class)) return;
+                        super.registerHandlerMethod(handler, method, mapping);
+                    }
+                };
+            }
+        };
+    }
+
+}
+```
+
+```java
+// for spring boot 1.x
+
+import com.github.bingoohuang.springrestclient.annotations.SpringRestClientEnabled;
+import com.raiyee.hi.notify.WxNotifyEnabled;
+import org.springframework.boot.autoconfigure.web.WebMvcRegistrationsAdapter;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+
+import java.lang.reflect.Method;
+
+@Configuration
+@WxNotifyEnabled
+public class SpringConfig {
+    @Bean
+    public WebMvcRegistrationsAdapter webMvcRegistrationsAdapter() {
+        return new WebMvcRegistrationsAdapter() {
+            @Override
+            public RequestMappingHandlerMapping getRequestMappingHandlerMapping() {
+                return new RequestMappingHandlerMapping() {
+                    @Override
+                    protected void registerHandlerMethod(Object handler, Method method, RequestMappingInfo mapping) {
+                        // by pass SpringRestClientEnabled interface
+                        if (method.getDeclaringClass().isAnnotationPresent(SpringRestClientEnabled.class)) return;
+                        super.registerHandlerMethod(handler, method, mapping);
+                    }
+                };
+            }
+        };
+    }
+}
+
+
+```
