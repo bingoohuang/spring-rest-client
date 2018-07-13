@@ -15,11 +15,11 @@ public class GetTest {
     @Test
     public void test1() throws UnirestException {
         HttpResponse<String> httpResponse = Unirest.get("http://localhost:4849/pay-party/party/{sellerId}/{buyerId}")
-            .routeParam("sellerId", "s100")
-            .routeParam("buyerId", "b200")
-            .queryString("partyId", "p300")
-            .queryString("name", "n400")
-            .asString();
+                .routeParam("sellerId", "s100")
+                .routeParam("buyerId", "b200")
+                .queryString("partyId", "p300")
+                .queryString("name", "n400")
+                .asString();
 
         String json = httpResponse.getBody();
 

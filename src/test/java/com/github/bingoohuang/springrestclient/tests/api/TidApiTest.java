@@ -3,7 +3,6 @@ package com.github.bingoohuang.springrestclient.tests.api;
 import com.github.bingoohuang.springrestclient.spring.SpringRestClientConfig;
 import com.github.bingoohuang.springrestclient.spring.api.EasyHiTid;
 import com.github.bingoohuang.springrestclient.spring.api.TidApi;
-import com.github.bingoohuang.utils.redis.Redis;
 import mockit.Mock;
 import mockit.MockUp;
 import org.junit.Test;
@@ -11,6 +10,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import redis.clients.jedis.Jedis;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -22,7 +22,7 @@ public class TidApiTest {
     @Autowired
     TidApi tidApi;
     @Autowired
-    Redis redis;
+    Jedis redis;
 
     @Test
     public void getMobile() {
@@ -41,7 +41,7 @@ public class TidApiTest {
 
         EasyHiTid.tid.set("1000");
         new MockUp<T>() {
-            @Mock(invocations = 1)
+            @Mock
             String getMobile2() {
                 return "bingoo:1000";
             }
@@ -51,7 +51,7 @@ public class TidApiTest {
         assertThat(mobile, is(equalTo("bingoo:1000")));
 
         new MockUp<T>() {
-            @Mock(invocations = 0)
+            @Mock
             String getMobile2() {
                 return "bingoo:2000";
             }

@@ -97,19 +97,19 @@ public class RestReqBuilder {
 
     public RestReq build() {
         return new RestReq(
-            basicAuthProvider,
-            firstConsume,
-            succInResponseJSONProperty,
-            fixedRequestParams,
-            statusExceptionMapping,
-            apiClass,
-            baseUrlProvider,
-            prefix,
-            routeParams,
-            requestParams,
-            cookies,
-            async,
-            signProvider,
-            appContext);
+                basicAuthProvider,
+                firstConsume,
+                succInResponseJSONProperty,
+                fixedRequestParams,
+                statusExceptionMapping,
+                apiClass,
+                baseUrlProvider,
+                prefix,
+                routeParams,
+                requestParams,
+                cookies,
+                async,
+                signProvider,
+                appContext);
     }
 }

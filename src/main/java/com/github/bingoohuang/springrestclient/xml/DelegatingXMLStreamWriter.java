@@ -60,7 +60,7 @@ abstract class DelegatingXMLStreamWriter implements XMLStreamWriter {
     }
 
     public void writeAttribute(String prefix, String namespaceURI, String localName, String value)
-        throws XMLStreamException {
+            throws XMLStreamException {
         writer.writeAttribute(prefix, namespaceURI, localName, value);
     }
 

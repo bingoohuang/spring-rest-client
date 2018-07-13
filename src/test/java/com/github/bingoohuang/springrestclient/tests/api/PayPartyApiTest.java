@@ -56,7 +56,7 @@ public class PayPartyApiTest {
     public void getStr() {
         String sellerId = "中华";
         String str = payPartyApi.getStr(sellerId);
-        assertThat(sellerId, is(equalTo(str)));
+        assertThat(str, is(equalTo(sellerId)));
     }
 
     @Test

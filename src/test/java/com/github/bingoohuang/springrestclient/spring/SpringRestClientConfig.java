@@ -1,25 +1,36 @@
 package com.github.bingoohuang.springrestclient.spring;
 
-import com.github.bingoohuang.springrediscache.RedisCacheSpringConfig;
-import com.github.bingoohuang.utils.redis.Redis;
-import com.github.bingoohuang.utils.redis.RedisConfig;
+import com.github.bingoohuang.voucherno.JedisProxy;
+import com.github.bingoohuang.westcache.spring.WestCacheableEnabled;
+import lombok.val;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 
 @Configuration
 @ComponentScan
 @SpringRestClientEnabledScan
-@Import(RedisCacheSpringConfig.class)
+@WestCacheableEnabled
 public class SpringRestClientConfig {
+    /**
+     * 生成JedisCommands可以注入的对象.
+     *
+     * @return JedisCommands
+     */
     @Bean
-    public Redis redis() {
-        RedisConfig redisConfig = new RedisConfig();
-        redisConfig.setHost("127.0.0.1");
-        redisConfig.setPort(6379);
-        return new Redis(redisConfig);
+    public Jedis jedis() {
+        val poolConfig = new JedisPoolConfig();
+        poolConfig.setMaxTotal(10);
+        poolConfig.setMaxIdle(5);
+        poolConfig.setMaxWaitMillis(1000 * 10);
+        poolConfig.setTestOnBorrow(true);
+
+        val jedisPool = new JedisPool(poolConfig, "127.0.0.1", 6379, 2000);
+        return JedisProxy.createJedisProxy(jedisPool);
     }
 
     @Bean

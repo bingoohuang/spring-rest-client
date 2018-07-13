@@ -5,5 +5,6 @@ package com.github.bingoohuang.springrestclient.provider;
  */
 public interface BasicAuthProvider {
     String username();
+
     String password();
 }

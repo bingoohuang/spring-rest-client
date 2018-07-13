@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @SpringRestClientEnabled(baseUrl = "http://localhost:4849")
 public interface UserXmlApi {
     @RequestMapping(value = "/register",
-        method = RequestMethod.POST,
-        consumes = MediaType.APPLICATION_XML_VALUE)
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_XML_VALUE)
     void handleXMLPostRequest(@RequestBody UserXmlController.User user);
 
     @RequestMapping(method = RequestMethod.GET)

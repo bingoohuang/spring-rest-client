@@ -29,7 +29,7 @@ public class SpringRestClientFactoryBean<T> implements FactoryBean<T>, Applicati
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext)  {
+    public void setApplicationContext(ApplicationContext applicationContext) {
         this.appContext = applicationContext;
     }
 }

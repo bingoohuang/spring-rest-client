@@ -35,7 +35,7 @@ public class DownloadController {
         // set headers for the response
         String headerKey = "Content-Disposition";
         String headerValue = String.format("attachment; filename=\"%s\"",
-            resource.getFilename());
+                resource.getFilename());
         response.setHeader(headerKey, headerValue);
 
         // get output stream of the response

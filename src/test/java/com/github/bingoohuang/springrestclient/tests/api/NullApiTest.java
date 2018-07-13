@@ -9,8 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -23,14 +22,14 @@ public class NullApiTest {
     public void testNull() {
         Account account = new Account(100, "java");
         Account a = nullApi.nullAccount(account);
-        assertThat(a, is(nullValue()));
+        assertThat(a).isNull();
     }
 
     @Test
     public void testEmptyString() {
         Account account = new Account(100, "java");
         String a = nullApi.emptyString(account);
-        assertThat(a, is(equalTo("")));
+        assertThat(a).isEmpty();
     }
 
 }

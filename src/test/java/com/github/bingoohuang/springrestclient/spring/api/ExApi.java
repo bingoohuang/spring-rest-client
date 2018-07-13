@@ -27,12 +27,12 @@ public interface ExApi {
      */
     @RequestMapping("/error/{error}")
     @RespStatusMappings({
-        @RespStatusMapping(status = 404, exception = NotFoundError.class /* 检查异常，函数必须声明 */),
-        @RespStatusMapping(status = 405, exception = BadArgumentError.class /* 检查异常，函数必须声明 */),
-        @RespStatusMapping(status = 406, exception = OtherError.class /* 非检查异常，函数可以不声明 */)
+            @RespStatusMapping(status = 404, exception = NotFoundError.class /* 检查异常，函数必须声明 */),
+            @RespStatusMapping(status = 405, exception = BadArgumentError.class /* 检查异常，函数必须声明 */),
+            @RespStatusMapping(status = 406, exception = OtherError.class /* 非检查异常，函数可以不声明 */)
     })
     int error(@PathVariable("error")
-                  int error) throws NotFoundError, BadArgumentError;
+                      int error) throws NotFoundError, BadArgumentError;
 
 
 }

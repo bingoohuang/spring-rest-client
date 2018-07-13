@@ -123,7 +123,7 @@ public class SpringRestClientScannerConfigurer implements BeanDefinitionRegistry
 
         if (!prcs.isEmpty() && applicationContext instanceof GenericApplicationContext) {
             val mapperScannerBean = ((GenericApplicationContext) applicationContext)
-                .getBeanFactory().getBeanDefinition(beanName);
+                    .getBeanFactory().getBeanDefinition(beanName);
 
             // PropertyResourceConfigurer does not expose any methods to explicitly perform
             // property placeholder substitution. Instead, create a BeanFactory that just

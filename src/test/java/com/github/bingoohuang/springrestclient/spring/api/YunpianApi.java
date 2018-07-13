@@ -17,7 +17,7 @@ public interface YunpianApi {
               @RequestParam("mobile") String mobile);
 
     @FixedRequestParams({
-        @FixedRequestParam(name = "apikey", value = "xxx")
+            @FixedRequestParam(name = "apikey", value = "xxx")
     })
     @SuccInResponseJSONProperty(key = "code", value = "0")
     void send2(@RequestParam("text") String text,

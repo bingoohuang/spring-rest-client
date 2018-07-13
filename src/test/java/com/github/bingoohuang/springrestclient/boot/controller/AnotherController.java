@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 public class AnotherController {
     @RequestMapping("/add")
     public int add(
-        @RequestParam("offset") int offset, HttpServletResponse response) {
+            @RequestParam("offset") int offset, HttpServletResponse response) {
         response.addHeader("fuck", "you" + offset);
         return offset;
     }

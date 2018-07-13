@@ -25,7 +25,7 @@ public class PostTest {
     public void uploadOne() throws IOException {
         // Create temp file.
         File temp = File.createTempFile("myimage", ".image");
-        Files.write("Hello world", temp, Charsets.UTF_8);
+        Files.asCharSink(temp, Charsets.UTF_8).write("Hello world");
 
 
         try {
@@ -33,7 +33,7 @@ public class PostTest {
             post.field("name", "bingoo.txt");
             post.field("file", temp);
             HttpResponse<String> file = post
-                .asString();
+                    .asString();
             System.out.println(file.getStatus());
 
         } catch (Exception e) {
@@ -48,21 +48,21 @@ public class PostTest {
     public void uploadTwo() throws IOException {
         // Create temp file.
         File temp1 = File.createTempFile("myimage", ".image");
-        Files.write("Hello world1111", temp1, Charsets.UTF_8);
+        Files.asCharSink(temp1, Charsets.UTF_8).write("Hello world1111");
 
         File temp2 = File.createTempFile("myimage", ".image");
-        Files.write("Hello world2222", temp2, Charsets.UTF_8);
+        Files.asCharSink(temp2, Charsets.UTF_8).write("Hello world2222");
 
         File temp3 = File.createTempFile("myimage", ".image");
-        Files.write("Hello 33333", temp3, Charsets.UTF_8);
+        Files.asCharSink(temp3, Charsets.UTF_8).write("Hello 33333");
 
 
         try {
             MultipartBody field = Unirest.post("http://localhost:4849/upload/images")
-                .field("name", "bingoo.txt")
-                .field("files", temp1)
-                .field("files", temp2)
-                .field("files", temp3);
+                    .field("name", "bingoo.txt")
+                    .field("files", temp1)
+                    .field("files", temp2)
+                    .field("files", temp3);
             HttpResponse<String> file = field.asString();
             System.out.println(file.getStatus());
 
@@ -81,9 +81,9 @@ public class PostTest {
         String json = JSON.toJSONString(payParty);
 
         HttpResponse<String> response = Unirest.post("http://localhost:4849/pay-party/add-party")
-            .header("Content-Type", "application/json;charset=UTF-8")
-            .body(json)
-            .asString();
+                .header("Content-Type", "application/json;charset=UTF-8")
+                .body(json)
+                .asString();
         assertThat(response.getBody(), is(equalTo("100")));
     }
 
@@ -92,10 +92,10 @@ public class PostTest {
         Account fromAccount = new Account(100, "from");
         String json = JSON.toJSONString(fromAccount);
         HttpResponse<String> response = Unirest.post("http://localhost:4849/pay-party/transfer")
-            .header("Content-Type", "application/json;charset=UTF-8")
-            .queryString("sendConfirmationSms", "true")
-            .body(json)
-            .asString();
+                .header("Content-Type", "application/json;charset=UTF-8")
+                .queryString("sendConfirmationSms", "true")
+                .body(json)
+                .asString();
 
         Account account = JSON.parseObject(response.getBody(), Account.class);
         assertThat(account, is(equalTo(new Account(1234, "bingoo"))));
@@ -107,10 +107,10 @@ public class PostTest {
         String sellerId = "中华";
         String json = JSON.toJSONString(sellerId);
         HttpResponse<String> response = Unirest.post("http://localhost:4849/pay-party/get-str")
-            .header("Content-Type", "application/json;charset=UTF-8")
-            .queryString("sellerId", "中华")
-            .body(json)
-            .asString();
+                .header("Content-Type", "application/json;charset=UTF-8")
+                .queryString("sellerId", "中华")
+                .body(json)
+                .asString();
         String str = response.getBody();
         assertThat(sellerId, is(equalTo(str)));
     }
@@ -119,8 +119,8 @@ public class PostTest {
     public void test4() throws UnirestException {
         String sellerId = "123456";
         HttpResponse<String> response = Unirest.post("http://localhost:4849/pay-party/return-void")
-            .queryString("sellerId", sellerId)
-            .asString();
+                .queryString("sellerId", sellerId)
+                .asString();
         assertThat(response.getStatus(), is(equalTo(200)));
         assertThat(response.header("sellerId"), is(equalTo("123456abc")));
     }
@@ -130,10 +130,10 @@ public class PostTest {
         Account fromAccount = new Account(1234, "bingoo");
         String json = JSON.toJSONString(fromAccount);
         HttpResponse<String> response = Unirest.post("http://localhost:4849/pay-party/transfer-int")
-            .header("Content-Type", "application/json;charset=UTF-8")
-            .queryString("msg", 100)
-            .body(json)
-            .asString();
+                .header("Content-Type", "application/json;charset=UTF-8")
+                .queryString("msg", 100)
+                .body(json)
+                .asString();
 
         Account account = JSON.parseObject(response.getBody(), Account.class);
         assertThat(account, is(equalTo(new Account(1234, "bingoo"))));
@@ -144,10 +144,10 @@ public class PostTest {
         Account fromAccount = new Account(1234, "bingoo");
         String json = JSON.toJSONString(fromAccount);
         HttpResponse<String> response = Unirest.post("http://localhost:4849/pay-party/transfer-double")
-            .header("Content-Type", "application/json;charset=UTF-8")
-            .queryString("msg", 100.12)
-            .body(json)
-            .asString();
+                .header("Content-Type", "application/json;charset=UTF-8")
+                .queryString("msg", 100.12)
+                .body(json)
+                .asString();
 
         Account account = JSON.parseObject(response.getBody(), Account.class);
         assertThat(account, is(equalTo(new Account(1234, "bingoo"))));
@@ -157,9 +157,9 @@ public class PostTest {
     public void test7() throws UnirestException {
         int offset = 123;
         HttpResponse<String> response = Unirest.post("http://localhost:4849/another/add")
-            .header("Content-Type", "application/json;charset=UTF-8")
-            .queryString("offset", offset)
-            .asString();
+                .header("Content-Type", "application/json;charset=UTF-8")
+                .queryString("offset", offset)
+                .asString();
 
         Integer account = JSON.parseObject(response.getBody(), Integer.class);
         assertThat(account, is(equalTo(123)));
@@ -170,9 +170,9 @@ public class PostTest {
         Account account = new Account(110, "java");
         String json = JSON.toJSONString(account);
         HttpResponse<String> response = Unirest.post("http://localhost:4849/null/null-account")
-            .header("Content-Type", "application/json;charset=UTF-8")
-            .body(json)
-            .asString();
+                .header("Content-Type", "application/json;charset=UTF-8")
+                .body(json)
+                .asString();
 
         assertThat(response.getBody().length(), is(0));
         assertThat(response.header("returnNull"), is(equalTo("true")));

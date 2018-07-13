@@ -49,7 +49,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
     @RequestMapping(value = "/transfer", method = POST)
     public Account transfer(@RequestBody Account fromAccount,
                             @RequestParam("sendConfirmationSms")
-                                boolean sendConfirmationSms) {
+                                    boolean sendConfirmationSms) {
         return new Account(1234, "bingoo");
     }
 
@@ -60,7 +60,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
     @RequestMapping(value = "/return-void")
     public void returnVoid(
-        @RequestParam("sellerId") String sellerId, HttpServletResponse resp) {
+            @RequestParam("sellerId") String sellerId, HttpServletResponse resp) {
         resp.addHeader("sellerId", sellerId + "abc");
     }
 

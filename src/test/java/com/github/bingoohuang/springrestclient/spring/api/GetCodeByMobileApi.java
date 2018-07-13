@@ -11,7 +11,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @SpringRestClientEnabled(baseUrl = "http://localhost:4849",
-    signProvider = DefaultSignProvider.class)
+        signProvider = DefaultSignProvider.class)
 public interface GetCodeByMobileApi {
     @AsmValid
     @RequestMapping(value = "/getCode/{mobile}", method = GET)
@@ -20,10 +20,10 @@ public interface GetCodeByMobileApi {
     @AsmValid
     @RequestMapping(value = "/update-user-mobile", method = POST)
     boolean updateUserMobile(
-        @RequestParam("userId")
-        @AsmMinSize(18) @AsmMaxSize(19) @AsmDigits
-        @AsmMessage("必须为18位或者19位数字")
-            String userId,
-        @RequestParam("mobile") @AsmMobile
-            String mobile);
+            @RequestParam("userId")
+            @AsmMinSize(18) @AsmMaxSize(19) @AsmDigits
+            @AsmMessage("必须为18位或者19位数字")
+                    String userId,
+            @RequestParam("mobile") @AsmMobile
+                    String mobile);
 }

@@ -24,7 +24,7 @@ public class PubParamsSignature implements ParameterDelayable {
         val sb = new StringBuilder();
         for (Map.Entry<String, Object> entry : sortedMap.entrySet()) {
             sb.append(urlEncode(entry.getKey())).append("=")
-                .append(urlEncode("" + entry.getValue())).append("&");
+                    .append(urlEncode("" + entry.getValue())).append("&");
         }
         if (sb.length() > 0) sb.setLength(sb.length() - 1); // remove last &
         val canonicalizedQueryString = sb.toString();
@@ -59,8 +59,8 @@ public class PubParamsSignature implements ParameterDelayable {
     private String urlEncode(String val) {
         String encoded = URLEncoder.encode(val, "UTF-8");
         return encoded
-            .replace("+", "%20")
-            .replace("*", "%2A")
-            .replace("%7E", "~");
+                .replace("+", "%20")
+                .replace("*", "%2A")
+                .replace("%7E", "~");
     }
 }

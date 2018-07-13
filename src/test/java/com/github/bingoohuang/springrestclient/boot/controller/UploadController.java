@@ -21,7 +21,7 @@ public class UploadController {
     @RequestMapping(value = "/image", method = POST)
     public void image(@RequestParam("name") String name,
                       @RequestParam("file")
-                          MultipartFile file) throws IOException {
+                              MultipartFile file) throws IOException {
         if (file.isEmpty()) throw new RestException(410, "no file uploaded");
 
         File tempFile = File.createTempFile(name, ".temp");
@@ -32,7 +32,7 @@ public class UploadController {
     @RequestMapping(value = "/images", method = POST)
     public void images(@RequestParam("name") String name,
                        @RequestParam("files")
-                           List<MultipartFile> files) throws IOException {
+                               List<MultipartFile> files) throws IOException {
         if (files.isEmpty()) throw new RestException(410, "no file uploaded");
 
         int cnt = 0;

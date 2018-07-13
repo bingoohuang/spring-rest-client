@@ -34,7 +34,7 @@ public class EmployeeXmlController {
 
     @RequestMapping(value = "/{id}", produces = {"application/xml"})
     public ResponseEntity<EmployeeVO> getEmployeeById(
-        @PathVariable("id") int id) {
+            @PathVariable("id") int id) {
         if (id <= 3) {
             val employee = new EmployeeVO(1, "Lokesh", "Gupta", "howtodoinjava@gmail.com");
             return new ResponseEntity<EmployeeVO>(employee, HttpStatus.OK);

@@ -21,14 +21,14 @@ public class UrlDecodes {
                     needToChange = true;
                     break;
                 case '%':
-                /*
-                 * Starting with this instance of %, process all
-                 * consecutive substrings of the form %xy. Each
-                 * substring %xy will yield a byte. Convert all
-                 * consecutive  bytes obtained this way to whatever
-                 * character(s) they represent in the provided
-                 * encoding.
-                 */
+                    /*
+                     * Starting with this instance of %, process all
+                     * consecutive substrings of the form %xy. Each
+                     * substring %xy will yield a byte. Convert all
+                     * consecutive  bytes obtained this way to whatever
+                     * character(s) they represent in the provided
+                     * encoding.
+                     */
 
                     // (numChars-i)/3 is an upper bound for the number
                     // of remaining bytes
@@ -37,7 +37,7 @@ public class UrlDecodes {
                     int pos = 0;
 
                     while (((i + 2) < numChars) &&
-                        (c == '%')) {
+                            (c == '%')) {
                         int v = parseInt(s.substring(i + 1, i + 3), 16);
                         if (v < 0) {
                             sb.append('%').append(s.substring(i + 1, i + 3));

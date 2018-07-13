@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @SpringRestClientEnabled(baseUrlProvider = PropertiesBaseUrlProvider.class,
-    signProvider = DefaultSignProvider.class)
+        signProvider = DefaultSignProvider.class)
 @RequestMapping("/pay-party")
 public interface PayPartyApi {
     @RequestMapping("/party/{sellerId}/{buyerId}")
@@ -38,7 +38,7 @@ public interface PayPartyApi {
     @RequestMapping(value = "/transfer", method = POST)
     Account transfer(@RequestBody Account fromAccount,
                      @RequestParam("sendConfirmationSms")
-                         boolean sendConfirmationSms);
+                             boolean sendConfirmationSms);
 
     @RequestMapping(value = "/get-str", method = POST)
     String getStr(@RequestParam("sellerId") String sellerId);
@@ -48,11 +48,11 @@ public interface PayPartyApi {
 
     @RequestMapping(value = "/transfer-int", method = POST)
     Account transferInt(
-        @RequestBody Account account, @RequestParam("msg") int msg);
+            @RequestBody Account account, @RequestParam("msg") int msg);
 
     @RequestMapping(value = "/transfer-double", method = POST)
     Account transferDouble(
-        @RequestBody Account account, @RequestParam("msg") double msg);
+            @RequestBody Account account, @RequestParam("msg") double msg);
 
     @RequestMapping(value = "/transfer-double2", method = POST)
     Account transferDouble2(@RequestParam("msg") double ms,
