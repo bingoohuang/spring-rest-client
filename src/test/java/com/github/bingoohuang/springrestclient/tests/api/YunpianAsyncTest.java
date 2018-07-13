@@ -36,7 +36,7 @@ public class YunpianAsyncTest {
     }
 
     @Test
-    public void sendAsyncVoid() throws ExecutionException, InterruptedException {
+    public void sendAsyncVoid() {
         asyncApi.sendAsyncVoid("【健康生活】您正在注册验证easy-hi，验证码为123456（5分钟内有效），如非本人操作，请忽略本短信",
                 "18551855099");
     }

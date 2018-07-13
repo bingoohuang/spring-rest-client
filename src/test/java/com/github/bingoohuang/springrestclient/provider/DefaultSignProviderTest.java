@@ -9,7 +9,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 public class DefaultSignProviderTest {
     @Test
-    public void testCreateProxy() throws Exception {
+    public void testCreateProxy() {
         val signStr = new StringBuilder();
         val logStr = new StringBuilder();
         val proxy = new AbbreviateAppendable(logStr, signStr);

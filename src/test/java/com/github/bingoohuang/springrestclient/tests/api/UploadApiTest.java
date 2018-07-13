@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = SpringRestClientConfig.class)
@@ -54,7 +55,7 @@ public class UploadApiTest {
     @Test
     public void testOne2() throws IOException {
         MockMultipartFile file = new MockMultipartFile("myimage.image",
-                "/originial/name", null, "Hello test one2".getBytes("UTF-8"));
+                "/originial/name", null, "Hello test one2".getBytes(StandardCharsets.UTF_8));
         uploadApi.image2("bingoohuang.txt", file);
     }
 
@@ -62,12 +63,12 @@ public class UploadApiTest {
     @Test
     public void testTwo2() throws IOException {
         MockMultipartFile file1 = new MockMultipartFile("myimage1.image",
-                "/originial/name1", null, "Hello test one1111".getBytes("UTF-8"));
+                "/originial/name1", null, "Hello test one1111".getBytes(StandardCharsets.UTF_8));
 
         MockMultipartFile file2 = new MockMultipartFile("myimage2.image",
-                "/originial/name2", null, "Hello test one22222".getBytes("UTF-8"));
+                "/originial/name2", null, "Hello test one22222".getBytes(StandardCharsets.UTF_8));
 
 
-        uploadApi.images2("bingoohuang.txt", Lists.<MultipartFile>newArrayList(file1, file2));
+        uploadApi.images2("bingoohuang.txt", Lists.newArrayList(file1, file2));
     }
 }

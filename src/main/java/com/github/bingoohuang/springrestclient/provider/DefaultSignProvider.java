@@ -17,6 +17,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.List;
@@ -168,10 +169,10 @@ public class DefaultSignProvider implements SignProvider {
 
     public static String hmacSHA256(String data, String key) {
         try {
-            val secretKey = new SecretKeySpec(key.getBytes("UTF-8"), "HmacSHA256");
+            val secretKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
             val mac = Mac.getInstance("HmacSHA256");
             mac.init(secretKey);
-            val hmacData = mac.doFinal(data.getBytes("UTF-8"));
+            val hmacData = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
             return Base64.base64(hmacData, Base64.Format.Standard);
         } catch (Throwable e) {
             throw Throwables.propagate(e);

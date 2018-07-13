@@ -40,7 +40,7 @@ public class RestTestSuite {
     @ClassRule
     public static ExternalResource testRule = new ExternalResource() {
         @Override
-        protected void before() throws Throwable {
+        protected void before() {
 //            Unirest.setProxy(new org.apache.http.HttpHost("localhost", 9999));
             Application.startup();
 
